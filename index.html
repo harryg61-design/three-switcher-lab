@@ -1,0 +1,879 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Three Switcher Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --ground:#101317; --panel:#1a1e23; --panel2:#22272e; --btn:#2d333b; --btn-hi:#3a424d;
+  --ink:#e8ecef; --muted:#8d97a1; --line:#313843;
+  --pgm:#e5383b; --pst:#2bb673; --key:#f2a541; --mem:#58a6ff; --mac:#c792ea;
+  --accent:#58a6ff;
+  --f-legend:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+html,body{background:var(--ground);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.45}
+[hidden]{display:none!important}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:16px;padding-block:18px 48px;display:flex;flex-direction:column;gap:14px}
+header.top{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-legend);font-weight:700;font-size:32px;letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1}
+.sub{color:var(--muted);margin:4px 0 0;max-width:62ch}
+.skins{display:flex;gap:6px;flex-wrap:wrap}
+.skin{font-family:var(--f-legend);font-size:17px;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}
+.skin[aria-pressed="true"]{background:var(--accent);color:#0c0f12;border-color:var(--accent)}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* call bar */
+.callbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:#0b0d10;border:2px solid var(--key);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 6px 18px #000a}
+.callbar .ctext{font-family:var(--f-legend);font-weight:600;font-size:clamp(20px,4.5vw,32px);line-height:1.05;flex:1 1 220px;text-wrap:balance}
+.callbar .cclock{font-family:var(--f-mono);font-size:18px;color:var(--key);font-variant-numeric:tabular-nums}
+
+/* multiviewer */
+.mv{background:#050607;border:1px solid var(--line);border-radius:6px;padding:6px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;max-width:calc(36vh * 16 / 9 * 1.02 + 12px);margin-inline:auto;box-sizing:border-box}
+.mon{background:#000;overflow:hidden;position:relative;aspect-ratio:16/9;max-width:100%;border:2px solid #2a2f36;container-type:inline-size}
+.mon.big{grid-column:span 2}
+.mon.pgm{border-color:var(--pgm)} .mon.pvw{border-color:var(--pst)}
+.mon .tag{position:absolute;bottom:0;left:0;right:0;z-index:9;font-family:var(--f-legend);font-weight:600;font-size:max(10px,5.5cqw);letter-spacing:.06em;padding:0 5px;background:#000c;color:#fff;text-align:center;white-space:nowrap;overflow:hidden}
+.mon.big .tag{font-size:max(11px,3.6cqw)}
+.mon.pgm .tag{background:var(--pgm)} .mon.pvw .tag{background:var(--pst);color:#032}
+.layer{position:absolute;inset:0}
+.scene{display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:var(--f-legend);color:rgba(255,255,255,.92);text-shadow:0 1px 6px rgba(0,0,0,.6);text-align:center}
+.scene b{font-size:10cqw;letter-spacing:.04em;line-height:1}
+.scene small{font-size:3.6cqw;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.k1{display:flex;align-items:flex-end;padding:0 0 12% 5%;pointer-events:none}
+.k1 div{background:linear-gradient(90deg,#0b2a66,#1449a8);border-left:1cqw solid var(--key);padding:.6cqw 2.4cqw;font-family:var(--f-legend);font-size:3.8cqw;color:#fff;letter-spacing:.03em;text-align:left;line-height:1.1}
+.k1 div span{display:block;font-size:.62em;opacity:.8;letter-spacing:.1em;text-transform:uppercase}
+.k2{display:flex;justify-content:flex-end;align-items:flex-start;padding:4% 4% 0 0;pointer-events:none}
+.k2 div{background:rgba(10,12,16,.85);border:1px solid rgba(255,255,255,.3);font-family:var(--f-mono);font-size:2.7cqw;padding:.4cqw 1.4cqw;color:#fff;white-space:nowrap}
+.ftb{background:#000;pointer-events:none;opacity:0}
+
+/* panel shell */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.sys{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.2fr) minmax(0,1fr) auto;gap:8px}
+.mod{background:var(--panel2);border-radius:4px;padding:6px 8px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.mt{font-family:var(--f-legend);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:6px;white-space:nowrap}
+.screen{background:#0a1420;border:1px solid #24405e;border-radius:3px;font-family:var(--f-mono);font-size:12px;color:#9fd0ff;padding:6px 8px;min-height:58px;line-height:1.35;overflow:hidden}
+.screen .crumb{color:#fff;display:block;margin-bottom:2px}
+.bank{display:flex;flex-wrap:wrap;gap:4px}
+.bank .pb{min-width:44px}
+.stripe{display:grid;grid-template-columns:minmax(150px,.9fr) minmax(0,3.4fr) minmax(210px,1.3fr);gap:8px;align-items:stretch}
+.stripe.me-pgm{box-shadow:inset 3px 0 0 var(--pgm);padding-left:4px}
+.busline{display:flex;align-items:center;gap:4px;min-width:0}
+.bl{font-family:var(--f-legend);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);width:44px;flex:none}
+.xpts{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px;flex:1;min-width:0}
+.pb{font-family:var(--f-legend);font-weight:600;font-size:14px;letter-spacing:.02em;min-width:0;height:40px;padding:0 4px;border-radius:3px;border:1px solid #0007;background:var(--btn);color:var(--ink);cursor:pointer;box-shadow:inset 0 -3px 0 #0005;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.pb:hover{background:var(--btn-hi)}
+.pb:active{transform:translateY(1px)}
+.pb:disabled{opacity:.45;cursor:default}
+.pb.re{color:#b9d4ff}
+.pb.on-pgm{background:var(--pgm);color:#fff}
+.pb.on-pst{background:var(--pst);color:#032}
+.pb.on-key{background:var(--key);color:#2a1800}
+.pb.on-mem{background:var(--mem);color:#04172e}
+.pb.on-mac{background:var(--mac);color:#1d0830}
+.pb.big{height:48px;font-size:17px}
+.pb.w{padding:0 8px}
+.pb.blink{animation:blink .6s steps(2) infinite}
+@keyframes blink{50%{filter:brightness(.45)}}
+@media (prefers-reduced-motion:reduce){.pb.blink{animation:none;outline:2px dashed var(--ink)}}
+.pb.has{box-shadow:inset 0 -3px 0 var(--mem)}
+.pb.hasmac{box-shadow:inset 0 -3px 0 var(--mac)}
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.tgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.2fr);gap:4px}
+.tgrid .cut{grid-area:1/4}.tgrid .auto{grid-area:2/4}
+.deleg{flex:none;width:74px;height:40px;border-radius:3px;border:1px solid #000;background:#0b0f14;color:#ffc66b;font-family:var(--f-mono);font-size:12px;cursor:pointer;box-shadow:inset 0 0 0 1px #3b3222}
+.oled{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px;flex:1;min-width:0}
+.oled span{background:#05080a;color:#cfe9ff;font-family:var(--f-mono);font-size:10px;text-align:center;padding:1px 0;border-radius:2px;white-space:nowrap;overflow:hidden}
+.rowtabs{display:none}
+.hint{font-size:13px;color:var(--muted);margin:0}
+kbd{font-family:var(--f-mono);font-size:12px;background:var(--btn);border:1px solid var(--line);border-bottom-width:2px;padding:0 5px;border-radius:3px;color:var(--ink)}
+.touch-only{display:none}
+@media (hover:none) and (pointer:coarse){.kbd-only{display:none}.touch-only{display:block}}
+
+/* manufacturer character: layout and vocabulary follow each maker's documentation; styling is generic */
+.panel[data-skin="ross"]{background:#1b1e22}
+.panel[data-skin="ross"] .mod{background:#24282e}
+.panel[data-skin="gv"]{background:#15191d;border-color:#2b3a3f}
+.panel[data-skin="gv"] .mod{background:#1d2328;border:1px solid #28333a}
+.panel[data-skin="gv"] .pb{border-radius:6px;box-shadow:inset 0 0 0 1px #3c5560,inset 0 -3px 0 #0006}
+.panel[data-skin="gv"] .pb.on-pgm{box-shadow:0 0 10px #e5383b88}
+.panel[data-skin="gv"] .pb.on-pst{box-shadow:0 0 10px #2bb67388}
+.panel[data-skin="sony"]{background:#202226;border-color:#3a3d44}
+.panel[data-skin="sony"] .mod{background:#2a2d33;border-radius:2px}
+.panel[data-skin="sony"] .pb{border-radius:2px;height:38px}
+.panel[data-skin="sony"] .deleg{color:#9fe0ff;box-shadow:inset 0 0 0 1px #24445a}
+
+/* DPM module */
+.slgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 10px}
+.sl{display:grid;grid-template-columns:58px minmax(0,1fr) 40px;white-space:nowrap;align-items:center;gap:6px;font-family:var(--f-legend);font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.sl input{width:100%;accent-color:var(--key);min-width:0}
+.sl output{font-family:var(--f-mono);font-size:11px;color:var(--ink);text-align:right}
+.sl input:disabled{opacity:.3}
+.pad{position:relative;aspect-ratio:16/9;max-width:100%;background:#050607;border:1px solid #3a4148;border-radius:4px;touch-action:none;cursor:crosshair}
+.padx,.pady{position:absolute;background:#ffffff18}.padx{left:0;right:0;top:50%;height:1px}.pady{top:0;bottom:0;left:50%;width:1px}
+.dot{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--key);box-shadow:0 0 10px var(--key);pointer-events:none}
+.ksel{display:flex;gap:4px;flex:none;width:74px}.ksel .pb{flex:1}
+.stripe.dpm{grid-template-columns:minmax(200px,1fr) minmax(0,2.4fr) minmax(220px,1.1fr)}
+.oled span b{display:block;font-weight:500;color:#fff}
+@media (max-width:1100px){.slgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.slgrid{grid-template-columns:1fr}.stripe.dpm{grid-template-columns:1fr}.ksel{width:100%}.ksel .pb{height:40px}}
+.rowtabs{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+
+/* Kayenne-style surface: black modules in a brushed aluminum tray, context-lit buttons, OLED name displays */
+.panel[data-skin="gv"]{background:repeating-linear-gradient(90deg,#8e949a 0 1px,#9ba1a7 1px 2px,#92989e 2px 4px),linear-gradient(180deg,#a9afb5,#80868c);border:1px solid #5b6167;padding:12px;box-shadow:inset 0 1px 0 #d6dbe0,0 8px 24px #0008}
+.panel[data-skin="gv"] .mod{background:linear-gradient(180deg,#141719,#0b0d0e);border:1px solid #000;box-shadow:inset 0 1px 0 #2b3136,0 1px 0 #c3c8cd66;border-radius:3px}
+.panel[data-skin="gv"] .mt{color:#d9dfe4;letter-spacing:.14em}
+.panel[data-skin="gv"] .bl{color:#aeb6bd}
+.panel[data-skin="gv"] .pb{--ctx:#3b4550;background:linear-gradient(180deg,#22262a,#16191c);color:#eef3f6;border:1px solid #000;border-radius:4px;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ctx) 70%,transparent),inset 0 -3px 0 #0009}
+.panel[data-skin="gv"] .pb:hover{background:linear-gradient(180deg,#2b3035,#1c2023)}
+.panel[data-skin="gv"] [data-act="pgm"]{--ctx:#8a2226}
+.panel[data-skin="gv"] [data-act="pst"]{--ctx:#1f6a3c}
+.panel[data-skin="gv"] [data-act="kfill"]{--ctx:#8a6412}
+.panel[data-skin="gv"] [data-act="localmem"],.panel[data-skin="gv"] [data-act="locallearn"],.panel[data-skin="gv"] [data-act="mem"],.panel[data-skin="gv"] [data-act="memstore"],.panel[data-skin="gv"] [data-act="ksel"],.panel[data-skin="gv"] [data-act="dksel"]{--ctx:#1f4f86}
+.panel[data-skin="gv"] [data-act="mac"],.panel[data-skin="gv"] [data-act="macrec"]{--ctx:#6a2c86}
+.panel[data-skin="gv"] [data-act="keycut"],.panel[data-skin="gv"] [data-act="keyauto"],.panel[data-skin="gv"] [data-act="next"]{--ctx:#8a6412}
+.panel[data-skin="gv"] .pb.on-pgm{background:#e5383b;color:#fff;box-shadow:0 0 12px #e5383bb0,inset 0 0 0 1px #ff9a9c}
+.panel[data-skin="gv"] .pb.on-pst{background:#2bb673;color:#021;box-shadow:0 0 12px #2bb673b0,inset 0 0 0 1px #9ff0c6}
+.panel[data-skin="gv"] .pb.on-key{background:#f2a541;color:#211300;box-shadow:0 0 12px #f2a541a0}
+.panel[data-skin="gv"] .pb.on-mem{background:#58a6ff;color:#04172e;box-shadow:0 0 12px #58a6ffa0}
+.panel[data-skin="gv"] .pb.on-mac{background:#c792ea;color:#1d0830;box-shadow:0 0 12px #c792eaa0}
+.panel[data-skin="gv"] .oled span{background:#000;border:1px solid #1c2226;color:#9fd8ff;font-size:9px;line-height:1.15;padding:2px 0}
+.panel[data-skin="gv"] .screen{background:#06121c;border-color:#1e3a52}
+.panel[data-skin="gv"] .stripe.me-pgm{box-shadow:inset 4px 0 0 #e5383b}
+/* drill mode: the program row only */
+.panel.drill .keybus,.panel.drill .stripe:not(.me-pgm),.panel.drill .sys,.panel.drill .rowtabs,.panel.drill [data-stripe="aux"],.panel.drill .hint{display:none!important}
+.panel.drill .stripe.me-pgm{display:grid!important}
+.panel.drill .pb.re,.panel.drill .aux-line,.panel.drill .oled-line,.panel.drill .deleg,.panel.drill [data-act="roll"],.panel.drill .m-left .bank,.panel.drill .mt,.panel.drill .busline>span[style]{display:none!important}
+.panel.drill .xpts{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+.panel.drill .kgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:640px){.panel.drill .bl{display:none}.panel.drill .busline{flex-wrap:nowrap}.panel.drill .stripe .m-right{order:0}.panel.drill .stripe .m-left{order:1}}
+/* lab / drill / rosetta */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{font-family:var(--f-legend);font-size:17px;letter-spacing:.05em;text-transform:uppercase;background:none;border:0;color:var(--muted);padding:8px 12px;cursor:pointer;border-bottom:3px solid transparent}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px}
+.card h2{font-family:var(--f-legend);font-size:22px;letter-spacing:.05em;text-transform:uppercase;margin:0 0 6px}
+.card p{margin:0 0 10px;max-width:65ch}
+.muted{color:var(--muted)}
+.checks{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:var(--panel2);border-radius:4px}
+.checks .box{flex:none;width:20px;height:20px;border-radius:3px;border:2px solid var(--muted);margin-top:1px;display:grid;place-items:center;font-size:13px;color:#032}
+.checks li.done .box{background:var(--pst);border-color:var(--pst)}
+.checks li.done{color:var(--muted)}
+.call{font-family:var(--f-legend);font-size:clamp(26px,5vw,40px);letter-spacing:.03em;line-height:1.05;margin:8px 0;min-height:2.2em;text-wrap:balance}
+.stats{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--f-mono);font-size:14px;color:var(--muted)}
+.stats b{color:var(--ink);font-weight:500}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+thead th{font-family:var(--f-legend);font-size:17px;letter-spacing:.06em;text-transform:uppercase}
+tbody th{font-weight:600;color:var(--muted);width:18%}
+td .legend{font-family:var(--f-legend);font-weight:600;font-size:16px;letter-spacing:.04em;background:var(--btn);padding:0 6px;border-radius:3px;white-space:nowrap}
+col.active{background:#58a6ff14}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+
+@media (max-width:1100px){
+  .stripe{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .stripe .m-center{grid-column:1/-1;order:-1}
+  .sys{grid-template-columns:1fr 1fr}
+}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+@media (max-width:640px){
+  .wrap{gap:10px;padding-block:10px 40px}
+  h1{font-size:26px}.sub{font-size:13px}
+  .skin{font-size:14px;padding:6px 9px}
+  .mv{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:3px}
+  .rowtabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+  .rowtabs .pb{height:36px;font-size:13px}
+  .rowtabs .pb[aria-pressed="true"]{background:var(--ink);color:#111}
+  .panel{padding:6px;gap:6px}
+  .panel .view:not(.shown){display:none!important}
+  .sys{grid-template-columns:1fr}
+  .stripe{grid-template-columns:1fr;gap:6px}
+  .stripe .m-center{order:-1}
+  .xpts{grid-template-columns:repeat(auto-fit,minmax(54px,1fr))!important}
+  .oled-line{display:none!important}
+  .busline{flex-wrap:wrap}
+  .bl{width:100%}
+  .pb{height:44px}
+  .panel[data-skin="sony"] .pb{height:44px}
+  .deleg{width:auto;flex:1 1 100%;height:36px}
+  .busline>.pb.w,.busline>span[style]{flex:1 1 100%!important;width:auto!important}
+  .busline>span[style]:empty{display:none}
+  .callbar{padding:6px 8px;gap:6px 10px}
+  .callbar .ctext{flex-basis:100%;font-size:20px;min-height:2.1em}
+  .callbar .pb{height:36px;padding:0 10px}
+  .callbar .cclock{font-size:15px}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Three Switcher Lab</h1>
+      <p class="sub">Four mix effects rows, an aux bus, and three manufacturers' ways of laying them out. Technical Directing, Hofstra University.</p>
+    </div>
+    <div class="skins" role="group" aria-label="Switcher manufacturer">
+      <button class="skin" id="skin-ross" data-skin="ross" aria-pressed="true">Ross Acuity</button>
+      <button class="skin" id="skin-gv" data-skin="gv" aria-pressed="false">Grass Valley Kayenne</button>
+      <button class="skin" id="skin-sony" data-skin="sony" aria-pressed="false">Sony XVS</button>
+    </div>
+  </header>
+
+  <div class="callbar" id="callbar" hidden aria-live="assertive">
+    <span class="ctext" id="callbar-text"></span>
+    <span class="cclock" id="callbar-clock">0.00 s</span>
+    <span class="cclock" id="callbar-n">1/10</span>
+    <button class="pb w" id="callbar-skip">SKIP</button>
+    <button class="pb w" id="callbar-stop">STOP</button>
+  </div>
+
+  <section class="mv" id="mv" aria-label="Multiviewer"></section>
+
+  <section class="panel" id="panel" data-skin="ross" aria-label="Virtual switcher panel">
+    <div class="rowtabs" id="rowtabs"></div>
+    <div id="sys" class="sys view"></div>
+    <div id="stripes" style="display:flex;flex-direction:column;gap:8px"></div>
+    <p class="hint touch-only">Use the row buttons above to move between rows, the way a row is delegated on the real panel.</p>
+    <p class="hint kbd-only">Controller keys act on the row you last touched: <kbd>1</kbd>–<kbd>6</kbd> preset · <kbd>Shift</kbd>+number hot-punch · <kbd>Space</kbd> cut · <kbd>Enter</kbd> auto · <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> next transition · <kbd>A</kbd> <kbd>S</kbd> key 1 / key 2 auto · <kbd>↑</kbd> <kbd>↓</kbd> change row</p>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-lab" data-tab="lab" aria-selected="true">Translation missions</button>
+    <button class="tab" role="tab" id="tab-drill" data-tab="drill" aria-selected="false">Speed drill</button>
+    <button class="tab" role="tab" id="tab-rosetta" data-tab="rosetta" aria-selected="false">Rosetta Stone</button>
+  </nav>
+
+  <section id="pane-lab" class="two">
+    <div class="card">
+      <h2 id="mission-title">Missions</h2>
+      <p class="muted" id="mission-intro"></p>
+      <ul class="checks" id="missions"></ul>
+    </div>
+    <div class="card">
+      <h2>Why this matters</h2>
+      <p>Every manufacturer solved the same problems. <strong>Freeze a whole look</strong> and bring it back in one press. <strong>Chain a string of moves</strong> onto one button. <strong>Build a look on one mix effects and feed it into another</strong>, which is re-entry. And <strong>send any picture anywhere</strong> with an aux bus.</p>
+      <p>A panel only has so many physical rows. The frame has more mix effects than that, so each row can be delegated to whichever mix effects you need. The names change, the buttons move. The thinking does not.</p>
+      <p class="muted">Work in pairs. Finish the missions on all three panels; progress stays on each one as you switch.</p>
+      <h2 style="margin-top:14px">Figure it out</h2>
+      <ul class="checks" id="challenges"></ul>
+    </div>
+  </section>
+
+  <section id="pane-drill" class="card" hidden>
+    <h2>Director's calls</h2>
+    <p class="muted">Ten calls on the program row. The clock starts when the call appears and stops the moment the program monitor matches it.</p>
+    <div class="call" id="call">Press Start. Hands on the panel.</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="pb big w" id="drill-start" style="min-width:120px">START</button>
+      <button class="pb w" id="drill-skip">SKIP CALL</button>
+    </div>
+    <div class="stats">
+      <span>Call <b id="d-n">0</b>/10</span>
+      <span>Last <b id="d-last">–</b></span>
+      <span>Average <b id="d-avg">–</b></span>
+      <span>Best <b id="d-best">–</b></span>
+    </div>
+  </section>
+
+  <section id="pane-rosetta" class="card" hidden>
+    <h2>Rosetta Stone</h2>
+    <p class="muted">The same idea, named and placed three ways. The highlighted column follows the panel you have selected.</p>
+    <div class="tablewrap">
+      <table>
+        <colgroup><col><col id="col-ross"><col id="col-gv"><col id="col-sony"></colgroup>
+        <thead><tr><th></th><th>Ross Acuity</th><th>Grass Valley Kayenne</th><th>Sony XVS</th></tr></thead>
+        <tbody>
+          <tr><th>Physical rows</th><td>Acuity 4 panel: 4 mix effects rows, 40 source buttons per row</td><td>2 to 4 M/E stripes, 25 or 35 source buttons per row</td><td>ICP-X7000 panel: 1 to 4 M/E rows, 20, 28 or 36 cross-point buttons</td></tr>
+          <tr><th>Mix effects in the frame</th><td>Up to 8</td><td>Up to 9, six keyers each</td><td>XVS-7000: 6. XVS-9000: 5</td></tr>
+          <tr><th>More mix effects than rows</th><td>Assign a panel row to any mix effects, aux bus, or custom control bank; the button to the right of the source buttons shows the assignment</td><td>Row delegation, at the right of the Source Select modules</td><td>Delegation from the Key/AUX delegation row</td></tr>
+          <tr><th>Source rows</th><td>Key bus, Program (background), Preset</td><td>Source Select module with source name displays</td><td>Key/AUX delegation row, Background A row, Background B row</td></tr>
+          <tr><th>Module order on a row</th><td>Each row carries a Keyers module, Memory module and Transition module</td><td>Local E-MEM module on the left, Source Select in the center, Transition module on the right</td><td>Cross-point control block with the Transition control block beside it; Key control block</td></tr>
+          <tr><th>Aux buses</th><td>On-panel aux bus control; a row can be assigned to an aux bus</td><td>Local Aux controls in the Source Select module</td><td>AUX Bus control block</td></tr>
+          <tr><th>A saved look</th><td><b>Memory</b>, stored in the Memory Area, organized in banks (<span class="legend">BANK</span>)</td><td><b>E-MEM register</b>; each register holds one or more keyframes</td><td><b>Snapshot</b></td></tr>
+          <tr><th>Save it</th><td>Press <span class="legend">STORE</span> so it is on, then pick the number</td><td><b>Learn</b> the register (<span class="legend">LRN</span> on the Local or Master E-MEM module)</td><td>Store a snapshot from the numeric keypad or Flexi Pad control block</td></tr>
+          <tr><th>Bring it back</th><td>With <span class="legend">STORE</span> off, key the number and press <span class="legend">ENTER</span></td><td><b>Recall</b> the register</td><td>Recall the snapshot from the numeric keypad or Flexi Pad</td></tr>
+          <tr><th>How much gets saved</th><td><span class="legend">ALL</span>, <span class="legend">ME</span>, <span class="legend">LOCAL ROW</span> choose which mix effects are included</td><td>Local E-MEM: that stripe. Master E-MEM: the whole switcher. Partial Keyframing leaves sub-levels out</td><td>Set in the snapshot settings on the Menu panel (check on the panel)</td></tr>
+          <tr><th>A chain of moves on one button</th><td><b>Custom Control</b>. Touchscreen: HOME, Custom Controls, Start Recording, press the moves, Finish Recording</td><td><b>Macro</b>, recorded into a macro register</td><td><b>Macro</b>, editable offline; also <b>Shotbox</b></td></tr>
+          <tr><th>Run it</th><td>Press the custom control button, or <span class="legend">RUN CC</span>. Press again to stop it</td><td>Press the macro register</td><td>From the numeric keypad, Flexi Pad, a cross-point button, or the menu</td></tr>
+          <tr><th>The interface screen</th><td>Integrated touchscreen menu, starting at HOME</td><td>Menu panel</td><td>Menu panel</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Checked against Ross Video's Acuity product pages and online help, Grass Valley's Kayenne product page and user manual, and Sony's XVS and ICP-X7000 product pages and XVS user manual. The documentation does not state which mix effects each physical row is assigned to out of the box, so this lab starts top to bottom at mix effects 3, 2, 1 and program/preset; every row can be reassigned. The virtual panel follows each maker's documented layout and vocabulary; it is a teaching model, not a replica of any manufacturer's hardware.</p>
+  </section>
+</div>
+
+<script>
+(()=>{
+const SOURCES={
+ 1:{name:"CAM 1",desc:"Wide shot",bg:"linear-gradient(180deg,#5d8fc4 0%,#8fb8de 38%,#2f7d3a 39%,#3f9a4a 70%,#b98a58 71%,#a97a48 100%)"},
+ 2:{name:"CAM 2",desc:"Pitcher",bg:"radial-gradient(circle at 78% 72%,#c9a37a 0 9%,transparent 10%),linear-gradient(180deg,#2f7d3a,#246a2f)"},
+ 3:{name:"CAM 3",desc:"Batter",bg:"radial-gradient(ellipse at 22% 70%,#eaeaea 0 7%,transparent 8%),linear-gradient(160deg,#1f5f2a,#3a8a44 60%,#8a6a45)"},
+ 4:{name:"CAM 4",desc:"Dugout",bg:"linear-gradient(180deg,#1d2530 0 45%,#3a4656 46% 60%,#2c6b35 61%)"},
+ 5:{name:"GFX",desc:"Full screen stats",bg:"repeating-linear-gradient(90deg,#10204a 0 40px,#132657 40px 80px)"},
+ 6:{name:"CLIP",desc:"Replay",bg:"linear-gradient(135deg,#4a1a1a,#8a2c2c 50%,#3a1414)"}
+};
+const SKINS={
+ ross:{accent:"#58a6ff",
+   meNames:["ME 1","ME 2","ME 3","ME 4","ME 5","ME 6","ME 7","PGM/PST"],
+   reName:i=>"ME"+(i+1), pgmBus:"PGM", pstBus:"PST", keyBus:"KEY",
+   memArea:"Global Memory",memWord:"Memory",memStore:"STORE",storeVerb:"Stored",
+   macArea:"Custom Controls",macWord:"Custom Control",macRec:"START REC",macFinish:"FINISH REC",macSlot:"CC",
+   menu:"Touchscreen",home:"HOME",aux:"AUX",
+   intro:"The Ross vocabulary, laid out like the Acuity rows in Control Room A."},
+ gv:{accent:"#7ee0c3",
+   meNames:["M/E 1","M/E 2","M/E 3","M/E 4","M/E 5","M/E 6","M/E 7","M/E 8","PGM PST"],
+   reName:i=>"ME"+(i+1), pgmBus:"PGM", pstBus:"PST", keyBus:"KEY",
+   memArea:"Master E-MEM",memWord:"E-MEM register",memStore:"LEARN",storeVerb:"Learned",
+   macArea:"Macros",macWord:"Macro",macRec:"RECORD",macFinish:"STOP REC",macSlot:"MAC",
+   menu:"Menu panel",home:"MENU",aux:"LOCAL AUX",
+   intro:"Same moves, Grass Valley names and stripe order: Local E-MEM, Source Select, Transition."},
+ sony:{accent:"#f0c75e",
+   meNames:["M/E-1","M/E-2","M/E-3","M/E-4","M/E-5","P/P"],
+   reName:i=>"M/E"+(i+1), pgmBus:"BKGD A", pstBus:"BKGD B", keyBus:"KEY",
+   memArea:"Numeric Keypad",memWord:"Snapshot",memStore:"STORE",storeVerb:"Stored",
+   macArea:"Flexi Pad",macWord:"Macro",macRec:"MACRO REC",macFinish:"END REC",macSlot:"MCRO",
+   menu:"Menu panel",home:"MENU",aux:"AUX BUS",
+   intro:"Same moves, Sony names. Background A and Background B instead of program and preset."}
+};
+const RATES=[15,30,45,60];
+const $=id=>document.getElementById(id);
+let skin="ross";
+const dpmDefault=()=>({mode:"off",space:"source",x:0,y:0,z:0,size:1,aspect:1,rx:0,ry:0,rz:0,cl:0,cr:0,ct:0,cb:0});
+const DPMP=["x","y","z","size","aspect","rx","ry","rz","cl","cr","ct","cb"];
+const newME=()=>({pgm:1,pst:2,key1:false,key2:false,next:{bg:true,k1:false,k2:false},type:"MIX",rate:30,busy:false,bgo:0,k1o:0,k2o:0,
+  kf:{1:"L3",2:"BUG"},keySel:1,dpm:{1:dpmDefault(),2:dpmDefault()},path:{1:{},2:{}}});
+const W={}; // per-skin world
+function world(){return W[skin]}
+function initWorld(k){
+  const n=SKINS[k].meNames.length, P=n-1;
+  const mes=Array.from({length:n},()=>newME());
+  mes[P].key2=true;mes[P].k2o=1;
+  mes[0].pgm=2;mes[0].pst=3;mes[1].pgm=4;mes[1].pst=5;mes[2].pgm=5;mes[2].pst=6;
+  W[k]={mes,P,rows:[2,1,0,P],aux:[P+100,100,101,1],auxSel:0,active:3,view:3,ftb:false,ftbo:0,memScope:"all",
+        mem:{},macros:{},memStoreMode:false,rec:{state:"off",slot:null,steps:[]},running:false,plays:0,
+        missions:{play:false,store:false,recall:false,reentry:false,aux:false,dpm:false,record:false,run:false},status:"Ready."};
+}
+Object.keys(SKINS).forEach(initWorld);
+
+// ---------- compositing ----------
+function sceneHTML(id){const s=SOURCES[id];return `<div class="layer scene" style="background:${s.bg}"><b>${s.name}</b><small>${s.desc}</small></div>`}
+function srcHTML(id,depth){ if(id>=100){return meOutHTML(id-100,depth+1)} return sceneHTML(id)}
+const K1=`<div><span>Now batting</span>Number 20 · Center field</div>`;
+const K2=`<div>NYM 3 · ATL 2 · ▲7 · 1 OUT</div>`;
+function dpmTransform(d){
+  const t=`translate(${d.x*50}%,${-d.y*50}%)`,s=`scale(${d.size*d.aspect},${d.size})`;
+  if(d.mode==="2d")return d.space==="target"?`rotate(${d.rz}deg) ${t} ${s}`:`${t} rotate(${d.rz}deg) ${s}`;
+  const tz=`translateZ(calc(${d.z} * 60cqw))`,r=`rotateX(${d.rx}deg) rotateY(${d.ry}deg) rotateZ(${d.rz}deg)`;
+  return d.space==="target"?`perspective(140cqw) ${r} ${t} ${tz} ${s}`:`perspective(140cqw) ${t} ${tz} ${r} ${s}`;
+}
+function keyLayer(m,n,op,depth){
+  const fill=m.kf[n],d=m.dpm[n];
+  let inner=fill==="L3"?`<div class="layer k1">${K1}</div>`:fill==="BUG"?`<div class="layer k2">${K2}</div>`:`<div class="layer keysrc">${srcHTML(+fill,depth)}</div>`;
+  if(d.mode==="off")return `<div class="layer" style="opacity:${op}">${inner}</div>`;
+  const crop=`clip-path:inset(${d.ct}% ${d.cr}% ${d.cb}% ${d.cl}%)`;
+  return `<div class="layer dpmwrap" style="opacity:${op}"><div class="layer" style="transform:${dpmTransform(d)};transform-origin:50% 50%"><div class="layer" style="${crop}">${inner}</div></div></div>`;
+}
+function meOutHTML(i,depth){
+  const w=world(),m=w.mes[i]; if(depth>6)return "";
+  let h=`<div class="layer">${srcHTML(m.pgm,depth)}`;
+  if(m.bgo>0){const clip=m.type==="WIPE"?`clip-path:inset(0 ${100-m.bgo*100}% 0 0)`:`opacity:${m.bgo}`;h+=`<div class="layer" style="${clip}">${srcHTML(m.pst,depth)}</div>`}
+  if(m.k1o>0)h+=keyLayer(m,1,m.k1o,depth);
+  if(m.k2o>0)h+=keyLayer(m,2,m.k2o,depth);
+  return h+"</div>";
+}
+function meNextHTML(i){
+  const m=world().mes[i];
+  let h=`<div class="layer">${srcHTML(m.next.bg?m.pst:m.pgm,0)}`;
+  if(m.key1!==m.next.k1)h+=keyLayer(m,1,1,0);
+  if(m.key2!==m.next.k2)h+=keyLayer(m,2,1,0);
+  return h+"</div>";
+}
+function srcName(id){const sk=SKINS[skin];return id>=100?sk.meNames[id-100]:SOURCES[id].name}
+function renderMV(){
+  const w=world(),sk=SKINS[skin],a=w.mes[w.rows[w.active]]?w.rows[w.active]:w.P;
+  const tiles=w.rows.filter(i=>i!==w.P).slice(0,3);
+  let h=`<div class="mon big pvw">${meNextHTML(w.rows[w.active]??w.P)}<span class="tag">PREVIEW · ${sk.meNames[w.rows[w.active]??w.P]}</span></div>`;
+  h+=`<div class="mon big pgm">${meOutHTML(w.P,0)}<div class="layer ftb" style="opacity:${w.ftbo}"></div><span class="tag">PROGRAM</span></div>`;
+  tiles.forEach(i=>{h+=`<div class="mon">${meOutHTML(i,0)}<span class="tag">${sk.meNames[i]}</span></div>`});
+  h+=`<div class="mon">${srcHTML(w.aux[0],0)}<span class="tag">${sk.aux} 1 · ${srcName(w.aux[0])}</span></div>`;
+  $("mv").innerHTML=h;
+}
+
+// ---------- panel build ----------
+const B=(act,v,label,extra="",row="")=>`<button class="pb ${extra}" data-act="${act}" data-v="${v}" ${row!==""?`data-row="${row}"`:""}>${label}</button>`;
+function xptList(i){ // physical sources plus re-entry of lower-numbered mix effects
+  const w=world(),list=[1,2,3,4,5,6];
+  const maxRe=i===w.P?3:Math.min(i,3);
+  for(let j=0;j<maxRe;j++)list.push(100+j);
+  return list;
+}
+function busLine(r,act,label,cls=""){
+  const i=world().rows[r],sk=SKINS[skin];
+  const btns=xptList(i).map(s=>B(act,s,s>=100?sk.reName(s-100):SOURCES[s].name,s>=100?"re":"",r)).join("");
+  return `<div class="busline ${cls}"><span class="bl">${label}</span><div class="xpts">${btns}</div></div>`;
+}
+function keyFills(label){return `<div class="busline aux-line"><span class="bl">${label}</span><div class="xpts"><button class="pb" disabled>L 3RD</button><button class="pb" disabled>BUG</button></div></div>`}
+function gvKeyBus(r){
+  const i=world().rows[r],sk=SKINS[skin];
+  const fills=[...xptList(i),"L3","BUG"].map(s=>B("kfill",s,s==="L3"?"L 3RD":s==="BUG"?"BUG":s>=100?sk.reName(s-100):SOURCES[s].name,(typeof s==="number"&&s>=100)?"re":"",r)).join("");
+  return `<div class="busline keybus"><span class="bl">KEY</span><div class="xpts">${fills}</div>
+    <span class="ksel">${B("ksel",1,"K1","",r)}${B("ksel",2,"K2","",r)}</span></div>`;
+}
+function oled(r){const sk=SKINS[skin];return `<div class="busline oled-line"><span class="bl"></span><div class="oled">${xptList(world().rows[r]).map(s=>`<span><b>${s>=100?sk.meNames[s-100]:SOURCES[s].name}</b>${s>=100?"output":SOURCES[s].desc}</span>`).join("")}</div><span style="flex:none;width:74px"></span></div>`}
+const deleg=r=>`<button class="deleg" data-act="deleg" data-row="${r}" id="deleg-${r}" title="Delegate this row to another mix effects"></button>`;
+const keyers=r=>`<div class="kgrid">${B("keycut",1,"KEY 1 CUT","",r)}${B("keyauto",1,"KEY 1 AUTO","",r)}${B("keycut",2,"KEY 2 CUT","",r)}${B("keyauto",2,"KEY 2 AUTO","",r)}</div>`;
+const trans=r=>`<div class="tgrid">${B("next","bg","BKGD","",r)}${B("next","k1","KEY 1","",r)}${B("next","k2","KEY 2","",r)}${B("cut","","CUT","big cut",r)}${B("type","MIX","MIX","",r)}${B("type","WIPE","WIPE","",r)}${B("rate","","RATE","",r)}${B("auto","","AUTO","big auto",r)}</div>`;
+function stripeHTML(r){
+  const w=world(),sk=SKINS[skin],i=w.rows[r],pgmCls=i===w.P?"me-pgm":"";
+  const view=`view ${w.view===r?"shown":""}`;
+  if(skin==="ross") return `<div class="stripe ${pgmCls} ${view}" data-stripe="${r}">
+    <div class="mod m-left"><div class="mt"><span>Keyers</span></div>${keyers(r)}</div>
+    <div class="mod m-center"><div class="mt"><span>Panel row ${r+1}</span><span class="rt">RATE ${w.mes[i].rate}</span></div>
+      ${keyFills(sk.keyBus)}
+      <div class="busline"><span class="bl">${sk.pgmBus}</span><div class="xpts">${xptList(i).map(s=>B("pgm",s,s>=100?sk.reName(s-100):SOURCES[s].name,s>=100?"re":"",r)).join("")}</div>${deleg(r)}</div>
+      <div class="busline"><span class="bl">${sk.pstBus}</span><div class="xpts">${xptList(i).map(s=>B("pst",s,s>=100?sk.reName(s-100):SOURCES[s].name,s>=100?"re":"",r)).join("")}</div><button class="pb w" data-act="roll" data-row="${r}" style="flex:none;width:74px">ROLL</button></div>
+    </div>
+    <div class="mod m-right"><div class="mt"><span>Transition</span></div>${trans(r)}</div></div>`;
+  if(skin==="gv") return `<div class="stripe ${pgmCls} ${view}" data-stripe="${r}">
+    <div class="mod m-left"><div class="mt"><span>Local E-MEM</span><span>${sk.meNames[i]}</span></div>
+      <div class="bank">${B("locallearn","","LEARN","w",r)}${B("localmem",1,"1","",r)}${B("localmem",2,"2","",r)}${B("localmem",3,"3","",r)}</div>
+      ${keyers(r)}</div>
+    <div class="mod m-center"><div class="mt"><span>Source Select · stripe ${r+1}</span><span class="rt">RATE ${w.mes[i].rate}</span></div>
+      ${gvKeyBus(r)}
+      ${oled(r)}
+      <div class="busline"><span class="bl">${sk.pgmBus}</span><div class="xpts">${xptList(i).map(s=>B("pgm",s,s>=100?sk.reName(s-100):SOURCES[s].name,s>=100?"re":"",r)).join("")}</div>${deleg(r)}</div>
+      <div class="busline"><span class="bl">${sk.pstBus}</span><div class="xpts">${xptList(i).map(s=>B("pst",s,s>=100?sk.reName(s-100):SOURCES[s].name,s>=100?"re":"",r)).join("")}</div><span style="flex:none;width:74px"></span></div>
+    </div>
+    <div class="mod m-right"><div class="mt"><span>Transition module</span></div>${trans(r)}</div></div>`;
+  return `<div class="stripe ${pgmCls} ${view}" data-stripe="${r}">
+    <div class="mod m-left"><div class="mt"><span>Key control</span></div>${keyers(r)}</div>
+    <div class="mod m-center"><div class="mt"><span>Cross-point · M/E row ${r+1}</span><span class="rt">RATE ${w.mes[i].rate}</span></div>
+      <div class="busline aux-line"><span class="bl">KEY/AUX</span><div class="xpts"><button class="pb" disabled>KEY 1</button><button class="pb" disabled>KEY 2</button><button class="pb" disabled>AUX</button></div>${deleg(r)}</div>
+      <div class="busline"><span class="bl">${sk.pgmBus}</span><div class="xpts">${xptList(i).map(s=>B("pgm",s,s>=100?sk.reName(s-100):SOURCES[s].name,s>=100?"re":"",r)).join("")}</div><span style="flex:none;width:74px"></span></div>
+      <div class="busline"><span class="bl">${sk.pstBus}</span><div class="xpts">${xptList(i).map(s=>B("pst",s,s>=100?sk.reName(s-100):SOURCES[s].name,s>=100?"re":"",r)).join("")}</div><span style="flex:none;width:74px"></span></div>
+    </div>
+    <div class="mod m-right"><div class="mt"><span>Transition control</span></div>${trans(r)}</div></div>`;
+}
+function auxHTML(){
+  const w=world(),sk=SKINS[skin];
+  const srcs=[1,2,3,4,5,6,100,101,102,w.P+100];
+  const sel=[0,1,2,3].map(a=>B("auxsel",a,`${skin==="ross"?"AUX":"AUX"} ${a+1}`,"","aux")).join("");
+  const x=srcs.map(s=>B("auxsrc",s,s>=100?(s-100===w.P?"PGM":sk.reName(s-100)):SOURCES[s].name,s>=100?"re":"","aux")).join("");
+  return `<div class="stripe view ${w.view==="aux"?"shown":""}" data-stripe="aux">
+    <div class="mod m-left"><div class="mt"><span>${skin==="sony"?"AUX bus control":skin==="gv"?"Local Aux":"Aux bus"}</span></div><div class="kgrid">${sel}</div></div>
+    <div class="mod m-center"><div class="mt"><span>${sk.aux} source</span><span id="aux-readout"></span></div>
+      <div class="busline"><span class="bl">SRC</span><div class="xpts" style="grid-template-columns:repeat(10,minmax(0,1fr))">${x}</div></div></div>
+    <div class="mod m-right"><div class="mt"><span>What an aux does</span></div><p class="hint">An aux bus sends any source or any mix effects output to one place: a stadium screen, a record deck, a truck. It never touches program.</p></div></div>`;
+}
+function dpmHTML(){
+  const w=world(),sk=SKINS[skin];
+  const sl=(p,label,min,max,step)=>`<label class="sl"><span>${label}</span><input type="range" id="dpm-${p}" data-p="${p}" min="${min}" max="${max}" step="${step}"><output id="dpmv-${p}"></output></label>`;
+  return `<div class="stripe view dpm ${w.view==="dpm"?"shown":""}" data-stripe="dpm">
+   <div class="mod m-left"><div class="mt"><span>Multi-Function · DPM</span><span id="dpm-target"></span></div>
+     <div class="bank">${B("dksel",1,"KEY 1","w","")}${B("dksel",2,"KEY 2","w","")}</div>
+     <div class="bank">${B("dpmmode","off","DPM OFF","w","")}${B("dpmmode","2d","2D DPM","w","")}${B("dpmmode","3d","iDPM 3D","w","")}</div>
+     <div class="bank">${B("space","source","SOURCE SPACE","w","")}${B("space","target","TARGET SPACE","w","")}</div>
+     <p class="hint" id="dpm-fill"></p></div>
+   <div class="mod m-center"><div class="mt"><span>Transform · Crop</span><span>${B("dpmreset","","RESET","w","")}</span></div>
+     <div class="slgrid">
+      ${sl("x","POS X",-1.5,1.5,.01)}${sl("y","POS Y",-1.5,1.5,.01)}${sl("z","POS Z",-1,1,.01)}
+      ${sl("size","SIZE",.05,2,.01)}${sl("aspect","ASPECT",.25,2,.01)}${sl("rz","SPIN Z",-720,720,1)}
+      ${sl("rx","ROT X",-180,180,1)}${sl("ry","ROT Y",-180,180,1)}<span></span>
+      ${sl("cl","CROP L",0,50,.5)}${sl("cr","CROP R",0,50,.5)}${sl("ct","CROP T",0,50,.5)}${sl("cb","CROP B",0,50,.5)}
+     </div></div>
+   <div class="mod m-right"><div class="mt"><span>Positioner</span><span id="pad-mode"></span></div>
+     <div class="bank">${B("padmode","location","LOC","","")}${B("padmode","size","SIZE","","")}${B("padmode","rotate","ROT","","")}${B("padmode","spin","SPIN","","")}${B("padmode","crop","CROP","","")}</div>
+     <div class="pad" id="dpm-pad"><div class="padx"></div><div class="pady"></div><div class="dot" id="pad-dot"></div></div>
+     <div class="mt" style="margin-top:2px"><span>Path</span></div>
+     <div class="bank">${B("kfset","A","KF A","w","")}${B("kfset","B","KF B","w","")}${B("kfrun","","RUN","w","")}${B("dpmpreset","box","BOX","w","")}</div></div>
+  </div>`;
+}
+function sysHTML(){
+  const w=world(),sk=SKINS[skin];
+  const mems=[1,2,3,4,5,6].map(n=>B("mem",n,n,"","")).join("");
+  const macs=[1,2,3,4].map(n=>B("mac",n,`${sk.macSlot} ${n}`,"","")).join("");
+  const screen=`<div class="mod"><div class="mt"><span>${sk.menu}</span></div><div class="screen" id="screen"></div></div>`;
+  let memMod;
+  if(skin==="ross") memMod=`<div class="mod"><div class="mt"><span>${sk.memArea}</span><span id="mem-mode"></span></div><div class="bank">${B("memstore","",sk.memStore,"w","")}${B("scope","all","ALL","w","")}${B("scope","row","LOCAL ROW","w","")}${mems}</div></div>`;
+  else memMod=`<div class="mod"><div class="mt"><span>${sk.memArea}</span><span id="mem-mode"></span></div><div class="bank">${B("memstore","",sk.memStore,"w","")}${mems}</div></div>`;
+  const macMod=`<div class="mod"><div class="mt"><span>${sk.macArea}</span><span id="mac-mode"></span></div><div class="bank">${B("macrec","",sk.macRec,"w","")}${macs}</div></div>`;
+  const last=skin==="ross"?`<div class="mod"><div class="mt"><span>FTB</span></div>${B("ftb","","FADE TO BLACK","w big","")}</div>`
+     :skin==="sony"?`<div class="mod"><div class="mt"><span>Utility/Shotbox</span></div><div class="bank"><button class="pb w" disabled>BANK 1</button><button class="pb w" disabled>BANK 2</button></div></div>`
+     :`<div class="mod"><div class="mt"><span>System bar</span></div><div class="bank"><button class="pb w" disabled>HOLD</button><button class="pb w" disabled>PANEL</button></div></div>`;
+  return screen+memMod+macMod+last;
+}
+function rowtabsHTML(){
+  const w=world(),sk=SKINS[skin];
+  return w.rows.map((i,r)=>`<button class="pb" data-act="view" data-v="${r}" aria-pressed="${w.view===r}">${i===w.P?(skin==="sony"?"P/P":"PGM"):sk.reName(i)}</button>`).join("")
+   +`<button class="pb" data-act="view" data-v="aux" aria-pressed="${w.view==="aux"}">AUX</button><button class="pb" data-act="view" data-v="sys" aria-pressed="${w.view==="sys"}">MEM</button>`
+   +(skin==="gv"?`<button class="pb" data-act="view" data-v="dpm" aria-pressed="${w.view==="dpm"}">DPM</button>`:"");
+}
+function build(){
+  const w=world();
+  $("panel").dataset.skin=skin;
+  $("sys").innerHTML=sysHTML();
+  $("sys").classList.toggle("shown",w.view==="sys");
+  $("stripes").innerHTML=(skin==="gv"?dpmHTML():"")+[0,1,2,3].map(stripeHTML).join("")+auxHTML();
+  wireDPM();
+  $("rowtabs").innerHTML=rowtabsHTML();
+  paint();
+}
+
+// ---------- paint ----------
+function setScreen(t){world().status=t;const s=$("screen");if(s)s.innerHTML=screenText()}
+function screenText(){
+  const w=world(),sk=SKINS[skin];
+  let crumb=sk.home;
+  if(w.rec.state!=="off")crumb=skin==="ross"?"HOME › Custom Controls":`${sk.home} › ${sk.macWord}`;
+  else if(w.memStoreMode)crumb=`${sk.home} › ${sk.memWord}`;
+  return `<span class="crumb">${crumb}</span>${w.status}`;
+}
+function paint(){
+  const w=world(),sk=SKINS[skin];
+  document.querySelectorAll("[data-stripe]").forEach(el=>{
+    const r=el.dataset.stripe; if(r==="aux")return;
+    const m=w.mes[w.rows[r]];
+    el.querySelectorAll('[data-act="pgm"]').forEach(b=>b.classList.toggle("on-pgm",+b.dataset.v===m.pgm));
+    el.querySelectorAll('[data-act="pst"]').forEach(b=>b.classList.toggle("on-pst",+b.dataset.v===m.pst));
+    el.querySelectorAll('[data-act="next"]').forEach(b=>b.classList.toggle("on-key",!!m.next[b.dataset.v]));
+    el.querySelectorAll('[data-act="type"]').forEach(b=>b.classList.toggle("on-key",m.type===b.dataset.v));
+    el.querySelectorAll('[data-act="keycut"]').forEach(b=>b.classList.toggle("on-pgm",b.dataset.v==="1"?m.key1:m.key2));
+    el.querySelectorAll('[data-act="auto"]').forEach(b=>b.classList.toggle("on-pgm",m.busy));
+    const rt=el.querySelector(".rt");if(rt)rt.textContent=`RATE ${m.rate} frames`;
+    const d=el.querySelector(".deleg");if(d)d.textContent=sk.meNames[w.rows[r]];
+    el.style.outline=(+r===w.active)?"1px solid #ffffff22":"none";
+  });
+  document.querySelectorAll('[data-act="auxsel"]').forEach(b=>b.classList.toggle("on-key",+b.dataset.v===w.auxSel));
+  document.querySelectorAll('[data-act="auxsrc"]').forEach(b=>b.classList.toggle("on-pgm",+b.dataset.v===w.aux[w.auxSel]));
+  const ar=$("aux-readout");if(ar)ar.textContent=`${sk.aux} ${w.auxSel+1} = ${srcName(w.aux[w.auxSel])}`;
+  document.querySelectorAll('[data-act="scope"]').forEach(b=>b.classList.toggle("on-mem",w.memScope===b.dataset.v));
+  const ms=document.querySelector('[data-act="memstore"]');
+  if(ms){ms.classList.toggle("on-mem",w.memStoreMode);ms.classList.toggle("blink",w.memStoreMode)}
+  const mm=$("mem-mode");if(mm)mm.textContent=w.memStoreMode?(skin==="gv"?"LEARN":"STORE"):"RECALL";
+  document.querySelectorAll('[data-act="mem"]').forEach(b=>b.classList.toggle("has",!!w.mem["g"+b.dataset.v]));
+  document.querySelectorAll('[data-act="localmem"]').forEach(b=>b.classList.toggle("has",!!w.mem["l"+w.rows[b.dataset.row]+"-"+b.dataset.v]));
+  const ll=document.querySelector('[data-act="locallearn"]');
+  document.querySelectorAll('[data-act="locallearn"]').forEach(b=>{b.classList.toggle("on-mem",w.memStoreMode==="local"+b.dataset.row);b.classList.toggle("blink",w.memStoreMode==="local"+b.dataset.row)});
+  document.querySelectorAll('[data-act="mac"]').forEach(b=>{const n=+b.dataset.v;b.classList.toggle("hasmac",!!w.macros[n]);
+    b.classList.toggle("on-mac",w.rec.state==="on"&&w.rec.slot===n);b.classList.toggle("blink",w.rec.state==="arm"||(w.rec.state==="on"&&w.rec.slot===n))});
+  const mr=document.querySelector('[data-act="macrec"]');if(mr){mr.textContent=w.rec.state==="on"?sk.macFinish:sk.macRec;mr.classList.toggle("on-mac",w.rec.state!=="off")}
+  const mc=$("mac-mode");if(mc)mc.textContent=w.rec.state==="arm"?"CHOOSE BUTTON":w.rec.state==="on"?`REC · ${w.rec.steps.length}`:w.running?"RUNNING":"";
+  const f=document.querySelector('[data-act="ftb"]');if(f)f.classList.toggle("on-pgm",w.ftb);
+  document.querySelectorAll('[data-act="kfill"]').forEach(b=>{const m=w.mes[w.rows[b.dataset.row]];b.classList.toggle("on-key",String(m.kf[m.keySel])===b.dataset.v)});
+  document.querySelectorAll('[data-act="ksel"]').forEach(b=>{const m=w.mes[w.rows[b.dataset.row]];b.classList.toggle("on-mem",m.keySel===+b.dataset.v)});
+  paintDPM();
+  const s=$("screen");if(s)s.innerHTML=screenText();
+  renderMV();
+}
+
+// ---------- actions ----------
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+function animate(dur,fn){return new Promise(res=>{const t0=performance.now();function f(t){const p=Math.min(1,(t-t0)/dur);fn(p);renderMV();if(p<1)requestAnimationFrame(f);else res()}requestAnimationFrame(f)})}
+function label(st){
+  const sk=SKINS[skin],me=st.me!=null?sk.meNames[st.me]+": ":"";const nm=()=>(+st.v>0?srcName(+st.v):"");
+  const map={pgm:`${me}${sk.pgmBus} ${nm()}`,pst:`${me}${sk.pstBus} ${nm()}`,cut:`${me}CUT`,auto:`${me}AUTO`,
+    next:`${me}next ${st.v==="bg"?"BKGD":st.v==="k1"?"KEY 1":"KEY 2"}`,type:`${me}${st.v}`,rate:`${me}RATE`,keycut:`${me}KEY ${st.v} CUT`,keyauto:`${me}KEY ${st.v} AUTO`,
+    mem:`Recall ${sk.memWord} ${st.v}`,kfill:`${me}key fill ${st.v}`,dpmmode:`${me}key ${st.k} DPM ${st.v}`,space:`${me}key ${st.k} ${st.v} space`,dpmset:`${me}key ${st.k} DPM move`,dpmrun:`${me}key ${st.k} path run`,localmem:`${me}recall local ${st.v}`,auxsrc:`${sk.aux} ${(st.aux??0)+1}: ${nm()}`,ftb:"FADE TO BLACK"};
+  return map[st.a]||st.a;
+}
+function recordStep(st){
+  const w=world(); if(w.rec.state!=="on")return;
+  w.rec.steps.push(st);
+}
+async function doAction(st,fromMacro){
+  const w=world(),sk=SKINS[skin];
+  const m=st.me!=null?w.mes[st.me]:null;
+  if(m&&m.busy&&["cut","auto","keycut","keyauto","localmem"].includes(st.a))return;
+  if(!fromMacro){recordStep(st);w.plays++;if(w.plays===12){w.missions.play=true;renderMissions()}}
+  switch(st.a){
+    case "pst":m.pst=+st.v;break;
+    case "pgm":m.pgm=+st.v;break;
+    case "next":m.next[st.v]=!m.next[st.v];if(!m.next.bg&&!m.next.k1&&!m.next.k2)m.next.bg=true;break;
+    case "type":m.type=st.v;break;
+    case "rate":m.rate=RATES[(RATES.indexOf(m.rate)+1)%RATES.length];break;
+    case "cut":
+      if(m.next.bg){const t=m.pgm;m.pgm=m.pst;m.pst=t}
+      if(m.next.k1)m.key1=!m.key1;if(m.next.k2)m.key2=!m.key2;
+      m.k1o=m.key1?1:0;m.k2o=m.key2?1:0;setScreen(`${sk.meNames[st.me]}: cut.`);break;
+    case "auto":await autoTrans(st.me);break;
+    case "keycut":if(st.v==1){m.key1=!m.key1;m.k1o=m.key1?1:0}else{m.key2=!m.key2;m.k2o=m.key2?1:0}break;
+    case "keyauto":await keyAuto(st.me,+st.v);break;
+    case "mem":recallGlobal(+st.v);break;
+    case "localmem":recallLocal(st.me,+st.v);break;
+    case "auxsrc":w.aux[st.aux??w.auxSel]=+st.v;setScreen(`${sk.aux} ${(st.aux??w.auxSel)+1} now carries ${srcName(+st.v)}.`);break;
+    case "ftb":await fadeToBlack();break;
+    case "kfill":{const kk=st.k||m.keySel;m.kf[kk]=isNaN(+st.v)?st.v:+st.v;setScreen(`${sk.meNames[st.me]} key ${kk} fill: ${fillName(m.kf[kk])}.`);break}
+    case "dpmmode":m.dpm[st.k].mode=st.v;setScreen(`${sk.meNames[st.me]} key ${st.k}: ${st.v==="off"?"DPM off":st.v==="2d"?"2D DPM on":"iDPM (3D) on"}.`);break;
+    case "space":m.dpm[st.k].space=st.v;setScreen(`DPM in ${st.v} space: ${st.v==="source"?"the picture turns around its own center.":"the picture turns around the center of the screen."}`);break;
+    case "dpmset":Object.assign(m.dpm[st.k],st.data);break;
+    case "dpmrun":await runPath(st.me,st.k);break;
+  }
+  checkMissions();paint();checkDrill();
+}
+async function autoTrans(i){
+  const w=world(),m=w.mes[i];m.busy=true;paint();
+  const bg=m.next.bg,k1=m.next.k1,k2=m.next.k2,f1=m.key1?1:0,f2=m.key2?1:0;
+  await animate(m.rate/30*1000,p=>{if(bg)m.bgo=p;if(k1)m.k1o=Math.abs(f1-p);if(k2)m.k2o=Math.abs(f2-p)});
+  if(bg){const t=m.pgm;m.pgm=m.pst;m.pst=t}
+  if(k1)m.key1=!m.key1;if(k2)m.key2=!m.key2;
+  m.bgo=0;m.k1o=m.key1?1:0;m.k2o=m.key2?1:0;m.busy=false;
+  setScreen(`${SKINS[skin].meNames[i]}: auto, ${m.type.toLowerCase()}, ${m.rate} frames.`);
+}
+async function keyAuto(i,n){
+  const m=world().mes[i];m.busy=true;paint();const from=(n===1?m.key1:m.key2)?1:0;
+  await animate(m.rate/30*1000,p=>{if(n===1)m.k1o=Math.abs(from-p);else m.k2o=Math.abs(from-p)});
+  if(n===1){m.key1=!m.key1;m.k1o=m.key1?1:0}else{m.key2=!m.key2;m.k2o=m.key2?1:0}m.busy=false;
+}
+async function fadeToBlack(){
+  const w=world(),from=w.ftb?1:0;
+  await animate(1000,p=>{w.ftbo=Math.abs(from-p)});w.ftb=!w.ftb;w.ftbo=w.ftb?1:0;
+  setScreen(w.ftb?"Program faded to black.":"Program up from black.");
+}
+const clean=m=>({pgm:m.pgm,pst:m.pst,key1:m.key1,key2:m.key2,next:{...m.next},type:m.type,rate:m.rate,kf:{...m.kf},keySel:m.keySel,dpm:JSON.parse(JSON.stringify(m.dpm)),path:JSON.parse(JSON.stringify(m.path))});
+function fillName(f){return f==="L3"?"lower third":f==="BUG"?"score bug":srcName(+f)}
+function dpmTarget(){const w=world(),me=w.rows[w.active],m=w.mes[me];return {w,me,m,k:m.keySel,d:m.dpm[m.keySel]}}
+let padMode="location";
+function paintDPM(){
+  if(skin!=="gv"||!$("dpm-pad"))return;
+  const {w,me,m,k,d}=dpmTarget(),sk=SKINS[skin];
+  $("dpm-target").textContent=`${sk.meNames[me]} · KEY ${k}`;
+  $("dpm-fill").textContent=`Fill: ${fillName(m.kf[k])}. Key ${k} is ${(k===1?m.key1:m.key2)?"on air on this mix effects":"off"}. Pick the fill on the KEY bus of the stripe.`;
+  document.querySelectorAll('[data-act="dksel"]').forEach(b=>b.classList.toggle("on-mem",+b.dataset.v===k));
+  document.querySelectorAll('[data-act="dpmmode"]').forEach(b=>b.classList.toggle("on-key",b.dataset.v===d.mode));
+  document.querySelectorAll('[data-act="space"]').forEach(b=>b.classList.toggle("on-key",b.dataset.v===d.space));
+  document.querySelectorAll('[data-act="padmode"]').forEach(b=>b.classList.toggle("on-mem",b.dataset.v===padMode));
+  document.querySelectorAll('[data-act="kfset"]').forEach(b=>b.classList.toggle("has",!!m.path[k][b.dataset.v]));
+  DPMP.forEach(p=>{const el=$("dpm-"+p);if(!el)return;if(document.activeElement!==el)el.value=d[p];el.disabled=d.mode==="off"||(d.mode==="2d"&&["z","rx","ry"].includes(p));$("dpmv-"+p).textContent=(+d[p]).toFixed(["rx","ry","rz"].includes(p)?0:2)});
+  const dot=$("pad-dot");let px=.5,py=.5;
+  if(padMode==="location"){px=(d.x/1.5+1)/2;py=(-d.y/1.5+1)/2}else if(padMode==="size"){py=1-(d.size-.05)/1.95}else if(padMode==="rotate"){px=(d.ry/180+1)/2;py=(-d.rx/180+1)/2}else if(padMode==="spin"){px=(d.rz/720+1)/2}else{px=d.cl/50;py=d.ct/50}
+  dot.style.left=Math.max(0,Math.min(1,px))*100+"%";dot.style.top=Math.max(0,Math.min(1,py))*100+"%";
+  $("pad-mode").textContent={location:"drag = position X / Y",size:"drag up / down = size",rotate:"drag = rotate X / Y",spin:"drag left / right = spin",crop:"drag = crop sides / top"}[padMode];
+}
+function wireDPM(){
+  if(skin!=="gv"||!$("dpm-pad"))return;
+  DPMP.forEach(p=>{const el=$("dpm-"+p);
+    el.addEventListener("input",()=>{const {d}=dpmTarget();d[p]=+el.value;$("dpmv-"+p).textContent=(+el.value).toFixed(["rx","ry","rz"].includes(p)?0:2);renderMV();checkMissions()});
+    el.addEventListener("change",()=>{const {me,k,d}=dpmTarget();recordStep({a:"dpmset",me,k,data:{[p]:d[p]}});paint()});
+  });
+  const pad=$("dpm-pad");let drag=false;
+  const apply=e=>{const r=pad.getBoundingClientRect(),px=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),py=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+    const {d}=dpmTarget();if(d.mode==="off"){d.mode="2d"}
+    if(padMode==="location"){d.x=+((px*2-1)*1.5).toFixed(2);d.y=+(-(py*2-1)*1.5).toFixed(2)}
+    else if(padMode==="size"){d.size=+((1-py)*1.95+.05).toFixed(2)}
+    else if(padMode==="rotate"){if(d.mode!=="3d"){d.mode="3d";setScreen("Rotating on X and Y needs the iDPM, so the keyer switched to iDPM 3D.")}d.ry=Math.round((px*2-1)*180);d.rx=Math.round(-(py*2-1)*180)}
+    else if(padMode==="spin"){d.rz=Math.round((px*2-1)*720)}
+    else{d.cl=d.cr=+(px*50).toFixed(1);d.ct=d.cb=+(py*50).toFixed(1)}
+    renderMV();paintDPM();checkMissions()};
+  pad.addEventListener("pointerdown",e=>{drag=true;pad.setPointerCapture(e.pointerId);apply(e);e.preventDefault()});
+  pad.addEventListener("pointermove",e=>{if(drag)apply(e)});
+  const end=()=>{if(!drag)return;drag=false;const {me,k,d}=dpmTarget();recordStep({a:"dpmset",me,k,data:{...d}});paint()};
+  pad.addEventListener("pointerup",end);pad.addEventListener("pointercancel",end);
+}
+async function runPath(i,k){
+  const m=world().mes[i],pa=m.path[k],sk=SKINS[skin];
+  if(!pa.A||!pa.B){setScreen("Store KF A and KF B first, then Run flies between them.");return}
+  const d=m.dpm[k];if(d.mode==="off")d.mode=pa.B.mode!=="off"?pa.B.mode:"2d";
+  const A=pa.A,Bk=pa.B;
+  await animate(m.rate/30*1000,t=>{const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;DPMP.forEach(p=>{d[p]=A[p]+(Bk[p]-A[p])*e});paintDPM()});
+  Object.assign(d,JSON.parse(JSON.stringify(Bk)));
+  setScreen(`${sk.meNames[i]} key ${k}: path A to B, ${m.rate} frames.`);
+}
+function applyME(m,d){Object.assign(m,JSON.parse(JSON.stringify(d)));m.bgo=0;m.k1o=m.key1?1:0;m.k2o=m.key2?1:0;m.busy=false}
+function storeGlobal(n){
+  const w=world(),sk=SKINS[skin];
+  if(skin==="ross"&&w.memScope==="row"){const i=w.rows[w.active];w.mem["g"+n]={scope:"me",me:i,data:clean(w.mes[i])};
+    setScreen(`${sk.storeVerb} ${sk.memWord} ${n}, local row only (${sk.meNames[i]}).`);}
+  else{w.mem["g"+n]={scope:"all",mes:w.mes.map(clean),aux:[...w.aux]};setScreen(`${sk.storeVerb} ${sk.memWord} ${n}: every mix effects and the aux buses.`)}
+  const P=w.mes[w.P],reg=w.mem["g"+n];
+  if(n===5&&P.pgm===3&&P.key1&&(reg.scope==="all"||reg.me===w.P))w.missions.store=true;
+  w.memStoreMode=false;
+}
+function recallGlobal(n){
+  const w=world(),sk=SKINS[skin],reg=w.mem["g"+n];
+  if(!reg){setScreen(`${sk.memWord} ${n} is empty.`);return}
+  const before=w.mes[w.P].pgm+"|"+w.mes[w.P].key1;
+  if(reg.scope==="all"){reg.mes.forEach((d,i)=>applyME(w.mes[i],d));w.aux=[...reg.aux]}else applyME(w.mes[reg.me],reg.data);
+  setScreen(`Recalled ${sk.memWord} ${n}.`);
+  if(n===5&&w.missions.store&&before!==w.mes[w.P].pgm+"|"+w.mes[w.P].key1&&w.mes[w.P].pgm===3)w.missions.recall=true;
+}
+function storeLocal(i,n){
+  const w=world(),sk=SKINS[skin];w.mem["l"+i+"-"+n]=clean(w.mes[i]);w.memStoreMode=false;
+  setScreen(`Learned local E-MEM ${n} for ${sk.meNames[i]} only.`);
+}
+function recallLocal(i,n){
+  const w=world(),sk=SKINS[skin],d=w.mem["l"+i+"-"+n];
+  if(!d){setScreen(`Local register ${n} on ${sk.meNames[i]} is empty.`);return}
+  applyME(w.mes[i],d);setScreen(`Recalled local E-MEM ${n} on ${sk.meNames[i]}. Other stripes did not change.`);
+}
+function checkMissions(){
+  const w=world(),P=w.mes[w.P];
+  for(const n of [1,2]){const d=P.dpm[n],on=n===1?P.key1:P.key2;if(on&&typeof P.kf[n]==="number"&&d.mode==="3d"&&d.size<=.6&&(Math.abs(d.x)>.2||Math.abs(d.y)>.2)&&(d.rx||d.ry||d.rz))w.missions.dpm=true}
+  if(P.pgm>=100&&P.pgm-100!==w.P){const src=w.mes[P.pgm-100];if(src.key1&&src.pgm>=1&&src.pgm<=6)w.missions.reentry=true}
+  if(w.aux[0]>=100&&w.aux[0]!==w.P+100)w.missions.aux=true;
+  renderMissions();
+}
+async function macPress(n){
+  const w=world(),sk=SKINS[skin];
+  if(w.rec.state==="arm"){w.rec={state:"on",slot:n,steps:[]};setScreen(`Recording ${sk.macWord} ${n}. Press your moves, then ${sk.macFinish}.`);paint();return}
+  if(w.rec.state==="on"){setScreen("Finish the recording before running a chain.");return}
+  const steps=w.macros[n];
+  if(!steps){setScreen(`${sk.macWord} ${n} is empty.`);return}
+  if(w.running){w.running=false;setScreen(`${sk.macWord} stopped.`);paint();return}
+  w.running=true;paint();setScreen(`Running ${sk.macWord} ${n}: ${steps.length} steps.`);
+  for(const st of steps){if(!w.running)break;await doAction(st,true);await wait(180)}
+  if(w.running){w.missions.run=true;renderMissions();setScreen(`${sk.macWord} ${n} complete.`)}else setScreen(`${sk.macWord} ${n} stopped.`);
+  w.running=false;paint();
+}
+function macRec(){
+  const w=world(),sk=SKINS[skin];
+  if(w.rec.state==="off"){w.rec.state="arm";setScreen(`Choose the ${sk.macWord.toLowerCase()} button to record into.`)}
+  else if(w.rec.state==="arm"){w.rec.state="off";setScreen("Recording cancelled.")}
+  else{
+    if(w.rec.steps.length){w.macros[w.rec.slot]=w.rec.steps.slice();
+      setScreen(`Saved ${sk.macWord} ${w.rec.slot}: `+w.rec.steps.map(label).join(" → "));
+      if(w.rec.steps.length>=3){w.missions.record=true;renderMissions()}}
+    else setScreen("Nothing was recorded.");
+    w.rec={state:"off",slot:null,steps:[]};
+  }
+  paint();
+}
+function delegate(r){
+  const w=world(),n=w.mes.length;let i=w.rows[r];
+  for(let k=0;k<n;k++){i=(i+1)%n;if(!w.rows.includes(i))break}
+  if(w.rows.includes(i)){setScreen("Every mix effects is already on a row.");return}
+  w.rows[r]=i;setScreen(`Row ${r+1} now controls ${SKINS[skin].meNames[i]}. The frame did not change; only what this row talks to.`);
+  build();
+}
+
+// ---------- missions ----------
+function renderMissions(){
+  const sk=SKINS[skin],m=world().missions,pg=sk.meNames[world().P],me1=sk.meNames[0];
+  $("mission-title").textContent=`Missions: ${document.querySelector(`.skin[data-skin="${skin}"]`).textContent}`;
+  $("mission-intro").textContent=sk.intro;
+  const items=[
+    ["play","Free play, 5 minutes, with your partner. Punch buttons on every row and watch the multiviewer."],
+    ["store",`On the ${pg} row: camera 3 on ${sk.pgmBus} with key 1 on. ${skin==="gv"?"Learn":"Store"} it as ${sk.memWord} 5 (whole switcher${skin==="ross"?", ALL":""}).`],
+    ["recall",`Change the ${pg} row, then recall ${sk.memWord} 5 and watch program snap back.`],
+    ["reentry",`Re-entry: build ${me1} with camera 2 and the lower third. Then on the ${pg} row, put ${sk.reName(0)} on ${sk.pgmBus}.`],
+    ["aux",`Aux: send a mix effects output (not program) to ${sk.aux} 1.`],
+    ...(skin==="gv"?[["dpm","DPM: on the PGM PST stripe, put camera 4 on the KEY bus for key 1, turn on the iDPM, size it down, move it off center, give it a rotation or spin, and take key 1 to air."]]:[]),
+    ["record",`Record ${sk.macWord} 1 with at least three moves.`],
+    ["run",`Reset and run ${sk.macWord} 1. Every pair should get the identical result.`]
+  ];
+  $("missions").innerHTML=items.map(([k,t])=>`<li class="${m[k]?"done":""}"><span class="box">${m[k]?"✓":""}</span><span>${t}</span></li>`).join("");
+  const ch=[
+    `Delegate a row to ${sk.meNames[4]}. Did the picture on the other mix effects change? What did you actually change?`,
+    skin==="gv"?"Learn a Local E-MEM on one stripe and a Master E-MEM register. Change everything, recall each. Which one touched every stripe?"
+      :skin==="ross"?"Store one memory with ALL and one with LOCAL ROW. Change everything, recall each. Which one touched every row?"
+      :"Store a snapshot, change two rows, recall it. What came back?",
+    `Record a ${sk.macWord.toLowerCase()} that recalls a ${sk.memWord.toLowerCase()} and runs an auto. Why might a real switcher need a pause between those steps?`
+  ];
+  $("challenges").innerHTML=ch.map(t=>`<li><span class="box"></span><span>${t}</span></li>`).join("");
+}
+
+// ---------- drill ----------
+const D={on:false,n:0,times:[],target:null,t0:0};
+function PM(){const w=world();return w.mes[w.P]}
+function makeCall(){
+  const S=PM(),cam=()=>1+Math.floor(Math.random()*4);let c=cam();while(c===S.pgm)c=cam();
+  const o=[{text:`Take camera ${c}.`,test:()=>PM().pgm===c},{text:`Ready camera ${c} clean... take ${c}, lose everything.`,test:()=>PM().pgm===c&&!PM().key1&&!PM().key2}];
+  if(!S.key1)o.push({text:"Lower third, up.",test:()=>PM().key1});
+  else{o.push({text:"Lose the lower third.",test:()=>!PM().key1});o.push({text:`Under-dissolve to camera ${c}. Keep the lower third.`,test:()=>PM().pgm===c&&PM().key1})}
+  if(!S.key2)o.push({text:"Score bug, in.",test:()=>PM().key2});else o.push({text:`Camera ${c} with the score bug still up.`,test:()=>PM().pgm===c&&PM().key2});
+  return o[Math.floor(Math.random()*o.length)];
+}
+let clockRAF=0;
+function tickClock(){if(!D.on)return;if(D.target)$("callbar-clock").textContent=((performance.now()-D.t0)/1000).toFixed(2)+" s";clockRAF=requestAnimationFrame(tickClock)}
+const fmt=ms=>ms==null?"–":(ms/1000).toFixed(2)+" s";
+const avg=()=>D.times.length?D.times.reduce((a,b)=>a+b,0)/D.times.length:null;
+function stopDrill(msg){$("panel").classList.remove("drill");D.on=false;D.target=null;cancelAnimationFrame(clockRAF);$("callbar").hidden=true;$("call").textContent=msg;$("drill-start").textContent="AGAIN"}
+function nextCall(){
+  if(!D.on)return;
+  if(D.n>=10){stopDrill(`Done. Average ${fmt(avg())}, best ${fmt(D.times.length?Math.min(...D.times):null)}. Pass the panel.`);return}
+  D.target=makeCall();D.n++;D.t0=performance.now();
+  $("call").textContent=D.target.text;$("d-n").textContent=D.n;$("callbar-text").textContent=D.target.text;$("callbar-n").textContent=`${D.n}/10`;
+}
+function checkDrill(){
+  if(!D.on||!D.target||PM().busy)return;
+  if(D.target.test()){const t=performance.now()-D.t0;D.times.push(t);
+    $("d-last").textContent=fmt(t);$("d-avg").textContent=fmt(avg());$("d-best").textContent=fmt(Math.min(...D.times));
+    D.target=null;$("callbar-text").textContent=`Good. ${fmt(t)}`;setTimeout(nextCall,700)}
+}
+$("drill-start").onclick=()=>{
+  const w=world();Object.assign(D,{on:true,n:0,times:[]});["d-last","d-avg","d-best"].forEach(i=>$(i).textContent="–");$("drill-start").textContent="RESTART";
+  const pr=w.rows.indexOf(w.P);if(pr>=0){w.active=pr;w.view=pr}else{w.rows[3]=w.P;w.active=3;w.view=3}build();
+  $("panel").classList.add("drill");
+  $("callbar").hidden=false;cancelAnimationFrame(clockRAF);tickClock();
+  $("callbar-text").textContent="Stand by...";$("callbar-clock").textContent="0.00 s";
+  requestAnimationFrame(()=>{const mv=$("mv").getBoundingClientRect(),bh=$("callbar").getBoundingClientRect().height;window.scrollTo({top:Math.max(0,mv.top+scrollY-bh-8)})});
+  setTimeout(nextCall,1200)};
+const skip=()=>{if(D.on&&D.target){D.target=null;nextCall()}};
+$("drill-skip").onclick=skip;$("callbar-skip").onclick=skip;
+$("callbar-stop").onclick=()=>stopDrill("Drill stopped. Press Start to go again.");
+
+// ---------- wiring ----------
+function applySkin(){
+  const sk=SKINS[skin];
+  document.documentElement.style.setProperty("--accent",sk.accent);
+  document.querySelectorAll(".skin").forEach(b=>b.setAttribute("aria-pressed",b.dataset.skin===skin));
+  ["ross","gv","sony"].forEach(k=>$("col-"+k).className=k===skin?"active":"");
+  build();renderMissions();
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(e.detail>0)b.blur();
+  if(b.dataset.skin){skin=b.dataset.skin;applySkin();return}
+  if(b.dataset.tab){document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t===b));["lab","drill","rosetta"].forEach(k=>$("pane-"+k).hidden=k!==b.dataset.tab);return}
+  const act=b.dataset.act;if(!act)return;
+  const w=world(),rowAttr=b.dataset.row;
+  if(rowAttr!==undefined&&rowAttr!==""&&rowAttr!=="aux"){w.active=+rowAttr}
+  const me=rowAttr!==undefined&&rowAttr!==""&&rowAttr!=="aux"?w.rows[+rowAttr]:null;
+  switch(act){
+    case "view":w.view=["aux","sys","dpm"].includes(b.dataset.v)?b.dataset.v:+b.dataset.v;if(typeof w.view==="number")w.active=w.view;build();return;
+    case "deleg":delegate(+rowAttr);return;
+    case "memstore":w.memStoreMode=w.memStoreMode===true?false:true;paint();return;
+    case "scope":w.memScope=b.dataset.v;paint();return;
+    case "mem":if(w.memStoreMode===true){if(w.rec.state==="on"){setScreen("Finish recording before storing.");return}storeGlobal(+b.dataset.v);checkMissions();paint()}else doAction({a:"mem",v:+b.dataset.v});return;
+    case "locallearn":w.memStoreMode=w.memStoreMode==="local"+rowAttr?false:"local"+rowAttr;paint();return;
+    case "localmem":if(w.memStoreMode==="local"+rowAttr){storeLocal(me,+b.dataset.v);paint()}else doAction({a:"localmem",v:+b.dataset.v,me});return;
+    case "macrec":macRec();return;
+    case "mac":macPress(+b.dataset.v);return;
+    case "auxsel":w.auxSel=+b.dataset.v;paint();return;
+    case "auxsrc":doAction({a:"auxsrc",v:+b.dataset.v,aux:w.auxSel});return;
+    case "roll":setScreen(`${SKINS[skin].meNames[me]}: Roll Clip starts a clip server. This lab has no clip server, so nothing rolls.`);paint();return;
+    case "ftb":doAction({a:"ftb"});return;
+    case "ksel":w.mes[me].keySel=+b.dataset.v;paint();return;
+    case "kfill":doAction({a:"kfill",v:b.dataset.v,me,k:w.mes[me].keySel});return;
+    case "dksel":{const mm=w.mes[w.rows[w.active]];mm.keySel=+b.dataset.v;paint();return}
+    case "dpmmode":{const t=dpmTarget();doAction({a:"dpmmode",v:b.dataset.v,me:t.me,k:t.k});return}
+    case "space":{const t=dpmTarget();doAction({a:"space",v:b.dataset.v,me:t.me,k:t.k});return}
+    case "dpmreset":{const t=dpmTarget();doAction({a:"dpmset",me:t.me,k:t.k,data:{...dpmDefault(),mode:t.d.mode}});return}
+    case "dpmpreset":{const t=dpmTarget();doAction({a:"dpmset",me:t.me,k:t.k,data:{mode:t.d.mode==="off"?"2d":t.d.mode,x:.5,y:.45,z:0,size:.42,aspect:1,rx:0,ry:0,rz:0,cl:0,cr:0,ct:0,cb:0}});setScreen("Box: quarter-size picture upper right, the classic over-the-shoulder.");return}
+    case "padmode":padMode=b.dataset.v;paintDPM();return;
+    case "kfset":{const t=dpmTarget();t.m.path[t.k][b.dataset.v]=JSON.parse(JSON.stringify(t.d));setScreen(`Stored keyframe ${b.dataset.v} for key ${t.k}.`);paint();return}
+    case "kfrun":{const t=dpmTarget();doAction({a:"dpmrun",me:t.me,k:t.k});return}
+  }
+  doAction({a:act,v:b.dataset.v,me});
+});
+document.addEventListener("keyup",e=>{if(e.key===" "&&e.target.tagName==="BUTTON")e.preventDefault()});
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  const w=world(),me=w.rows[w.active];
+  if(e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();w.active=(w.active+(e.key==="ArrowUp"?3:1))%4;paint();return}
+  const num=e.code&&e.code.startsWith("Digit")?+e.code.slice(5):NaN;
+  if(num>=1&&num<=6){e.preventDefault();if(e.repeat)return;doAction({a:e.shiftKey?"pgm":"pst",v:num,me});return}
+  const map={" ":{a:"cut"},"Enter":{a:"auto"},"q":{a:"next",v:"bg"},"w":{a:"next",v:"k1"},"e":{a:"next",v:"k2"},"a":{a:"keyauto",v:"1"},"s":{a:"keyauto",v:"2"}};
+  const m=map[e.key.length===1?e.key.toLowerCase():e.key];
+  if(m){e.preventDefault();if(e.repeat)return;doAction({...m,me})}
+});
+applySkin();
+})();
+</script>
+
+</body></html>
