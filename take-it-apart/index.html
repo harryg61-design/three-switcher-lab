@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Take It Apart</title>
+<meta name="author" content="Harold Garcia">
+<meta name="description" content="Three real broadcasts taken apart layer by layer, then rebuilt on the Ross Acuity switcher in Control Room A.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Same console look as The Acuity Playbook, so the two read as one set. */
+:root{
+  color-scheme: dark;
+  --bg:#0e1116; --bg-2:#12171e; --surface:#161b23; --surface-2:#1c222b; --line:#28303b; --line-2:#353e4b;
+  --ink:#e9edf2; --ink-2:#a8b2c0; --ink-3:#7a8698;
+  --accent:#f5b03a; --accent-soft:rgba(245,176,58,.12); --accent-line:rgba(245,176,58,.55);
+  --pgm:#ff5446; --pst:#33d084; --cc:#62a8ff;
+  --lit-amber:#f5b03a; --lit-red:#ff4d40; --lit-green:#2fcf7d; --lit-blue:#5aa2ff;
+  --key-face:#262c36; --key-edge:#3c4452; --key-text:#dbe2ea;
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px rgba(0,0,0,.25);
+  --f-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+  color-scheme: light;
+  --bg:#f1f3f6; --bg-2:#e8ecf0; --surface:#ffffff; --surface-2:#f4f6f9; --line:#d5dbe3; --line-2:#c3ccd7;
+  --ink:#141920; --ink-2:#465062; --ink-3:#647083;
+  --accent:#a15f00; --accent-soft:rgba(214,140,20,.12); --accent-line:rgba(161,95,0,.5);
+  --pgm:#c62a1f; --pst:#0d7a43; --cc:#1b5fc6;
+  --shadow: 0 1px 2px rgba(20,25,32,.06), 0 8px 24px rgba(20,25,32,.06);
+}}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#f1f3f6; --bg-2:#e8ecf0; --surface:#ffffff; --surface-2:#f4f6f9; --line:#d5dbe3; --line-2:#c3ccd7;
+  --ink:#141920; --ink-2:#465062; --ink-3:#647083;
+  --accent:#a15f00; --accent-soft:rgba(214,140,20,.12); --accent-line:rgba(161,95,0,.5);
+  --pgm:#c62a1f; --pst:#0d7a43; --cc:#1b5fc6;
+  --shadow: 0 1px 2px rgba(20,25,32,.06), 0 8px 24px rgba(20,25,32,.06);
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#0e1116; --bg-2:#12171e; --surface:#161b23; --surface-2:#1c222b; --line:#28303b; --line-2:#353e4b;
+  --ink:#e9edf2; --ink-2:#a8b2c0; --ink-3:#7a8698;
+  --accent:#f5b03a; --accent-soft:rgba(245,176,58,.12); --accent-line:rgba(245,176,58,.55);
+  --pgm:#ff5446; --pst:#33d084; --cc:#62a8ff;
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+button{font:inherit;color:inherit}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0}
+p{margin:0}
+
+/* ---------- top bar: a panel row of three clip keys */
+.bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px clamp(16px,4.2vw,64px);background:color-mix(in srgb,var(--bg-2) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:grid;gap:1px;text-decoration:none;margin-right:auto}
+.brand .eb{font:500 11px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.brand .nm{font:700 26px/0.95 var(--f-display);letter-spacing:.01em;text-transform:uppercase}
+.brand .nm span{color:var(--accent)}
+.clipkeys{display:flex;gap:6px;flex-wrap:wrap}
+.clipkey{display:grid;grid-template-columns:40px auto;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:9px;border:0;background:transparent;cursor:pointer;color:var(--ink-2);font:600 16px/1.1 var(--f-display);letter-spacing:.03em;text-transform:uppercase;text-align:left}
+.clipkey .cap{display:grid;place-items:center;height:30px;border-radius:6px;background:var(--key-face);border:1px solid var(--key-edge);color:var(--key-text);font:600 15px/1 var(--f-display);box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)}
+.clipkey:hover{background:var(--surface-2);color:var(--ink)}
+.clipkey[aria-current="true"]{color:var(--ink);background:var(--surface-2)}
+.clipkey[aria-current="true"] .cap{background:var(--lit-amber);border-color:#c98a1c;color:#1c1405;box-shadow:0 0 0 3px rgba(245,176,58,.22),0 0 18px rgba(245,176,58,.35),inset 0 -2px 0 rgba(0,0,0,.18)}
+.homekey .cap{font-size:13px}
+.pblink{font:500 12.5px/1.2 var(--f-mono);color:var(--ink-2);text-decoration:none;border:1px solid var(--line-2);border-radius:999px;padding:6px 11px;white-space:nowrap}
+.pblink:hover{border-color:var(--accent-line);color:var(--ink)}
+@media (max-width:760px){
+  .clipkey{grid-template-columns:40px;padding:0}
+  .clipkey .lbl{display:none}
+  .brand .eb{display:none}
+  .brand .nm{font-size:21px}
+}
+
+/* ---------- main */
+main{padding-inline:clamp(16px,4.2vw,64px);padding-block:30px 96px}
+.view{max-width:1000px;margin-inline:auto}
+.view[hidden]{display:none!important}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font:500 12.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.eyebrow .num{font:700 15px/1 var(--f-display);letter-spacing:.04em;padding:5px 9px;border-radius:5px;background:var(--lit-amber);color:#1c1405}
+h1{font-weight:700;font-size:clamp(42px,6.2vw,76px);line-height:.94;letter-spacing:.005em;text-transform:uppercase;margin-top:14px}
+h2{font-weight:700;font-size:clamp(26px,3.2vw,36px);line-height:1.02;letter-spacing:.01em;text-transform:uppercase;margin-top:52px;padding-top:20px;border-top:2px solid var(--line)}
+h2 .sub{display:block;font:500 12.5px/1.4 var(--f-mono);letter-spacing:.08em;color:var(--ink-3);margin-bottom:8px}
+h3{font-weight:600;font-size:24px;line-height:1.1;letter-spacing:.01em}
+.lede{font-size:clamp(18px,1.6vw,21px);color:var(--ink-2);margin-top:16px;max-width:62ch}
+.byline{margin-top:14px;font-size:14.5px;color:var(--ink-3)}
+.byline b{color:var(--ink-2)}
+.srcline{margin-top:12px;font:500 13px/1.5 var(--f-mono);color:var(--ink-3);letter-spacing:.02em}
+.srcline b{color:var(--ink-2);font-weight:500}
+
+/* ---------- notation (same as the playbook) */
+.key{display:inline-block;font:600 .82em/1.25 var(--f-display);letter-spacing:.035em;text-transform:uppercase;padding:.1em .48em .08em;border-radius:5px;background:var(--key-face);color:var(--key-text);border:1px solid var(--key-edge);box-shadow:inset 0 -2px 0 rgba(0,0,0,.35);white-space:nowrap;vertical-align:.06em}
+.path{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 2px;vertical-align:.04em}
+.path b{font:600 .84em/1.3 var(--f-display);letter-spacing:.02em;padding:.08em .5em;border-radius:4px;background:color-mix(in srgb,var(--cc) 14%,var(--surface-2));border:1px solid color-mix(in srgb,var(--cc) 40%,var(--line-2));color:var(--ink);white-space:nowrap}
+.path b+b::before{content:">";margin:0 .38em 0 -.18em;color:var(--ink-3);font-weight:700}
+.knob{display:inline-flex;align-items:center;gap:.32em;font:600 .84em/1.3 var(--f-display);letter-spacing:.02em;padding:.08em .5em .08em .3em;border-radius:999px;border:1px dashed var(--line-2);white-space:nowrap}
+.knob::before{content:"";width:.82em;height:.82em;border-radius:50%;border:2px solid var(--ink-3);background:conic-gradient(var(--ink-3) 0 8%,transparent 8%)}
+.refs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.man{display:inline-flex;align-items:center;gap:7px;font:500 12.5px/1.25 var(--f-mono);color:var(--ink-2);text-decoration:none;border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:5px 11px 5px 9px}
+.man svg{flex:none;width:15px;height:15px;color:var(--accent)}
+.man.web{color:var(--ink-3)}
+a.man:hover{border-color:var(--accent-line);color:var(--ink)}
+
+/* ---------- home: how it works */
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:26px}
+.flow .node{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:6px;align-content:start}
+.flow .node b{font:700 13px/1.1 var(--f-mono);color:var(--accent);letter-spacing:.06em}
+.flow .node h4{font:700 22px/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.flow .node p{font-size:15.5px;color:var(--ink-2);line-height:1.5}
+@media (max-width:820px){.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.flow{grid-template-columns:minmax(0,1fr)}}
+.decide{margin-top:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.decide div{border:1px solid var(--accent-line);background:var(--accent-soft);border-radius:10px;padding:12px 14px;font:600 20px/1.1 var(--f-display);letter-spacing:.01em}
+.decide div small{display:block;font:500 11.5px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+@media (max-width:620px){.decide{grid-template-columns:minmax(0,1fr)}}
+.cliplist{display:grid;gap:12px;margin-top:22px}
+.clipcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line);text-decoration:none;cursor:pointer;text-align:left;width:100%}
+.clipcard:hover{border-color:var(--accent-line)}
+.clipcard .n{font:700 34px/1 var(--f-display);color:var(--accent)}
+.clipcard h3{font-size:26px;text-transform:uppercase}
+.clipcard p{font-size:15px;color:var(--ink-2);margin-top:4px}
+.clipcard .go{font:600 15px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.clipcard .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+@media (max-width:560px){.clipcard{grid-template-columns:auto minmax(0,1fr)}.clipcard .go{display:none}}
+
+/* category chips */
+.cat{display:inline-block;font:600 12.5px/1 var(--f-display);letter-spacing:.09em;text-transform:uppercase;padding:5px 8px 4px;border-radius:4px;border:1px solid var(--line-2);color:var(--ink-2);background:var(--surface-2);white-space:nowrap}
+.cat.transition{border-color:color-mix(in srgb,var(--pgm) 55%,var(--line));color:color-mix(in srgb,var(--pgm) 80%,var(--ink))}
+.cat.keyer{border-color:color-mix(in srgb,var(--cc) 55%,var(--line));color:color-mix(in srgb,var(--cc) 85%,var(--ink))}
+.cat.box{border-color:color-mix(in srgb,var(--pst) 55%,var(--line));color:color-mix(in srgb,var(--pst) 85%,var(--ink))}
+.cat.glide,.cat.stinger{border-color:var(--accent-line);color:var(--accent)}
+
+/* ---------- clip view */
+.watch{margin-top:24px;display:grid;gap:10px}
+.vidwrap{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#07090c;box-shadow:var(--shadow);aspect-ratio:16/9}
+.vidwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.poster{position:absolute;inset:0;display:grid;place-items:center;gap:10px;align-content:center;border:0;cursor:pointer;background:radial-gradient(120% 90% at 50% 40%,#1b222c 0%,#07090c 70%);color:#e9edf2;text-align:center;padding:16px}
+.poster .play{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--lit-red);box-shadow:0 0 0 6px rgba(255,77,64,.18),0 0 30px rgba(255,77,64,.35)}
+.poster .play svg{width:30px;height:30px;margin-left:4px}
+.poster b{font:700 clamp(22px,3.4vw,34px)/1 var(--f-display);letter-spacing:.02em;text-transform:uppercase}
+.poster span{font:500 13px/1.4 var(--f-mono);color:#a8b2c0}
+.vidrow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;font:500 12.5px/1.4 var(--f-mono);color:var(--ink-3)}
+.vidrow a{color:var(--ink-2)}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 16px/1 var(--f-display);letter-spacing:.05em;text-transform:uppercase;padding:10px 14px 9px;border-radius:8px;border:1px solid var(--key-edge);background:var(--key-face);color:var(--key-text);cursor:pointer;box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)}
+.btn:hover{border-color:var(--accent-line)}
+.btn.amber{background:var(--lit-amber);border-color:#c98a1c;color:#1c1405;box-shadow:0 0 0 3px rgba(245,176,58,.18),inset 0 -2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:transparent;box-shadow:none;border-color:var(--line-2);color:var(--ink-2)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.small{font-size:14px;padding:7px 10px 6px}
+
+/* timeline of moments under the video */
+.tl{position:relative;height:46px;margin:2px 11px 0}
+.tl .rail{position:absolute;left:-11px;right:-11px;top:16px;height:3px;border-radius:2px;background:var(--line-2)}
+.tl .end{position:absolute;font:500 11px/1 var(--f-mono);color:var(--ink-3);margin:0 -11px}
+.tl .mk{position:absolute;transform:translateX(-50%);width:22px;height:22px;border-radius:50%;border:2px solid var(--bg);background:var(--lit-amber);color:#1c1405;font:700 12px/18px var(--f-display);text-align:center;cursor:pointer;padding:0;opacity:0;pointer-events:none;transition:opacity .35s}
+.tl .mk.on{opacity:1;pointer-events:auto}
+
+/* the call-it prompt */
+.callit{margin-top:22px;display:grid;gap:12px;padding:18px 20px;border-radius:12px;border:1px solid var(--accent-line);background:var(--accent-soft)}
+.callit h4{font:700 15px/1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.callit p{font-size:19px;line-height:1.45;max-width:60ch}
+.callit .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* ---------- the exploded layer stack (original drawings, not frames from the broadcasts) */
+.apart{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;margin-top:26px;align-items:start}
+@media (max-width:900px){.apart{grid-template-columns:minmax(0,1fr)}}
+.stagewrap{position:sticky;top:76px;display:grid;gap:10px}
+@media (max-width:900px){.stagewrap{position:relative;top:0}}
+.stage{position:relative;width:100%;aspect-ratio:16/13;perspective:1700px;border-radius:12px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.stage .planes{position:absolute;inset:0;transform-style:preserve-3d}
+.plane{position:absolute;left:50%;top:52%;width:62%;aspect-ratio:16/9;transform-style:preserve-3d;
+  transform:translate(-50%,-50%) rotateX(52deg) rotateZ(-30deg) translateZ(calc(var(--z,0) * var(--gap,36px))) scale(1);
+  transition:transform .75s cubic-bezier(.2,.75,.2,1),opacity .45s ease;opacity:0}
+.plane.on{opacity:1}
+.plane svg{display:block;width:100%;height:100%;overflow:visible}
+.stage.together .plane{transform:translate(-50%,-50%) rotateX(0deg) rotateZ(0deg) translateZ(0px) scale(1.5)}
+.stage.together .ghost,.stage.together .badge{opacity:0}
+.ghost{fill:none;stroke:var(--ink-3);stroke-width:.6;stroke-dasharray:2.2 1.6;transition:opacity .4s}
+.frameline{fill:none;stroke:transparent;stroke-width:1.4;transition:stroke .3s}
+.plane.hot .frameline{stroke:var(--accent)}
+.plane.grouped .frameline{stroke:var(--accent);stroke-dasharray:3 2}
+.badge circle{fill:var(--surface-2);stroke:var(--ink-3);stroke-width:.6}
+.plane.hot .badge circle{fill:var(--lit-amber);stroke:#c98a1c}
+.badge text{font-family:var(--f-display);font-weight:700;font-size:6.4px;fill:var(--ink);text-anchor:middle}
+.plane.hot .badge text{fill:#1c1405}
+.lbl{font-family:var(--f-display);font-weight:600;letter-spacing:.04em;fill:#e9edf2;text-anchor:middle}
+.lbl.dark{fill:#0e1116}
+.stagecap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.stagecap .hint{font:500 12px/1.4 var(--f-mono);color:var(--ink-3)}
+.groupnote{position:absolute;left:12px;right:12px;bottom:10px;font:600 15px/1.2 var(--f-display);letter-spacing:.04em;text-transform:uppercase;color:var(--accent);text-align:center;opacity:0;transition:opacity .4s;pointer-events:none}
+.groupnote.on{opacity:1}
+
+/* layer cards */
+.layers{display:grid;gap:12px}
+.layer{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:10px;animation:rise .45s ease both}
+.layer.hot{border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.layer{animation:none}.plane{transition:none}}
+.layer .top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.layer .n{display:grid;place-items:center;width:28px;height:28px;border-radius:6px;background:var(--lit-amber);color:#1c1405;font:700 16px/1 var(--f-display)}
+.layer p{color:var(--ink-2);font-size:16px}
+.moments{display:flex;flex-wrap:wrap;gap:6px}
+.moment{display:inline-flex;align-items:center;gap:6px;font:500 12.5px/1.2 var(--f-mono);padding:5px 10px 5px 8px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);cursor:pointer}
+.moment:hover{border-color:var(--accent-line);color:var(--ink)}
+.moment svg{width:11px;height:11px;color:var(--lit-red)}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.three div{border-top:2px solid var(--line-2);padding-top:7px;font-size:14.5px;line-height:1.4;color:var(--ink)}
+.three small{display:block;font:500 10.5px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+@media (max-width:560px){.three{grid-template-columns:minmax(0,1fr)}}
+.layerctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.done{font:600 16px/1.3 var(--f-display);letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+
+/* ---------- build it */
+.steps{margin:18px 0 0;padding:0;list-style:none;counter-reset:s;display:grid;gap:14px}
+.steps li{counter-increment:s;position:relative;padding:16px 18px 16px 62px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.steps li::before{content:counter(s);position:absolute;left:16px;top:14px;width:32px;height:32px;display:grid;place-items:center;border-radius:7px;background:var(--key-face);border:1px solid var(--key-edge);color:var(--key-text);font:700 18px/1 var(--f-display);box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)}
+.steps li h4{font:700 21px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px}
+.steps li p{color:var(--ink-2);font-size:16.5px}
+.note{margin-top:10px;padding:10px 12px;border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 8px 8px 0;font-size:15px;color:var(--ink-2)}
+.note b.t{font:700 13px/1 var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-right:8px}
+.turn{margin-top:18px;padding:22px 22px;border-radius:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--lit-red) 16%,var(--surface)),var(--surface));border:1px solid color-mix(in srgb,var(--lit-red) 40%,var(--line))}
+.turn h4{font:700 15px/1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--pgm)}
+.turn p{margin-top:10px;font:600 clamp(22px,2.6vw,28px)/1.2 var(--f-display);letter-spacing:.01em;max-width:44ch}
+.turn .stuck{margin-top:12px;font:400 15px/1.5 var(--f-body);color:var(--ink-2)}
+.turn .stuck a{color:var(--ink)}
+.nextclip{margin-top:30px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
+
+footer{max-width:1000px;margin:60px auto 0;padding-top:18px;border-top:1px solid var(--line);font-size:13px;line-height:1.55;color:var(--ink-3)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a class="brand" href="#home" data-go="home">
+    <span class="eb">RTVF 065E · Control Room A</span>
+    <span class="nm">Take It <span>Apart</span></span>
+  </a>
+  <nav class="clipkeys" aria-label="Clips">
+    <button class="clipkey homekey" data-go="home" aria-current="true"><span class="cap">HOME</span><span class="lbl">Start</span></button>
+    <button class="clipkey" data-go="batter"><span class="cap">01</span><span class="lbl">The batter</span></button>
+    <button class="clipkey" data-go="boxes"><span class="cap">02</span><span class="lbl">Two boxes</span></button>
+    <button class="clipkey" data-go="replay"><span class="cap">03</span><span class="lbl">The replay</span></button>
+  </nav>
+  <a class="pblink" href="https://harryg61-design.github.io/three-switcher-lab/acuity-playbook/" target="_blank" rel="noopener">Acuity Playbook ↗</a>
+</header>
+
+<main>
+  <section class="view" id="view-home" aria-labelledby="h-home">
+    <span class="eyebrow"><span class="num">00</span> Start here</span>
+    <h1 id="h-home">Take It Apart</h1>
+    <p class="lede">Every show you have ever watched is built from a few pieces: a background, the way it changes, and layers keyed on top. Here are three real broadcasts. Take each one apart, then build it yourself on the Acuity.</p>
+    <p class="byline">Created by <b>Harold Garcia</b> · Instructor, RTVF 065E Technical Directing · Lawrence Herbert School of Communication, Hofstra University</p>
+
+    <h2><span class="sub">Four moves, every clip</span>How this works</h2>
+    <div class="flow">
+      <div class="node"><b>01</b><h4>Watch</h4><p>Play the clip. Then play it again.</p></div>
+      <div class="node"><b>02</b><h4>Call it</h4><p>Before you open anything, call out every layer you saw, from the bottom up.</p></div>
+      <div class="node"><b>03</b><h4>Take it apart</h4><p>Open the layers one at a time and check yourself.</p></div>
+      <div class="node"><b>04</b><h4>Build it</h4><p>Go to the panel. Take the first three steps, then finish it on your own.</p></div>
+    </div>
+    <p class="lede" style="margin-top:24px">For every layer, ask the same three questions:</p>
+    <div class="decide">
+      <div><small>Decision 1</small>What's included?</div>
+      <div><small>Decision 2</small>What does it look like?</div>
+      <div><small>Decision 3</small>What makes it happen?</div>
+    </div>
+    <p class="byline">"Makes it happen" is how you would build each layer on the Acuity. The broadcaster's own control room may do it with other gear.</p>
+
+    <h2><span class="sub">Pick one</span>The three clips</h2>
+    <div class="cliplist" id="cliplist"></div>
+  </section>
+
+  <section class="view" id="view-clip" hidden aria-live="off">
+    <span class="eyebrow"><span class="num" id="c-num">01</span> <span id="c-eyebrow">Clip</span></span>
+    <h1 id="c-title">Clip</h1>
+    <p class="srcline" id="c-src"></p>
+
+    <div class="watch">
+      <div class="vidwrap" id="vid"></div>
+      <div class="tl" id="tl" aria-label="Moments in this clip"></div>
+      <div class="vidrow"><span id="c-len"></span><span>Won't play here? <a id="c-yt" target="_blank" rel="noopener">Open it on YouTube</a></span></div>
+    </div>
+
+    <div class="callit">
+      <h4>Call it</h4>
+      <p id="c-call"></p>
+      <div class="row"><button class="btn amber" id="b-first">I called it. Open layer 1</button></div>
+    </div>
+
+    <h2><span class="sub">Bottom to top</span>Take it apart</h2>
+    <div class="apart">
+      <div class="stagewrap">
+        <div class="stage" id="stage" role="img" aria-label="Drawing of the layers opened so far, stacked from the bottom up"><div class="planes" id="planes"></div><div class="groupnote" id="groupnote"></div></div>
+        <div class="stagecap">
+          <button class="btn ghost small" id="b-together" aria-pressed="false">Put it back together</button>
+          <span class="hint">Drawings, not frames from the broadcast</span>
+        </div>
+      </div>
+      <div>
+        <div class="layers" id="layers" aria-live="polite"></div>
+        <div class="layerctl" style="margin-top:12px">
+          <button class="btn amber" id="b-next">Open the next layer</button>
+          <button class="btn ghost small" id="b-all">Show all</button>
+          <button class="btn ghost small" id="b-reset">Start over</button>
+        </div>
+      </div>
+    </div>
+
+    <h2><span class="sub">At the panel</span>Build it on the Acuity</h2>
+    <p class="lede" id="c-buildlede">Take these first three steps. Then the rest is yours.</p>
+    <ol class="steps" id="c-steps"></ol>
+    <div class="turn">
+      <h4>Your turn</h4>
+      <p id="c-turn"></p>
+      <p class="stuck" id="c-stuck"></p>
+    </div>
+    <div class="nextclip" id="c-nav"></div>
+  </section>
+
+  <footer>
+    Take It Apart was created by Harold Garcia for RTVF 065E Technical Directing, Lawrence Herbert School of Communication, Hofstra University. The clips play from the official YouTube channels of the New York Mets, Major League Baseball, and the NTT INDYCAR SERIES, and belong to their owners. The layer drawings are original illustrations, not frames from the broadcasts. Acuity procedures are paraphrased from Ross Video documentation; page numbers refer to the Acuity Operation Manual, version 9.2 (Ross part number 4820DR-110). Ross and Acuity are trademarks of Ross Video Limited. © 2026 Harold Garcia. All rights reserved.
+  </footer>
+</main>
+
+<script>
+(() => {
+"use strict";
+
+const PB = "https://harryg61-design.github.io/three-switcher-lab/acuity-playbook/";
+const BOOK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg>';
+const WEB = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg>';
+const PLAY = '<svg viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M2.5 1.5v9l8-4.5z"/></svg>';
+const K = s => `<kbd class="key">${s}</kbd>`;
+const P = (...a) => `<span class="path">${a.map(x=>`<b>${x}</b>`).join("")}</span>`;
+const N = s => `<span class="knob">${s}</span>`;
+const man = s => `<span class="man">${BOOK} ${s}</span>`;
+const web = (u, s="Online help, current version") => `<a class="man web" href="${u}" target="_blank" rel="noopener">${WEB} ${s}</a>`;
+const RH = "https://help.rossvideo.com/acuity/";
+
+/* ---------- drawing helpers. Each plane is a 160 x 90 sheet. */
+const sheet = (inner, opts={}) => `<svg viewBox="0 0 160 90" aria-hidden="true">${opts.key ? '<rect class="ghost" x=".5" y=".5" width="159" height="89" rx="2"/>' : ""}${inner}<rect class="frameline" x=".5" y=".5" width="159" height="89" rx="2"/><g class="badge"><circle cx="9" cy="81" r="5.6"/><text x="9" y="83.3">${opts.n||""}</text></g></svg>`;
+let gid = 0;
+const camera = (label, c1, c2) => { const id = "g" + (++gid); const lines = label.split("|"); return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><rect x="0" y="0" width="160" height="90" rx="2" fill="url(#${id})"/><g opacity=".85"><rect x="68" y="22" width="18" height="12" rx="2" fill="#0e1116"/><path d="M86 25l7-3v12l-7-3z" fill="#0e1116"/><circle cx="77" cy="28" r="3.2" fill="#e9edf2"/></g><text class="lbl" x="80" y="${lines.length>1?50:54}" font-size="8.4">${lines.map((l,i)=>`<tspan x="80" dy="${i?10:0}">${l}</tspan>`).join("")}</text>`; };
+
+/* ---------- the three clips */
+const ALPHA = "its own alpha (a matching cutout that tells the switcher what is see-through)";
+const CLIPS = {
+batter: {
+  num: "01", title: "The batter comes up", short: "The batter",
+  src: "<b>SNY</b> · Mets at Braves · September 30, 2024 · Top of the first, Francisco Lindor leads off the game",
+  yt: "dTjSCcDwAQg", start: 49, end: 77, channel: "New York Mets",
+  tags: ["transition","keyer"],
+  blurb: "A dissolve, a stat bar that fades on and off by itself, two cuts, and a score bug.",
+  call: "How many layers are there? Name them from the bottom up. Each time the picture changed, was it a cut or a dissolve? And what was on screen that never changed?",
+  planes: [
+    {id:"bg",  draw: s => sheet(camera(s.label||"CAMERAS", "#2f5a44", "#1b2b23"), {n:1})},
+    {id:"bar", draw: s => sheet(`<g><rect x="34" y="64" width="92" height="5" fill="#f4f6f9"/><rect x="34" y="69" width="92" height="12" fill="#1d3f86"/><rect x="34" y="64" width="10" height="17" fill="#f5b03a"/><text class="lbl" x="85" y="77.6" font-size="7.4">STAT BAR</text></g>`, {key:true, n:2})},
+    {id:"score", draw: s => sheet(`<g><rect x="5" y="6" width="42" height="15" rx="1.5" fill="#12305e" stroke="#f4f6f9" stroke-width=".5"/><text class="lbl" x="26" y="16" font-size="6">SCORE BUG</text></g>`, {key:true, n:3})},
+    {id:"net", draw: s => sheet(`<g><rect x="125" y="6" width="30" height="12" rx="2" fill="#2b62c4"/><text class="lbl" x="140" y="14.2" font-size="5.4">NETWORK</text></g>`, {key:true, n:4})}
+  ],
+  steps: [
+    {cat:["transition","Transition"], title:"The background: four shots, two ways to change",
+     text:"Underneath everything there is one camera at a time. Tight on the pitcher, then a dissolve to Lindor at 0:50. At 1:08 a cut to the high wide shot of the ballpark, and at 1:14 a cut to the center field camera.",
+     moments:[[50,"Dissolve"],[68,"Cut"],[74,"Cut"]],
+     three:["The background only.","One dissolve, then two cuts.",`${K("AUTO TRANS")} for the dissolve, ${K("CUT")} for the cuts.`],
+     state:{bg:{on:1,label:"PITCHER › LINDOR|WIDE › CENTER FIELD"}}},
+    {cat:["keyer","Keyer"], title:"The stat bar",
+     text:"Lindor's season numbers fade on at 0:51, hold for about nine seconds, and fade off at 1:00. The camera underneath never changes while they're on. The key goes on and off by itself.",
+     moments:[[51,"Fades on"],[60,"Fades off"]],
+     three:["One key.",`A graphic with ${ALPHA}, dissolving on and off.`,`That key's own ${K("AUTO TRANS")} on the Keyers module.`],
+     state:{bar:{on:1}}},
+    {cat:["keyer","Top key"], title:"The score bug",
+     text:"Watch the top left corner. The score bug stays off while Lindor is introduced. It comes back on right after the cut to the center field shot at 1:14, before the first pitch of the game.",
+     moments:[[74,"Bug on"]],
+     three:["A key above the camera and the stat bar.","A small box in the corner.","Its own key transition, right after the cut."],
+     state:{score:{on:1}}},
+    {cat:["keyer","Top key"], title:"The network bug",
+     text:"Top right, the network's logo. It is on from the first frame of the clip to the last. Nothing about it changes, and it is still a layer.",
+     moments:[[49,"On the whole time"]],
+     three:["A key that never leaves.","A small logo in the corner.","It is set up once, before the show."],
+     state:{net:{on:1}}}
+  ],
+  build: [
+    {h:"Dissolve between two cameras",
+     p:`Put the pitcher camera on the Program bus and the batter camera on the Preset bus. On the Transition module, light only ${K("BKGD")}, press ${K("DISS")}, then press ${K("AUTO TRANS")}.`,
+     refs:[man("Ops Manual v9.2 · p. 42 · To Perform a Transition"), web(RH+"Tasks/Operation/Transitions/To-Trans.html")]},
+    {h:"Build the stat bar",
+     p:`On the Keyers module, press ${K("SEL")} for ${K("KEY 1")}. Select your stat bar graphic on the key bus and press ${K("AUTO SELECT")}.`,
+     note:`<b class="t">No graphic loaded?</b>Chapter 06 of the playbook shows how to load one into the Media-Store and pair its fill with its alpha in Auto Key Setup.`,
+     refs:[man("Ops Manual v9.2 · p. 50 · To Set Up an Auto Select Key"), web(RH+"Tasks/Operation/Keying/To-AutoKey.html")]},
+    {h:"Put it on by itself",
+     p:`Press ${K("KEY 1")}'s own ${K("AUTO TRANS")} on the Keyers module. Count to nine. Press it again to take it off. The camera underneath never changes.`,
+     note:`<b class="t">Watch out</b>If ${K("KEY 1")} is also lit in the Next Transition area, its own button takes it off air instead of putting it on.`,
+     refs:[man("Ops Manual v9.2 · p. 42 · Independent Key Transitions"), web(RH+"Topics/Operation/Transitions/KeyTrans.html")]}
+  ],
+  turn: "Now finish it: cut to a wide shot, cut to a third camera, and bring a score bug on right after that cut. Then add a second bug in the corner that never leaves.",
+  stuck: `Stuck? See Chapter 02, <a href="${PB}#transitions" target="_blank" rel="noopener">Transitions</a>, and Chapter 03, <a href="${PB}#keyers" target="_blank" rel="noopener">Keyers</a>, in the Acuity Playbook.`
+},
+
+boxes: {
+  num: "02", title: "Two boxes", short: "Two boxes",
+  src: "<b>NTT INDYCAR SERIES</b> · Chevrolet Detroit Grand Prix · 2026 · Round 8 · Lap 63 of 100",
+  yt: "f5YzsaqgG7Q", start: 4693, end: 4738, channel: "NTT INDYCAR SERIES",
+  tags: ["box","glide"],
+  blurb: "Two picture boxes over a background graphic, a full-screen shot that squeezes into a box, and a driver graphic.",
+  call: "How many pictures are on the screen at the same time? What is underneath them? Watch 1:18:15 closely: does the full-screen shot cut to the boxes, or does it move?",
+  planes: [
+    {id:"bg",  draw: s => sheet(`<rect x="0" y="0" width="160" height="90" rx="2" fill="#1a0d1c"/><path d="M96 90 L150 0 L160 0 L160 14 L114 90Z" fill="#c4213a" opacity=".9"/><path d="M122 90 L160 26 L160 44 L140 90Z" fill="#e0364d" opacity=".7"/><path d="M0 60 L60 0 L74 0 L0 74Z" fill="#23345e" opacity=".9"/><text class="lbl" x="138" y="47" font-size="6.2"><tspan x="138" dy="0">BACKGROUND</tspan><tspan x="138" dy="8">GRAPHIC</tspan></text>`, {n:1})},
+    {id:"bot", draw: s => sheet(`<rect x="44" y="47" width="72" height="39" fill="#3d5770" stroke="#f4f6f9" stroke-width=".8"/><path d="M58 86 Q80 64 102 86Z" fill="#101820"/><text class="lbl" x="80" y="62" font-size="7.4">IN-CAR · CAR 27</text>`, {key:true, n:2})},
+    {id:"top", draw: s => sheet(`<rect x="44" y="5" width="72" height="39" fill="#5b6672" stroke="#f4f6f9" stroke-width=".8"/><path d="M44 44 L80 18 L116 44Z" fill="#454e58"/><text class="lbl" x="80" y="28" font-size="7.4">TRACK CAMERA</text>`, {key:true, n:3})},
+    {id:"drv", draw: s => sheet(`<g><rect x="34" y="68" width="92" height="16" fill="#10234d" stroke="#5aa2ff" stroke-width=".5"/><rect x="34" y="68" width="16" height="16" fill="#2b62c4"/><text class="lbl" x="42" y="79" font-size="8">27</text><text class="lbl" x="88" y="78.6" font-size="7">DRIVER GRAPHIC</text></g>`, {key:true, n:5})},
+    {id:"tower", draw: s => sheet(`<g><rect x="4" y="4" width="28" height="82" rx="1.5" fill="#0f1c26" stroke="#3c5a6a" stroke-width=".6"/>${Array.from({length:9},(_,i)=>`<rect x="7" y="${13+i*8}" width="22" height="4.6" rx=".6" fill="#2a3e4c"/>`).join("")}<text class="lbl" x="18" y="10.6" font-size="5.4">ORDER</text><rect x="132" y="5" width="23" height="13" rx="2" fill="#e9edf2"/><text class="lbl dark" x="143.5" y="13.8" font-size="6">LOGO</text></g>`, {key:true, n:6})}
+  ],
+  steps: [
+    {cat:["","Background"], title:"The background graphic",
+     text:"Behind the boxes is a full-screen graphic in red and blue. It fills every part of the screen the boxes don't cover.",
+     moments:[[4696,"Boxes on screen"]],
+     three:["The background.","A full-screen graphic.",`It sits on the background bus of ${K("ME 1")}, the bank that builds the boxes.`],
+     state:{bg:{on:1}}},
+    {cat:["box","Digital video effects box"], title:"The bottom box",
+     text:"Kyle Kirkwood's in-car camera, car 27, in a box with a thin border. It stays on the same camera the whole time.",
+     moments:[[4696,"Bottom box"]],
+     three:["One key, flown.","A box with a thin border.","Two-dimensional digital video effects on that key: Position and Size."],
+     state:{bot:{on:1}}},
+    {cat:["box","Digital video effects box"], title:"The top box",
+     text:"A track camera in a second box the same size, right above the first. Watch closely: every few seconds the director calls a different camera into this box, while the box itself stays put.",
+     moments:[[4697,"Top box"]],
+     three:["A second key, flown, above the first.","The same box, higher on the screen.","The same controls, with a different Y Location."],
+     state:{top:{on:1}}},
+    {cat:["glide","Effects dissolve"], title:"The squeeze",
+     text:"Go to 1:18:15 and watch it slowly. The full-screen shot never cuts away. It shrinks into the top box in less than half a second, and the background and the bottom box appear around it. At 1:18:55 the top box grows back to full screen the same way.",
+     moments:[[4695,"Squeeze in"],[4735,"Grows back"]],
+     three:["The top box's key.","The picture shrinks from full screen into its box.",`Two stored looks, and ${K("EFF DISS")} to glide from one to the other.`],
+     note:"Layer 3 starts full screen, covering the boxes and the background, then shrinks into its box",
+     state:{top:{on:1}}},
+    {cat:["keyer","Keyer"], title:"The driver graphic",
+     text:"At 1:18:33 Kirkwood's graphic keys on over the bottom box: his number, his name, and how far behind the leader he was on each of the last three laps. It comes off at about 1:18:40.",
+     moments:[[4713,"Graphic on"],[4720,"Graphic off"]],
+     three:["A key above the boxes.","A graphic with its own alpha.","That key's own transition."],
+     state:{drv:{on:1}}},
+    {cat:["keyer","Top key"], title:"The running order and the logo",
+     text:"The running order down the left side, and the logo at the top right, are there before the squeeze, during the boxes, and after. They sit above everything, so the change underneath never touches them.",
+     moments:[[4693,"On the whole time"]],
+     three:["The highest keys.","A tall list on the left, a logo at the top right.",`Keys on ${K("ME 2")}, with the boxes re-entered from ${K("ME 1")} underneath, so the memories never touch them.`],
+     state:{tower:{on:1}}}
+  ],
+  build: [
+    {h:"Fly one box",
+     p:`Put a background source on the Program bus of ME 1. On the Keyers module, press ${K("SEL")} for ${K("KEY 2")}, choose a camera on the key bus, and press ${K("PST PATT")}. Press ${K("KEY 2")}'s own ${K("CUT")} on the Keyers module so you can watch it as you place it. Then press ${K("2D DVE")}, press ${P("Position")} and turn ${N("X Location")} and ${N("Y Location")}, and press ${P("Aspect/Size")} and turn ${N("Size")}. For the thin border, press ${P("DVE Menu","Border")}.`,
+     note:`<b class="t">Watch out</b>Flying keys use digital video effects channels. If a box won't fly, simplify the look.`,
+     refs:[man("Ops Manual v9.2 · p. 55 · To Set Up a Preset Pattern Key"), man("p. 57 · To Set Up a 2D DVE Fly Key"), man("p. 59 · To Apply a DVE Border"), web(RH+"Tasks/Operation/Keying/Modify/To-2D-DVE-Setup.html")]},
+    {h:"Store two looks",
+     p:`First set the effects rate: press ${K("EFF RATE")}, key in the number of frames, and press ${K("ENTER")}. Each memory stores its own rate. Store the box you just built as your first look. Then set ${N("X Location")} and ${N("Y Location")} back to center and ${N("Size")} back to full, so the key fills the screen, and store that as a second look in another register. To store: on the Store side of the Global Memory module, press ${K("ME 1")}, hold ${K("BANK")} and key in a two-digit bank number, press a register button from 0 to 9, then press ${K("ENTER")}.`,
+     note:`<b class="t">Match the clip</b>The squeeze takes less than half a second. The playbook's rule of thumb: in a 59.94 interlaced format, 15 frames is about half a second.`,
+     refs:[man("Ops Manual v9.2 · p. 71 · To Store a Memory"), man("p. 75 · Effects Dissolve"), web(RH+"Tasks/Operation/Memories/To-Store-Memories_acu.html")]},
+    {h:"Glide between them",
+     p:`To recall: on the Recall side of the Global Memory module, press ${K("ME 1")}, hold ${K("BANK")} and key in the same bank number, then press the register. Recall the full-screen look. Turn on ${K("EFF DISS")}. Recall the box look. The key glides into its box at the rate stored with the look you recalled second. Recall the full-screen look again and it glides back out.`,
+     refs:[man("Ops Manual v9.2 · p. 72 · To Recall a Memory"), man("p. 75 · Effects Dissolve"), web(RH+"Tasks/Operation/Memories/To-EffDiss.html")]}
+  ],
+  turn: "Now finish it: put the in-car camera in a second box below it on KEY 1, in both looks. KEY 2 sits above KEY 1, so the squeezing camera covers the bottom box while it is full screen. Add a driver graphic over the bottom box, then glide back out to full screen. Stretch: build the boxes on ME 1 and re-enter ME 1 into ME 2, so your top keys on ME 2 never move.",
+  stuck: `Stuck? See Chapter 03, <a href="${PB}#keyers" target="_blank" rel="noopener">Keyers</a>; Chapter 04, <a href="${PB}#memory" target="_blank" rel="noopener">Effects memory</a>; and Chapter 08, <a href="${PB}#showprep" target="_blank" rel="noopener">Show prep</a> (where re-entry lives), in the Acuity Playbook.`
+},
+
+replay: {
+  num: "03", title: "The replay", short: "The replay",
+  src: "<b>ESPN</b> · National League Wild Card Series, Game 3 · Mets at Brewers · October 3, 2024 · Pete Alonso's ninth-inning home run",
+  yt: "SDDG2Piskzs", start: 6865, end: 6892, channel: "MLB",
+  tags: ["stinger","transition"],
+  blurb: "A logo flies in, the cut to the replay hides behind it, and a second animation brings you back to live.",
+  call: "Twice, an animation crosses the screen. What changes underneath it each time? Keep one eye on the top left corner.",
+  planes: [
+    {id:"bg",  draw: s => sheet(s.replay ? camera(s.label||"REPLAY", "#4a3d6b", "#221c33") : camera(s.label||"LIVE", "#2f5a44", "#1b2b23"), {n:1})},
+    {id:"sting", draw: s => sheet(`<g><rect x="0" y="0" width="160" height="90" rx="2" fill="#0c1a2b"/><path d="M0 90 L54 0 L106 0 L52 90Z" fill="#1f9fb0"/><path d="M60 90 L114 0 L160 0 L160 6 L110 90Z" fill="#e7b43c"/><path d="M0 0 L40 0 L0 66Z" fill="#163a5c"/><text class="lbl" x="80" y="49" font-size="10">STINGER</text></g>`, {n:2})},
+    {id:"score", draw: s => sheet(`<g><rect x="5" y="6" width="42" height="15" rx="1.5" fill="#12305e" stroke="#f4f6f9" stroke-width=".5"/><text class="lbl" x="26" y="16" font-size="6">SCORE BUG</text></g>`, {key:true, n:1})},
+    {id:"net", draw: s => sheet(`<g><rect x="125" y="6" width="30" height="12" rx="2" fill="#2b62c4"/><text class="lbl" x="140" y="14.2" font-size="5.4">CORNER BUG</text></g>`, {key:true, n:1})}
+  ],
+  steps: [
+    {cat:["","Background"], title:"Live",
+     text:"We start live: a tight shot of a Brewers player, the score bug on in the top left, and a bug in the top right corner.",
+     moments:[[6866,"Live"]],
+     three:["The background, with the bugs above it.","A live camera.","It is already on air."],
+     state:{bg:{on:1,label:"LIVE"},score:{on:1},net:{on:1}}},
+    {cat:["stinger","Stinger"], title:"The stinger flies in",
+     text:"At 1:54:28 a three-dimensional ESPN logo flies out of the middle of the screen and grows until it fills the frame. Look closely: the score bug and the bug in the top right stay on top of it. The animation is a key with its own alpha, and it plays the moment it is cut on.",
+     moments:[[6868,"Stinger in"]],
+     three:["A key above the picture, below the bugs.","An animation that covers the picture for a moment.",`That key's own ${K("CUT")}. The animation plays itself.`],
+     state:{sting:{on:1}}},
+    {cat:["transition","Hidden cut"], title:"The cut you never see",
+     text:"While the logo fills the screen, the background cuts from the live camera to the replay. The score bug comes off at the same moment. When the logo clears, the replay is already there.",
+     moments:[[6869,"Hidden cut"]],
+     three:["The background, and the score bug coming off.","Nothing. It is hidden.",`${K("CUT")} on the Transition module, timed to the frame where the stinger covers the picture, and the score bug's own ${K("CUT")} at the same moment.`],
+     state:{bg:{replay:1,label:"REPLAY"},score:{on:0}}},
+    {cat:["","Replay"], title:"The replay",
+     text:"About twenty seconds of replay from several angles: the swing, Alonso running, the ball landing in the seats, the pitcher watching it go, and the crowd. No score bug the whole time.",
+     moments:[[6872,"Replay"]],
+     three:["The replay source on the background.","Full screen, no score bug.",`The server plays the clip when the cut happens (${K("ROLL CLIP")}).`],
+     state:{sting:{on:0},bg:{replay:1,label:"REPLAY · SEVERAL ANGLES"}}},
+    {cat:["stinger","Stinger"], title:"The stinger flies out",
+     text:"At 1:54:49 a second animation sweeps across the screen. Underneath it, the background has already cut back to the live center field camera, and the score bug is back on. When it clears, we are live again.",
+     moments:[[6889,"Stinger out"]],
+     three:["The stinger key, the background, and the score bug.","A second, different animation that sweeps across the screen.",`The mirror image of the way in: stinger on, ${K("CUT")} back to live with the score bug back on, stinger off.`],
+     state:{sting:{on:1},bg:{replay:0,label:"LIVE · CENTER FIELD"},score:{on:1}}}
+  ],
+  build: [
+    {h:"Key the stinger",
+     p:`On the Keyers module, press ${K("SEL")} for ${K("KEY 4")}, the keyer the playbook's replay package uses. Select the Media-Store fill channel that holds your stinger on the key bus and press ${K("AUTO SELECT")}.`,
+     note:[`<b class="t">Before you start</b>The stinger's fill must be paired with its alpha in Auto Key Setup, and Auto Play must be on, or the animation will not play when you cut it on. Chapter 06 covers both.`,
+           `<b class="t">Not quite ESPN</b>On ESPN the bugs ride on top of the logo. On the Acuity, ${K("KEY 4")} sits above keys 1 to 3, so your stinger covers your score bug. To match ESPN, hold ${K("KEY PRIOR")} and press ${K("SEL")} for the bug's key.`],
+     refs:[man("Ops Manual v9.2 · p. 50 · To Set Up an Auto Select Key"), web(RH+"Tasks/Operation/Keying/To-AutoKey.html"), web(RH+"Tasks/Operation/Transitions/To-KeyPrior-Cut.html","Online help · Key priority")]},
+    {h:"Set up the hidden cut",
+     p:`Put the replay source on the Preset bus. In the Next Transition area, light only ${K("BKGD")}.`,
+     note:`<b class="t">Why only ${K("BKGD")}?</b>If a key is also lit there, pressing that key's own ${K("CUT")} takes it off air and removes it from the next transition. The stinger would never come on.`},
+    {h:"Run it by hand",
+     p:`Press ${K("KEY 4")}'s own ${K("CUT")} on the Keyers module: the stinger goes on. When it fully covers the picture, press ${K("CUT")} on the Transition module. When it has fully cleared, press ${K("KEY 4")}'s own ${K("CUT")} again to take the empty key off.`,
+     refs:[web(PB+"#replay","Acuity Playbook · Chapter 07 · Replay")]}
+  ],
+  turn: "Now finish it: run it until the timing is clean, and take your score bug off while the stinger fills the screen. Then record it as one custom control called REPLAY IN, and build REPLAY OUT, the mirror image.",
+  stuck: `Stuck? See Chapter 05, <a href="${PB}#macros" target="_blank" rel="noopener">Custom controls</a>, and Chapter 07, <a href="${PB}#replay" target="_blank" rel="noopener">Replay</a>, in the Acuity Playbook.`
+}
+};
+const ORDER = ["batter","boxes","replay"];
+
+/* ---------- small utilities */
+const $ = s => document.querySelector(s);
+const fmt = t => { t=Math.round(t); const h=Math.floor(t/3600), m=Math.floor(t%3600/60), s=t%60; return h ? `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}` : `${m}:${String(s).padStart(2,"0")}`; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const progress = {}; ORDER.forEach(k => progress[k] = 0);
+let cur = null, together = false;
+
+/* ---------- home list */
+const catName = {transition:"Transitions", keyer:"Keyers", box:"Boxes", glide:"Effects dissolve", stinger:"Stinger"};
+$("#cliplist").innerHTML = ORDER.map(k => { const c = CLIPS[k]; return `<a class="clipcard" href="#${k}" data-go="${k}"><span class="n">${c.num}</span><span><h3>${c.title}</h3><p>${c.blurb}</p><span class="tags">${c.tags.map(t=>`<span class="cat ${t}">${catName[t]}</span>`).join("")}</span></span><span class="go">Open ›</span></a>`; }).join("");
+
+/* ---------- player: loads only when asked, from the official upload */
+function poster(c){
+  $("#vid").innerHTML = `<button class="poster" id="b-play"><span class="play">${PLAY}</span><b>Play the clip</b><span>${fmt(c.start)} to ${fmt(c.end)} · ${c.end-c.start} seconds · from ${esc(c.channel)} on YouTube</span></button>`;
+  $("#b-play").addEventListener("click", () => play(c.start));
+}
+function play(from){
+  const c = CLIPS[cur]; const s = Math.max(c.start, Math.floor(from));
+  const src = `https://www.youtube-nocookie.com/embed/${c.yt}?start=${s}&end=${c.end}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
+  $("#vid").innerHTML = `<iframe src="${src}" title="${esc(c.title)}: the clip" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  $("#vid").scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+/* ---------- timeline of moments */
+function timeline(c){
+  const span = c.end - c.start; const marks = [];
+  c.steps.forEach((st,i) => st.moments.forEach(([t,lab]) => marks.push({i, t, lab, pct: Math.min(100, Math.max(0, (t - c.start) / span * 100))})));
+  marks.sort((a,b) => a.pct - b.pct || a.i - b.i);
+  const rowEnd = []; const minGap = Math.max(5, 26 / Math.max(1, $("#tl").clientWidth || 600) * 100);
+  marks.forEach(m => { let r = 0; while (rowEnd[r] !== undefined && m.pct - rowEnd[r] < minGap) r++; rowEnd[r] = m.pct; m.row = r; });
+  const rows = Math.max(1, rowEnd.length);
+  let html = `<div class="rail" style="top:${16 + (rows-1)*24}px"></div>`;
+  marks.forEach(m => { html += `<button class="mk" data-step="${m.i}" data-t="${m.t}" style="left:${m.pct}%;top:${5 + (rows-1-m.row)*24}px" title="${esc(m.lab)} · ${fmt(m.t)}" aria-label="Layer ${m.i+1}, ${esc(m.lab)} at ${fmt(m.t)}">${m.i+1}</button>`; });
+  html += `<span class="end" style="left:0;top:${30 + (rows-1)*24}px">${fmt(c.start)}</span><span class="end" style="right:0;top:${30 + (rows-1)*24}px">${fmt(c.end)}</span>`;
+  const tl = $("#tl"); tl.innerHTML = html; tl.style.height = (46 + (rows-1)*24) + "px";
+}
+
+/* ---------- the stack */
+function stateAt(c, n){
+  const st = {}; c.planes.forEach(p => st[p.id] = {on:0});
+  for (let i=0;i<n;i++) for (const [id, v] of Object.entries(c.steps[i].state||{})) st[id] = Object.assign({}, st[id], v);
+  return st;
+}
+function drawStack(){
+  const c = CLIPS[cur], n = progress[cur], st = stateAt(c, n);
+  const hotIds = n ? Object.keys(c.steps[n-1].state||{}) : [];
+  const note = n ? c.steps[n-1].note : null;
+  const stage = $("#stage"); const gap = Math.max(18, stage.clientWidth * (c.planes.length > 4 ? 0.085 : 0.11));
+  stage.style.setProperty("--gap", gap + "px");
+  const total = c.planes.length; const mid = (total - 1) / 2;
+  const els = $("#planes").children;
+  c.planes.forEach((p, i) => {
+    const s = st[p.id], el = els[i]; if (!el) return;
+    el.innerHTML = p.draw(s);
+    el.classList.toggle("on", !!s.on);
+    el.classList.toggle("hot", !!s.on && hotIds.includes(p.id));
+    el.style.setProperty("--z", s.on ? (i - mid) : 9);
+  });
+  const gn = $("#groupnote"); gn.textContent = note || ""; gn.classList.toggle("on", !!note && !together);
+  stage.classList.toggle("together", together);
+}
+
+/* ---------- layer cards */
+function card(c, i, hot){
+  const st = c.steps[i];
+  const mom = st.moments.map(([t,lab]) => `<button class="moment" data-t="${t}">${PLAY} ${esc(lab)} · ${fmt(t)}</button>`).join("");
+  return `<article class="layer${hot?" hot":""}"><div class="top"><span class="n">${i+1}</span><span class="cat ${st.cat[0]}">${st.cat[1]}</span></div><h3>${st.title}</h3><p>${st.text}</p><div class="moments">${mom}</div><div class="three"><div><small>Included</small>${st.three[0]}</div><div><small>Looks like</small>${st.three[1]}</div><div><small>Makes it happen</small>${st.three[2]}</div></div></article>`;
+}
+function drawLayers(){
+  const c = CLIPS[cur], n = progress[cur];
+  let html = ""; for (let i=0;i<n;i++) html += card(c, i, i===n-1);
+  if (n === c.steps.length) html += `<p class="done">That's every layer. Now build it.</p>`;
+  $("#layers").innerHTML = html;
+  const next = $("#b-next"); next.disabled = n >= c.steps.length; next.textContent = n >= c.steps.length ? "All layers open" : `Open layer ${n+1}`;
+  $("#b-first").textContent = n ? "Layers are open below" : "I called it. Open layer 1";
+  $("#b-first").disabled = n > 0;
+  document.querySelectorAll("#tl .mk").forEach(m => m.classList.toggle("on", +m.dataset.step < n));
+  drawStack();
+}
+function reveal(k){ const c = CLIPS[cur]; progress[cur] = Math.max(0, Math.min(c.steps.length, k)); drawLayers(); }
+
+/* ---------- build section */
+function drawBuild(c){
+  $("#c-steps").innerHTML = c.build.map(b => `<li><h4>${b.h}</h4><p>${b.p}</p>${b.note?[].concat(b.note).map(n=>`<p class="note">${n}</p>`).join(""):""}${b.refs?`<div class="refs">${b.refs.join("")}</div>`:""}</li>`).join("");
+  $("#c-turn").textContent = c.turn;
+  $("#c-stuck").innerHTML = c.stuck;
+  const i = ORDER.indexOf(cur), prev = ORDER[i-1], nxt = ORDER[i+1];
+  $("#c-nav").innerHTML = `${prev?`<button class="btn ghost" data-go="${prev}">‹ ${CLIPS[prev].num} ${CLIPS[prev].short}</button>`:`<button class="btn ghost" data-go="home">‹ Start</button>`}${nxt?`<button class="btn" data-go="${nxt}">${CLIPS[nxt].num} ${CLIPS[nxt].short} ›</button>`:`<button class="btn" data-go="home">Back to start ›</button>`}`;
+}
+
+/* ---------- routing */
+function show(k){
+  if (!CLIPS[k]) k = "home";
+  document.querySelectorAll(".clipkey").forEach(b => b.setAttribute("aria-current", String(b.dataset.go === k)));
+  if (k === "home"){ cur = null; $("#view-home").hidden = false; $("#view-clip").hidden = true; $("#vid").innerHTML = ""; document.title = "Take It Apart"; return; }
+  cur = k; const c = CLIPS[k]; together = false; $("#b-together").setAttribute("aria-pressed","false"); $("#b-together").textContent = "Put it back together";
+  $("#view-home").hidden = true; $("#view-clip").hidden = false;
+  $("#c-num").textContent = c.num; $("#c-eyebrow").textContent = "Clip"; $("#c-title").textContent = c.title;
+  $("#planes").innerHTML = c.planes.map(() => '<div class="plane" style="--z:9"></div>').join("");
+  $("#c-src").innerHTML = c.src; $("#c-call").textContent = c.call;
+  $("#c-len").textContent = `${fmt(c.start)} to ${fmt(c.end)} · ${c.end - c.start} seconds · ${c.channel} on YouTube`;
+  $("#c-yt").href = `https://www.youtube.com/watch?v=${c.yt}&t=${c.start}s`;
+  document.title = `${c.title} · Take It Apart`;
+  poster(c); timeline(c); drawLayers(); drawBuild(c);
+}
+function go(k, push=true){ if (push) { try { history.pushState(null, "", "#" + k); } catch (e) {} } show(k); window.scrollTo({top:0}); }
+
+/* ---------- events */
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g){ e.preventDefault(); go(g.dataset.go); return; }
+  const m = e.target.closest(".moment, .mk"); if (m && cur){ play(+m.dataset.t - 2); return; }
+});
+$("#b-first").addEventListener("click", () => { reveal(1); $("#layers").scrollIntoView({behavior:"smooth", block:"nearest"}); });
+$("#b-next").addEventListener("click", () => reveal(progress[cur] + 1));
+$("#b-all").addEventListener("click", () => reveal(CLIPS[cur].steps.length));
+$("#b-reset").addEventListener("click", () => reveal(0));
+$("#b-together").addEventListener("click", e => { together = !together; e.currentTarget.setAttribute("aria-pressed", String(together)); e.currentTarget.textContent = together ? "Take it apart" : "Put it back together"; drawStack(); });
+window.addEventListener("popstate", () => show(location.hash.slice(1)));
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (cur) drawStack(); }, 120); });
+
+show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>
