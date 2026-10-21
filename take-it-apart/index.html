@@ -244,7 +244,7 @@ footer{max-width:1000px;margin:60px auto 0;padding-top:18px;border-top:1px solid
     <span class="nm">Take It <span>Apart</span></span>
   </a>
   <nav class="clipkeys" aria-label="Clips">
-    <button class="clipkey homekey" data-go="home" aria-current="true"><span class="cap">HOME</span><span class="lbl">Start</span></button>
+    <button class="clipkey homekey" data-go="home" aria-current="true"><span class="cap">00</span><span class="lbl">Home</span></button>
     <button class="clipkey" data-go="batter"><span class="cap">01</span><span class="lbl">The batter</span></button>
     <button class="clipkey" data-go="boxes"><span class="cap">02</span><span class="lbl">Two boxes</span></button>
     <button class="clipkey" data-go="replay"><span class="cap">03</span><span class="lbl">The replay</span></button>
@@ -615,7 +615,7 @@ function drawBuild(c){
   $("#c-turn").textContent = c.turn;
   $("#c-stuck").innerHTML = c.stuck;
   const i = ORDER.indexOf(cur), prev = ORDER[i-1], nxt = ORDER[i+1];
-  $("#c-nav").innerHTML = `${prev?`<button class="btn ghost" data-go="${prev}">‹ ${CLIPS[prev].num} ${CLIPS[prev].short}</button>`:`<button class="btn ghost" data-go="home">‹ Start</button>`}${nxt?`<button class="btn" data-go="${nxt}">${CLIPS[nxt].num} ${CLIPS[nxt].short} ›</button>`:`<button class="btn" data-go="home">Back to start ›</button>`}`;
+  $("#c-nav").innerHTML = `${prev?`<button class="btn ghost" data-go="${prev}">‹ ${CLIPS[prev].num} ${CLIPS[prev].short}</button>`:`<button class="btn ghost" data-go="home">‹ Home</button>`}${nxt?`<button class="btn" data-go="${nxt}">${CLIPS[nxt].num} ${CLIPS[nxt].short} ›</button>`:`<button class="btn" data-go="home">Back to home ›</button>`}`;
 }
 
 /* ---------- routing */
