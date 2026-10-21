@@ -546,7 +546,7 @@ function poster(c){
 }
 function play(from){
   const c = CLIPS[cur]; const s = Math.max(c.start, Math.floor(from));
-  const src = `https://www.youtube-nocookie.com/embed/${c.yt}?start=${s}&end=${c.end}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
+  const src = `https://www.youtube.com/embed/${c.yt}?start=${s}&end=${c.end}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   $("#vid").innerHTML = `<iframe src="${src}" title="${esc(c.title)}: the clip" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
   $("#vid").scrollIntoView({behavior:"smooth", block:"center"});
 }
