@@ -1,0 +1,1600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Acuity Playbook</title>
+<meta name="author" content="Harold Garcia">
+<meta name="description" content="Harold Garcia's visual go-to guide for the Ross Acuity switcher in Control Room A: keyers, effects memory, custom controls, motion graphics and replay.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a control-room console. Left rail = a panel row of backlit chapter keys; right = one chapter at a time. */
+:root{
+  color-scheme: dark;
+  --bg:#0e1116; --bg-2:#12171e; --surface:#161b23; --surface-2:#1c222b; --line:#28303b; --line-2:#353e4b;
+  --ink:#e9edf2; --ink-2:#a8b2c0; --ink-3:#7a8698;
+  --accent:#f5b03a; --accent-soft:rgba(245,176,58,.12); --accent-line:rgba(245,176,58,.55);
+  --pgm:#ff5446; --pst:#33d084; --cc:#62a8ff;
+  --lit-amber:#f5b03a; --lit-red:#ff4d40; --lit-green:#2fcf7d; --lit-blue:#5aa2ff;
+  --key-face:#262c36; --key-edge:#3c4452; --key-text:#dbe2ea;
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px rgba(0,0,0,.25);
+  --f-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+  color-scheme: light;
+  --bg:#f1f3f6; --bg-2:#e8ecf0; --surface:#ffffff; --surface-2:#f4f6f9; --line:#d5dbe3; --line-2:#c3ccd7;
+  --ink:#141920; --ink-2:#465062; --ink-3:#647083;
+  --accent:#a15f00; --accent-soft:rgba(214,140,20,.12); --accent-line:rgba(161,95,0,.5);
+  --pgm:#c62a1f; --pst:#0d7a43; --cc:#1b5fc6;
+  --shadow: 0 1px 2px rgba(20,25,32,.06), 0 8px 24px rgba(20,25,32,.06);
+}}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#f1f3f6; --bg-2:#e8ecf0; --surface:#ffffff; --surface-2:#f4f6f9; --line:#d5dbe3; --line-2:#c3ccd7;
+  --ink:#141920; --ink-2:#465062; --ink-3:#647083;
+  --accent:#a15f00; --accent-soft:rgba(214,140,20,.12); --accent-line:rgba(161,95,0,.5);
+  --pgm:#c62a1f; --pst:#0d7a43; --cc:#1b5fc6;
+  --shadow: 0 1px 2px rgba(20,25,32,.06), 0 8px 24px rgba(20,25,32,.06);
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#0e1116; --bg-2:#12171e; --surface:#161b23; --surface-2:#1c222b; --line:#28303b; --line-2:#353e4b;
+  --ink:#e9edf2; --ink-2:#a8b2c0; --ink-3:#7a8698;
+  --accent:#f5b03a; --accent-soft:rgba(245,176,58,.12); --accent-line:rgba(245,176,58,.55);
+  --pgm:#ff5446; --pst:#33d084; --cc:#62a8ff;
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.app{display:grid;grid-template-columns:268px minmax(0,1fr);min-height:100vh}
+/* ---------- rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;height:100vh;overflow:auto;background:var(--bg-2);border-right:1px solid var(--line);padding:22px 16px 28px;display:flex;flex-direction:column;gap:18px}
+.brand{display:grid;gap:2px;text-decoration:none}
+.brand .eb{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.brand .nm{font:700 30px/0.95 var(--f-display);letter-spacing:.01em;text-transform:uppercase}
+.brand .nm span{color:var(--accent)}
+.navlist{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.navkey{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:10px;text-decoration:none;padding:5px 8px 5px 5px;border-radius:9px;color:var(--ink-2);font:600 17px/1.15 var(--f-display);letter-spacing:.02em;text-transform:uppercase}
+.navkey .cap{display:grid;place-items:center;height:32px;border-radius:6px;background:var(--key-face);border:1px solid var(--key-edge);color:var(--key-text);font:600 15px/1 var(--f-display);box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)}
+.navkey:hover{background:var(--surface-2);color:var(--ink)}
+.navkey[aria-current="page"]{color:var(--ink);background:var(--surface-2)}
+.navkey[aria-current="page"] .cap{background:var(--lit-amber);border-color:#c98a1c;color:#1c1405;box-shadow:0 0 0 3px rgba(245,176,58,.22),0 0 18px rgba(245,176,58,.35),inset 0 -2px 0 rgba(0,0,0,.18)}
+.railfoot{margin-top:auto;font-size:13px;color:var(--ink-3);line-height:1.45}
+.railfoot a{color:var(--ink-2)}
+@media (max-width: 920px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{height:auto;z-index:20;flex-direction:row;align-items:center;gap:12px;padding:10px 16px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden}
+  .brand{flex:none}.brand .eb{display:none}.brand .nm{font-size:20px;white-space:nowrap}
+  .navlist{display:flex;gap:6px;flex:none}
+  .navkey{grid-template-columns:auto;padding:0}
+  .navkey .lbl{display:none}
+  .navkey .cap{width:44px;height:34px}
+  .railfoot{display:none}
+}
+/* ---------- main */
+main{min-width:0;padding-inline:clamp(16px,4.2vw,64px);padding-block:36px 96px}
+.view{max-width:1000px}
+.view[hidden]{display:none!important}
+.prose{max-width:68ch}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font:500 12.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.eyebrow .num{font:700 15px/1 var(--f-display);letter-spacing:.04em;padding:5px 9px;border-radius:5px;background:var(--lit-amber);color:#1c1405}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0}
+h1{font-weight:700;font-size:clamp(42px,6.2vw,76px);line-height:.94;letter-spacing:.005em;text-transform:uppercase;margin-top:14px}
+h2{font-weight:700;font-size:clamp(28px,3.4vw,38px);line-height:1.02;letter-spacing:.01em;text-transform:uppercase;margin-top:56px;padding-top:22px;border-top:2px solid var(--line)}
+h2 .sub{display:block;font:500 12.5px/1.4 var(--f-mono);letter-spacing:.08em;color:var(--ink-3);margin-bottom:8px}
+h3{font-weight:600;font-size:25px;line-height:1.1;letter-spacing:.01em}
+p{margin:0}
+.lede{font-size:clamp(18px,1.6vw,21px);color:var(--ink-2);margin-top:16px;max-width:62ch}
+.stack{display:grid;gap:16px}
+.mt{margin-top:22px}
+/* ---------- notation */
+.key{display:inline-block;font:600 .82em/1.25 var(--f-display);letter-spacing:.035em;text-transform:uppercase;padding:.1em .48em .08em;border-radius:5px;background:var(--key-face);color:var(--key-text);border:1px solid var(--key-edge);box-shadow:inset 0 -2px 0 rgba(0,0,0,.35);white-space:nowrap;vertical-align:.06em}
+.key.amber{background:var(--lit-amber);color:#1c1405;border-color:#c98a1c;box-shadow:0 0 0 2px rgba(245,176,58,.2),inset 0 -2px 0 rgba(0,0,0,.18)}
+.key.red{background:var(--lit-red);color:#fff;border-color:#c43328;box-shadow:0 0 0 2px rgba(255,77,64,.2),inset 0 -2px 0 rgba(0,0,0,.2)}
+.key.green{background:var(--lit-green);color:#062a17;border-color:#1f9d5c;box-shadow:0 0 0 2px rgba(47,207,125,.2),inset 0 -2px 0 rgba(0,0,0,.18)}
+.key.blue{background:var(--lit-blue);color:#071a36;border-color:#3a7fd6;box-shadow:0 0 0 2px rgba(90,162,255,.2),inset 0 -2px 0 rgba(0,0,0,.18)}
+.path{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 2px;vertical-align:.04em}
+.path b{font:600 .84em/1.3 var(--f-display);letter-spacing:.02em;padding:.08em .5em;border-radius:4px;background:color-mix(in srgb,var(--cc) 14%,var(--surface-2));border:1px solid color-mix(in srgb,var(--cc) 40%,var(--line-2));color:var(--ink);white-space:nowrap}
+.path b+b::before{content:"›";margin:0 .38em 0 -.18em;color:var(--ink-3);font-weight:700}
+.knob{display:inline-flex;align-items:center;gap:.32em;font:600 .84em/1.3 var(--f-display);letter-spacing:.02em;padding:.08em .5em .08em .3em;border-radius:999px;border:1px dashed var(--line-2);white-space:nowrap}
+.knob::before{content:"";width:.82em;height:.82em;border-radius:50%;border:2px solid var(--ink-3);background:conic-gradient(var(--ink-3) 0 8%,transparent 8%)}
+.mono{font-family:var(--f-mono);font-size:.88em}
+.refs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.man{display:inline-flex;align-items:center;gap:7px;font:500 12.5px/1.25 var(--f-mono);color:var(--ink-2);text-decoration:none;border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:5px 11px 5px 9px}
+.man svg{flex:none;width:15px;height:15px;color:var(--accent)}
+.man.web{color:var(--ink-3)}
+a.man:hover{border-color:var(--accent-line);color:var(--ink)}
+/* ---------- media */
+.media{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:28px}
+.vidwrap{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#07090c;box-shadow:var(--shadow)}
+.vidwrap video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#07090c}
+.vidcap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;font:500 12.5px/1.4 var(--f-mono);color:var(--ink-3)}
+.listen{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.listen .tag{display:grid;gap:2px}
+.listen .tag b{font:700 15px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.listen .tag span{font:500 12px/1.2 var(--f-mono);color:var(--ink-3)}
+.listen audio{width:100%;min-width:0;height:40px}
+@media (max-width:560px){.listen{grid-template-columns:minmax(0,1fr)}}
+/* ---------- figures */
+figure{margin:0}
+.fig{margin-top:22px;display:grid;gap:10px}
+.fig figcaption{font-size:14.5px;color:var(--ink-3);max-width:70ch}
+.equation{display:grid;grid-template-columns:repeat(7,auto);align-items:center;gap:10px;overflow-x:auto;padding-bottom:4px}
+.equation img{width:100%;max-width:210px;border-radius:8px;border:1px solid var(--line);display:block}
+.equation .op{font:700 34px/1 var(--f-display);color:var(--accent);text-align:center}
+.equation .cell{display:grid;gap:6px;min-width:120px}
+.equation .cell span{font:600 14px/1.2 var(--f-display);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+@media (max-width:720px){.equation{grid-template-columns:repeat(2,minmax(0,1fr))}.equation .op{display:none}}
+.strip{display:grid;grid-template-columns:repeat(8,minmax(92px,1fr));gap:8px;overflow-x:auto;padding-bottom:6px}
+.strip figure{display:grid;gap:4px}
+.strip img{width:100%;border-radius:6px;border:1px solid var(--line);display:block}
+.strip figcaption{font:500 11.5px/1.2 var(--f-mono);color:var(--ink-3)}
+.strip figure.hot figcaption{color:var(--accent)}
+.strip figure.hot img{outline:2px solid var(--accent);outline-offset:1px}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tri{grid-template-columns:minmax(0,1fr)}}
+.tri .col{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start}
+.tri .col h4{font:700 15px/1 var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.tri .col .q{font:600 22px/1.1 var(--f-display)}
+.tri .keys{display:flex;flex-wrap:wrap;gap:6px}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px}
+.flow .node{flex:1 1 150px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:4px;position:relative}
+.flow .node b{font:700 13px/1.1 var(--f-mono);color:var(--accent);letter-spacing:.06em}
+.flow .node span{font:600 19px/1.15 var(--f-display)}
+.flow .node small{font-size:13.5px;color:var(--ink-3);line-height:1.35}
+/* ---------- procedures */
+.proc{display:grid;gap:12px;padding-block:26px;border-top:1px solid var(--line)}
+.proc:first-of-type{border-top:0}
+.proc h3{scroll-margin-top:80px}
+.steps{list-style:none;margin:0;padding:0;counter-reset:s;display:grid;gap:9px;max-width:72ch}
+.steps>li{counter-increment:s;position:relative;padding-left:40px;min-height:28px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line-2);font:600 14px/1 var(--f-display);color:var(--ink-2)}
+.steps ul{margin:.3em 0 0;padding-left:1.1em;display:grid;gap:3px}
+ul.bul{margin:0;padding-left:1.15em;display:grid;gap:6px;max-width:72ch}
+ul.bul li::marker{color:var(--accent)}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 9px 9px 0;max-width:72ch;font-size:16px}
+.note b.t{font:700 13px/1 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-right:6px}
+.note.warn{border-left-color:var(--pgm);background:color-mix(in srgb,var(--pgm) 9%,transparent)}
+.note.warn b.t{color:var(--pgm)}
+.note.pro{border-left-color:var(--cc);background:color-mix(in srgb,var(--cc) 9%,transparent)}
+.note.pro b.t{color:var(--cc)}
+/* ---------- tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-top:16px}
+table{border-collapse:collapse;width:100%;font-size:15.5px;min-width:560px}
+th{font:700 12.5px/1.2 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.pg{font-family:var(--f-mono);font-size:13px;color:var(--ink-3);white-space:nowrap}
+/* ---------- drill */
+.drill{margin-top:40px;border-radius:14px;border:1px solid var(--line);background:linear-gradient(180deg,var(--surface),var(--surface-2));padding:22px clamp(16px,3vw,28px);display:grid;gap:12px;box-shadow:var(--shadow)}
+.drill h3{display:flex;align-items:center;gap:12px}
+.drill h3 .lamp{width:12px;height:12px;border-radius:50%;background:var(--lit-red);box-shadow:0 0 0 4px rgba(255,77,64,.18),0 0 14px rgba(255,77,64,.6)}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.checks label{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;cursor:pointer}
+.checks input{appearance:none;width:22px;height:22px;margin:2px 0 0;border-radius:5px;border:1.5px solid var(--line-2);background:var(--bg);display:grid;place-items:center;cursor:pointer}
+.checks input:checked{background:var(--lit-green);border-color:#1f9d5c}
+.checks input:checked::after{content:"";width:6px;height:11px;border:solid #062a17;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.checks input:checked+span{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--ink-3)}
+.drill .reset{justify-self:start;font:600 14px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;background:transparent;color:var(--ink-3);border:1px solid var(--line-2);border-radius:6px;padding:8px 12px;cursor:pointer}
+/* ---------- chapter nav */
+.pager{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:48px}
+.pager a{display:grid;gap:4px;text-decoration:none;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.pager a:hover{border-color:var(--accent-line)}
+.pager small{font:500 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.pager span{font:700 22px/1.1 var(--f-display);text-transform:uppercase}
+.pager .next{text-align:right}
+/* ---------- home */
+.keyrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.keyrow a{display:grid;gap:5px;text-decoration:none;justify-items:center;width:72px;align-content:start}
+.keyrow a .cap{width:64px;height:44px;display:grid;place-items:center;border-radius:7px;background:var(--key-face);border:1px solid var(--key-edge);color:var(--key-text);font:700 20px/1 var(--f-display);box-shadow:inset 0 -3px 0 rgba(0,0,0,.35);transition:transform .12s ease,box-shadow .12s ease}
+.keyrow a .mn{font:600 11.5px/1.15 var(--f-display);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);max-width:72px;text-align:center}
+.keyrow a:hover .cap{background:var(--lit-amber);color:#1c1405;border-color:#c98a1c;box-shadow:0 0 0 3px rgba(245,176,58,.2),0 0 18px rgba(245,176,58,.35)}
+.keyrow a:active .cap{transform:translateY(1px)}
+.mapwrap{margin-top:30px;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:14px;overflow-x:auto;box-shadow:var(--shadow)}
+.mapwrap svg{display:block;width:100%;min-width:640px;height:auto}
+.legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+@media (max-width:760px){.legend{grid-template-columns:minmax(0,1fr)}}
+.legend>div{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);display:grid;gap:8px;align-content:start}
+.legend b.h{font:700 14px/1 var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:18px}
+.card{display:grid;grid-template-rows:auto 1fr;text-decoration:none;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-bottom:1px solid var(--line)}
+.card .b{padding:12px 14px 14px;display:grid;gap:4px;align-content:start}
+.card .b small{font:500 12px/1 var(--f-mono);letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase}
+.card .b span{font:700 21px/1.05 var(--f-display);text-transform:uppercase}
+.card .b p{font-size:14.5px;color:var(--ink-2);line-height:1.45}
+.card:hover{border-color:var(--accent-line)}
+.zone{cursor:pointer}
+.zone .zr{fill:var(--surface-2);stroke:var(--line-2);stroke-width:1.5;transition:fill .15s ease}
+.zone:hover .zr,.zone:focus .zr{fill:color-mix(in srgb,var(--accent) 16%,var(--surface-2));stroke:var(--accent)}
+.zone .zl{font:700 14px var(--f-display);letter-spacing:.06em;fill:var(--ink);text-transform:uppercase}
+.zone .zs{font:500 10.5px var(--f-mono);fill:var(--ink-3)}
+.mk{fill:var(--key-face);stroke:var(--key-edge)}
+.mk.a{fill:var(--lit-amber);stroke:none}.mk.r{fill:var(--lit-red);stroke:none}.mk.g{fill:var(--lit-green);stroke:none}.mk.b{fill:var(--lit-blue);stroke:none}
+.scr{fill:#0f1a29;stroke:var(--line-2)}
+.chart text{font:500 11px var(--f-mono);fill:var(--ink-3)}
+.chart .lbl{font:600 13px var(--f-display);letter-spacing:.05em;fill:var(--ink-2)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .area{fill:color-mix(in srgb,var(--accent) 22%,transparent);stroke:var(--accent);stroke-width:2}
+.chart .full{fill:color-mix(in srgb,var(--pst) 16%,transparent)}
+.chart .cut{stroke:var(--pgm);stroke-width:2.5}
+.chart .cutt{fill:var(--pgm);font:700 13px var(--f-display);letter-spacing:.05em}
+.chart .dot{fill:var(--accent)}
+.kbdlist{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-block;font:600 12px/1 var(--f-display);letter-spacing:.07em;text-transform:uppercase;padding:4px 7px;border-radius:4px;border:1px solid var(--line-2);color:var(--ink-3)}
+.byline{margin-top:14px;font:500 13.5px/1.5 var(--f-mono);color:var(--ink-3);letter-spacing:.02em}
+.byline b{font:700 15px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.letter{margin-top:20px;max-width:70ch;display:grid;gap:14px;padding:24px clamp(18px,3vw,32px);border-radius:14px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);box-shadow:var(--shadow);font-size:18px;line-height:1.65}
+.letter .sig{display:grid;gap:2px;margin-top:6px}
+.letter .sig .nm{font:700 26px/1 var(--f-display);letter-spacing:.02em;color:var(--ink)}
+.letter .sig span:last-child{font:500 12.5px/1.4 var(--f-mono);color:var(--ink-3)}
+.railfoot b{color:var(--ink-2)}
+.foot{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-size:14px;color:var(--ink-3);display:grid;gap:6px;max-width:80ch}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="rail" aria-label="Chapters">
+  <a class="brand" href="#home"><span class="eb">Ross Acuity · Control Room A</span><span class="nm">Acuity <span>Playbook</span></span></a>
+  <ul class="navlist">
+    <li><a class="navkey" href="#home" data-nav="home"><span class="cap">00</span><span class="lbl">Start here</span></a></li>
+    <li><a class="navkey" href="#panel" data-nav="panel"><span class="cap">01</span><span class="lbl">The panel</span></a></li>
+    <li><a class="navkey" href="#transitions" data-nav="transitions"><span class="cap">02</span><span class="lbl">Transitions</span></a></li>
+    <li><a class="navkey" href="#keyers" data-nav="keyers"><span class="cap">03</span><span class="lbl">Keyers</span></a></li>
+    <li><a class="navkey" href="#memory" data-nav="memory"><span class="cap">04</span><span class="lbl">Effects memory</span></a></li>
+    <li><a class="navkey" href="#macros" data-nav="macros"><span class="cap">05</span><span class="lbl">Custom controls</span></a></li>
+    <li><a class="navkey" href="#motion" data-nav="motion"><span class="cap">06</span><span class="lbl">Motion graphics</span></a></li>
+    <li><a class="navkey" href="#replay" data-nav="replay"><span class="cap">07</span><span class="lbl">Replay</span></a></li>
+    <li><a class="navkey" href="#showprep" data-nav="showprep"><span class="cap">08</span><span class="lbl">Show prep</span></a></li>
+    <li><a class="navkey" href="#reference" data-nav="reference"><span class="cap">09</span><span class="lbl">Quick reference</span></a></li>
+  </ul>
+  <p class="railfoot">Created by <b>Harold Garcia</b><br>RTVF 065E Technical Directing<br>Hofstra University<br>Page numbers: Operation Manual v9.2</p>
+</nav>
+<main id="main">
+<article class="view" id="view-home" data-route="home">
+  <span class="eyebrow">RTVF 065E Technical Directing · Control Room A · Hofstra University</span>
+  <h1>The Acuity<br>Playbook</h1>
+  <p class="byline">Created by <b>Harold Garcia</b> · Instructor, RTVF 065E Technical Directing · Lawrence Herbert School of Communication, Hofstra University</p>
+  <p class="lede">Your go-to guide for the Ross Acuity production switcher. Keyers, effects memories and attributes, custom controls, motion graphics, and a full replay package, built step by step. Every chapter has a narrated demonstration, plain-language steps you can follow at the panel, and the page where the full procedure lives in Ross Video's Operation Manual.</p>
+
+  <nav class="keyrow" aria-label="Chapters">
+    <a href="#panel"><span class="cap">01</span><span class="mn">Panel</span></a>
+    <a href="#transitions"><span class="cap">02</span><span class="mn">Transitions</span></a>
+    <a href="#keyers"><span class="cap">03</span><span class="mn">Keyers</span></a>
+    <a href="#memory"><span class="cap">04</span><span class="mn">Effects Memory</span></a>
+    <a href="#macros"><span class="cap">05</span><span class="mn">Custom Controls</span></a>
+    <a href="#motion"><span class="cap">06</span><span class="mn">Motion Graphics</span></a>
+    <a href="#replay"><span class="cap">07</span><span class="mn">Replay</span></a>
+    <a href="#showprep"><span class="cap">08</span><span class="mn">Show Prep</span></a>
+    <a href="#reference"><span class="cap">09</span><span class="mn">Quick Ref</span></a>
+  </nav>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Welcome · 0:38</span></div><audio controls preload="none" src="brief_home.mp3"></audio></div>
+  </div>
+
+  <section class="author" aria-labelledby="author-h">
+    <h2 id="author-h"><span class="sub">Why this playbook exists</span>From your instructor</h2>
+    <div class="letter">
+      <p>The first time you sit at a switcher, it looks like a foreign object: hundreds of buttons and lights. It's really an overblown remote control, and it lives in two worlds: the panel under your hands, and the touchscreen that talks to it.</p>
+      <p>I built this playbook from my years at the switcher, from CBS Sports control rooms to Citi Field, as a better way to learn it. A manual is a reference, not a teacher. So every chapter gives you four ways in. You <b>see</b> it in a short demonstration. You <b>hear</b> it in a briefing. You <b>do</b> it at the panel with a checklist. And you <b>find</b> it on the exact page of Ross's manual, the same habit professionals rely on during a live show.</p>
+      <p>In this room we solve problems together, and "I don't know" or "I'm confused" is always a fair thing to say. You and your families have worked hard for you to be here. This guide is part of my commitment to give you my best.</p>
+      <p class="sig"><span class="nm">Harold Garcia</span><span>Technical Director · Instructor, RTVF 065E Technical Directing</span></p>
+    </div>
+  </section>
+
+  <h2><span class="sub">Tap a part of the panel to open its chapter</span>Map of the switcher</h2>
+  <div class="mapwrap"><svg viewBox="0 0 1000 430" role="img" aria-label="Map of the Acuity panel. Each area links to its chapter."><a class="zone" href="#macros" aria-label="Custom control bus: open chapter"><rect class="zr" x="20" y="20" width="580" height="74" rx="10"/><rect class="mk b" x="250" y="40" width="36" height="22" rx="3"/><rect class="mk b" x="294" y="40" width="36" height="22" rx="3"/><rect class="mk " x="338" y="40" width="36" height="22" rx="3"/><rect class="mk " x="382" y="40" width="36" height="22" rx="3"/><rect class="mk " x="426" y="40" width="36" height="22" rx="3"/><rect class="mk " x="470" y="40" width="36" height="22" rx="3"/><rect class="mk " x="514" y="40" width="36" height="22" rx="3"/><rect class="mk " x="558" y="40" width="36" height="22" rx="3"/><text class="zl" x="32" y="42">Custom control bus</text><text class="zs" x="32" y="58">macros · ch 05</text></a><a class="zone" href="#transitions" aria-label="Source buses: open chapter"><rect class="zr" x="20" y="104" width="580" height="128" rx="10"/><rect class="mk " x="250" y="116" width="36" height="22" rx="3"/><rect class="mk " x="294" y="116" width="36" height="22" rx="3"/><rect class="mk " x="338" y="116" width="36" height="22" rx="3"/><rect class="mk " x="382" y="116" width="36" height="22" rx="3"/><rect class="mk " x="426" y="116" width="36" height="22" rx="3"/><rect class="mk " x="470" y="116" width="36" height="22" rx="3"/><rect class="mk " x="514" y="116" width="36" height="22" rx="3"/><rect class="mk " x="558" y="116" width="36" height="22" rx="3"/><rect class="mk " x="250" y="152" width="36" height="22" rx="3"/><rect class="mk r" x="294" y="152" width="36" height="22" rx="3"/><rect class="mk " x="338" y="152" width="36" height="22" rx="3"/><rect class="mk " x="382" y="152" width="36" height="22" rx="3"/><rect class="mk " x="426" y="152" width="36" height="22" rx="3"/><rect class="mk " x="470" y="152" width="36" height="22" rx="3"/><rect class="mk " x="514" y="152" width="36" height="22" rx="3"/><rect class="mk " x="558" y="152" width="36" height="22" rx="3"/><rect class="mk " x="250" y="188" width="36" height="22" rx="3"/><rect class="mk " x="294" y="188" width="36" height="22" rx="3"/><rect class="mk g" x="338" y="188" width="36" height="22" rx="3"/><rect class="mk " x="382" y="188" width="36" height="22" rx="3"/><rect class="mk " x="426" y="188" width="36" height="22" rx="3"/><rect class="mk " x="470" y="188" width="36" height="22" rx="3"/><rect class="mk " x="514" y="188" width="36" height="22" rx="3"/><rect class="mk " x="558" y="188" width="36" height="22" rx="3"/><text class="zl" x="32" y="126">Source buses</text><text class="zs" x="32" y="142">key · program · preset · ch 02</text></a><a class="zone" href="#keyers" aria-label="Keyers: open chapter"><rect class="zr" x="20" y="244" width="210" height="166" rx="10"/><rect class="mk " x="36" y="300" width="38" height="22" rx="3"/><rect class="mk " x="82" y="300" width="38" height="22" rx="3"/><rect class="mk " x="128" y="300" width="38" height="22" rx="3"/><rect class="mk " x="174" y="300" width="38" height="22" rx="3"/><rect class="mk a" x="36" y="332" width="38" height="22" rx="3"/><rect class="mk " x="82" y="332" width="38" height="22" rx="3"/><rect class="mk " x="128" y="332" width="38" height="22" rx="3"/><rect class="mk " x="174" y="332" width="38" height="22" rx="3"/><rect class="mk " x="36" y="364" width="38" height="22" rx="3"/><rect class="mk " x="82" y="364" width="38" height="22" rx="3"/><rect class="mk " x="128" y="364" width="38" height="22" rx="3"/><rect class="mk " x="174" y="364" width="38" height="22" rx="3"/><text class="zl" x="32" y="266">Keyers</text><text class="zs" x="32" y="282">key types · boxes · ch 03</text></a><a class="zone" href="#memory" aria-label="Effects memory: open chapter"><rect class="zr" x="240" y="244" width="170" height="166" rx="10"/><rect class="mk " x="256" y="300" width="40" height="22" rx="3"/><rect class="mk " x="304" y="300" width="40" height="22" rx="3"/><rect class="mk " x="352" y="300" width="40" height="22" rx="3"/><rect class="mk " x="256" y="332" width="40" height="22" rx="3"/><rect class="mk " x="304" y="332" width="40" height="22" rx="3"/><rect class="mk " x="352" y="332" width="40" height="22" rx="3"/><rect class="mk " x="256" y="364" width="40" height="22" rx="3"/><rect class="mk " x="304" y="364" width="40" height="22" rx="3"/><rect class="mk " x="352" y="364" width="40" height="22" rx="3"/><text class="zl" x="252" y="266">Effects memory</text><text class="zs" x="252" y="282">store · recall · ch 04</text></a><a class="zone" href="#transitions" aria-label="Transition: open chapter"><rect class="zr" x="420" y="244" width="180" height="166" rx="10"/><rect class="mk a" x="436" y="300" width="36" height="22" rx="3"/><rect class="mk " x="480" y="300" width="36" height="22" rx="3"/><rect class="mk " x="524" y="300" width="36" height="22" rx="3"/><rect class="mk a" x="436" y="332" width="36" height="22" rx="3"/><rect class="mk " x="480" y="332" width="36" height="22" rx="3"/><rect class="mk " x="524" y="332" width="36" height="22" rx="3"/><rect class="mk" x="572" y="292" width="12" height="104" rx="4"/><rect class="mk a" x="560" y="360" width="36" height="16" rx="3"/><text class="zl" x="432" y="266">Transition</text><text class="zs" x="432" y="282">cut · auto · fader · ch 02</text></a><a class="zone" href="#panel" aria-label="Touchscreen menu: open chapter"><rect class="zr" x="620" y="20" width="360" height="212" rx="10"/><rect class="scr" x="636" y="52" width="328" height="164" rx="6"/><text class="zl" x="636" y="40">Touchscreen menu</text><text class="zs" x="800" y="40">menus · ch 01</text><rect class="mk b" x="646" y="64" width="44" height="18" rx="3"/><rect class="mk" x="646" y="88" width="44" height="18" rx="3"/><rect class="mk" x="646" y="112" width="44" height="18" rx="3"/><rect class="mk" x="700" y="186" width="34" height="20" rx="3"/><rect class="mk" x="738" y="186" width="34" height="20" rx="3"/><rect class="mk" x="776" y="186" width="34" height="20" rx="3"/><rect class="mk" x="814" y="186" width="34" height="20" rx="3"/><rect class="mk" x="852" y="186" width="34" height="20" rx="3"/><rect class="mk" x="890" y="186" width="34" height="20" rx="3"/><rect class="mk" x="928" y="186" width="34" height="20" rx="3"/><circle cx="934" cy="80" r="11" class="mk"/><circle cx="934" cy="116" r="11" class="mk"/><circle cx="934" cy="152" r="11" class="mk"/></a><a class="zone" href="#motion" aria-label="Media-Store: open chapter"><rect class="zr" x="702" y="96" width="196" height="76" rx="6"/><text class="zl" x="714" y="120">Media-Store</text><text class="zs" x="714" y="137">animations · ch 06</text><text class="zs" x="714" y="154">HOME › More › Effects</text></a><a class="zone" href="#memory" aria-label="Global memory: open chapter"><rect class="zr" x="620" y="244" width="200" height="166" rx="10"/><rect class="mk " x="636" y="300" width="30" height="20" rx="3"/><rect class="mk " x="673" y="300" width="30" height="20" rx="3"/><rect class="mk " x="710" y="300" width="30" height="20" rx="3"/><rect class="mk " x="747" y="300" width="30" height="20" rx="3"/><rect class="mk " x="784" y="300" width="30" height="20" rx="3"/><rect class="mk " x="636" y="328" width="30" height="20" rx="3"/><rect class="mk " x="673" y="328" width="30" height="20" rx="3"/><rect class="mk " x="710" y="328" width="30" height="20" rx="3"/><rect class="mk " x="747" y="328" width="30" height="20" rx="3"/><rect class="mk " x="784" y="328" width="30" height="20" rx="3"/><rect class="mk " x="636" y="356" width="30" height="20" rx="3"/><rect class="mk " x="673" y="356" width="30" height="20" rx="3"/><rect class="mk " x="710" y="356" width="30" height="20" rx="3"/><rect class="mk " x="747" y="356" width="30" height="20" rx="3"/><rect class="mk a" x="784" y="356" width="30" height="20" rx="3"/><text class="zl" x="632" y="266">Global memory</text><text class="zs" x="632" y="282">across banks · ch 04</text></a><a class="zone" href="#transitions" aria-label="Fade to black: open chapter"><rect class="zr" x="830" y="244" width="150" height="76" rx="10"/><rect class="mk " x="846" y="286" width="50" height="22" rx="3"/><rect class="mk " x="906" y="286" width="50" height="22" rx="3"/><text class="zl" x="842" y="266">Fade to black</text><text class="zs" x="842" y="282">ch 02</text></a><a class="zone" href="#showprep" aria-label="Preview ovly: open chapter"><rect class="zr" x="830" y="330" width="150" height="80" rx="10"/><rect class="mk " x="846" y="374" width="26" height="20" rx="3"/><rect class="mk " x="879" y="374" width="26" height="20" rx="3"/><rect class="mk a" x="912" y="374" width="26" height="20" rx="3"/><rect class="mk " x="945" y="374" width="26" height="20" rx="3"/><text class="zl" x="842" y="352">Preview ovly</text><text class="zs" x="842" y="368">safe title · ch 08</text></a><a class="zone" href="#replay" aria-label="Replay package: open chapter"><rect class="zr" x="250" y="62" width="86" height="0.01" rx="0"/><text class="zs" x="250" y="76" style="fill:var(--cc)">▲ REPLAY IN / OUT · ch 07</text></a></svg></div>
+  <p class="fig" style="font-size:14.5px;color:var(--ink-3)">Simplified drawing. Your panel's exact layout, source names, and number of keyers may differ. Labels match the button names in Ross Video's documentation.</p>
+
+  <h2><span class="sub">Three kinds of instruction</span>How to read this guide</h2>
+  <div class="legend">
+    <div><b class="h">A button on the panel</b><div class="kbdlist"><kbd class="key">SEL</kbd> <kbd class="key amber">AUTO TRANS</kbd> <kbd class="key red">CAM 1</kbd> <kbd class="key green">CAM 2</kbd> <kbd class="key blue">1</kbd></div><p>Physical buttons look like this. In this guide's drawings, a lit color shows a state: amber is selected, red is on air, green is on preset, blue is a recorded custom control.</p></div>
+    <div><b class="h">A path on the touchscreen</b><div><span class="path"><b>HOME</b><b>Custom Controls</b><b>Start Recording</b></span></div><p>Press each touchscreen button in order. A dashed oval like <span class="knob">Bank</span> is one of the three knobs beside the menu.</p></div>
+    <div><b class="h">Where it lives in the manual</b><div><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 90</span></div><p>Page numbers point to the printed Acuity Operation Manual, version 9.2 (Ross part number 4820DR-110). A second chip links to Ross's current online help.</p></div>
+  </div>
+
+  <h2><span class="sub">Do these once, before Chapter 01</span>Before you start</h2>
+  <div class="stack prose mt">
+    <div class="proc" style="border-top:0;padding-top:0">
+      <h3>Check which software the switcher runs</h3>
+      <ol class="steps">
+        <li>On the touchscreen, press <span class="path"><b>HOME</b><b>Status</b><b>Version Info</b></span>.</li>
+        <li>Read the control panel and frame software versions on the screen.</li>
+      </ol>
+      <p class="note"><b class="t">Why</b>Menus and labels change between software versions. The steps in this guide follow Ross's current online help (version 15.0). If something on your screen looks different, the manual for your version is the final word.</p>
+      <div class="refs"><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Status/To-Version.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · To View Software Version Information</a></div>
+    </div>
+    <div class="proc">
+      <h3>Open the manual on the switcher itself</h3>
+      <ol class="steps">
+        <li>Press the Manuals button on the touchscreen. The manual opens in the top menu area. Press it again to close.</li>
+        <li>To take a copy home, plug a flash drive into the control panel and press <span class="path"><b>HOME</b><b>More</b><b>Help</b><b>Copy Manuals To USB</b></span>.</li>
+      </ol>
+      <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 31 · Help Features</span><a class="man web" href="https://documentation.rossvideo.com/files/Manuals/Production%20Switchers/Acuity/Acuity-Operation(4820DR-110).pdf" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Operation Manual (PDF)</a></div>
+    </div>
+    <div class="proc">
+      <h3>Bring your own flash drive</h3>
+      <p>Format it FAT32 and label it with your name. You'll use it to save your switcher setup at the end of every class (Chapter 08) and to carry animations into the Media-Store (Chapter 06). Not both at once: for a Media-Store transfer, the animation files must be the only files on the drive. Move your saved setup off the drive first, or carry a second drive for media.</p>
+    </div>
+  </div>
+
+  <h2><span class="sub">Nine chapters · eight narrated demonstrations</span>The series</h2>
+  <div class="cards">
+    <a class="card" href="#panel"><img src="v01_panel.jpg" alt="Chapter 01 title card" loading="lazy"><div class="b"><small>Chapter 01 · 1:30</small><span>Find your way around the panel</span><p>Rows, buses, modules, the touchscreen, and the reset.</p></div></a>
+    <a class="card" href="#transitions"><img src="v02_transitions.jpg" alt="Chapter 02 title card" loading="lazy"><div class="b"><small>Chapter 02 · 1:18</small><span>Transitions</span><p>What's included, what it looks like, what makes it happen.</p></div></a>
+    <a class="card" href="#keyers"><img src="v03_keyers.jpg" alt="Chapter 03 title card" loading="lazy"><div class="b"><small>Chapter 03 · 1:37</small><span>Keyers</span><p>Lower thirds, boxes, green screen, borders, and masks.</p></div></a>
+    <a class="card" href="#memory"><img src="v04_memory.jpg" alt="Chapter 04 title card" loading="lazy"><div class="b"><small>Chapter 04 · 1:47</small><span>Effects memory &amp; attributes</span><p>Store a whole look. Choose what comes back. Glide between looks.</p></div></a>
+    <a class="card" href="#macros"><img src="v05_customcontrols.jpg" alt="Chapter 05 title card" loading="lazy"><div class="b"><small>Chapter 05 · 1:36</small><span>Custom controls</span><p>Record, edit, attach, and trigger the Acuity's macros.</p></div></a>
+    <a class="card" href="#motion"><img src="v06_motion.jpg" alt="Chapter 06 title card" loading="lazy"><div class="b"><small>Chapter 06 · 2:02</small><span>Motion graphics</span><p>From your graphics software to an animated key on air.</p></div></a>
+    <a class="card" href="#replay"><img src="v07_replay.jpg" alt="Chapter 07 title card" loading="lazy"><div class="b"><small>Chapter 07 · 2:08</small><span>Replay build &amp; assembly</span><p>Stinger, hidden cut, replay tag. Two buttons.</p></div></a>
+    <a class="card" href="#showprep"><img src="v08_showprep.jpg" alt="Chapter 08 title card" loading="lazy"><div class="b"><small>Chapter 08 · 1:18</small><span>Show prep &amp; recovery</span><p>Save your work, layer banks, and recover fast on air.</p></div></a>
+  </div>
+
+  <h2><span class="sub">From Ross Video · opens in a new tab</span>Official Acuity training videos</h2>
+  <p class="prose mt">Ross Video's own "Acuity U" series covers some of the same ground with footage of a real panel. Watch them after the matching chapter here.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Ross video</th><th>Pairs with</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.rossvideo.com/resources/ross-university/acuity-panel-introduction/" target="_blank" rel="noopener">101 · Acuity Panel Introduction</a></td><td>Chapter 01</td></tr>
+      <tr><td><a href="https://www.rossvideo.com/resources/ross-university/acuity-panel-menu/" target="_blank" rel="noopener">102 · Acuity Panel Menu</a></td><td>Chapter 01</td></tr>
+      <tr><td><a href="https://www.rossvideo.com/resources/ross-university/acuity-key-types/" target="_blank" rel="noopener">103 · Key Types</a></td><td>Chapter 03</td></tr>
+      <tr><td><a href="https://www.rossvideo.com/resources/ross-university/two-box-effect/" target="_blank" rel="noopener">104 · Two Box Effect</a></td><td>Chapter 03</td></tr>
+      <tr><td><a href="https://www.rossvideo.com/resources/ross-university/bus-maps/" target="_blank" rel="noopener">105 · Bus Maps</a></td><td>Chapter 01</td></tr>
+      <tr><td><a href="https://www.rossvideo.com/resources/ross-university/memories/" target="_blank" rel="noopener">106 · Memories</a></td><td>Chapter 04</td></tr>
+      <tr><td><a href="https://www.rossvideo.com/resources/ross-university/mediastore/" target="_blank" rel="noopener">107 · MediaStore</a></td><td>Chapter 06</td></tr>
+    </tbody>
+  </table></div>
+  <p class="mt" style="font-size:14.5px;color:var(--ink-3)">The full list lives on Ross's <a href="https://www.rossvideo.com/products/production-switchers/acuity-u/" target="_blank" rel="noopener">Acuity U page</a>. Some were recorded on older software, so a few screens may look different.</p>
+
+  <p class="foot">The Acuity Playbook was created by Harold Garcia for RTVF 065E Technical Directing, Lawrence Herbert School of Communication, Hofstra University. Procedures are paraphrased from Ross Video documentation; page numbers refer to the Acuity Operation Manual version 9.2 (part 4820DR-110). Ross, Acuity, and XPression are trademarks of Ross Video Limited. Videos and stills are original illustrations. © 2026 Harold Garcia. All rights reserved.</p>
+</article>
+<article class="view" id="view-panel" data-route="panel" hidden>
+  <span class="eyebrow"><span class="num">01</span>Orientation</span>
+  <h1>Find your way around the panel</h1>
+  <p class="lede">The Acuity is two worlds: the panel under your hands, and the touchscreen menu that talks to it. Learn the rows, the modules, and how to move around the menu, and every later chapter becomes a matter of knowing which button lives where.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · Acuity Control Panel Overview · pp. 14–21</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Menu System · pp. 27–31</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Switcher Basics · pp. 34–37</span></div>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Chapter briefing · 0:22</span></div><audio controls preload="none" src="brief_ch01.mp3"></audio></div>
+    <div class="vidwrap"><video controls preload="metadata" playsinline poster="v01_panel.jpg" src="v01_panel.mp4"></video></div>
+    <div class="vidcap"><span>Narrated demonstration · 1:30</span><span>Simplified panel illustration</span></div>
+  </div>
+
+  <h2><span class="sub">pp. 14–18</span>What each part does</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Part of the panel</th><th>What it does</th><th>Manual</th></tr></thead>
+    <tbody>
+      <tr><td><b>Custom control bus</b><br>the top row of buttons</td><td>Records and runs custom controls, the Acuity's macros. One row can reach many banks.</td><td class="pg">p. 14</td></tr>
+      <tr><td><b>Source buses</b></td><td>The bottom row is the <b>Preset</b> bus (the next shot). Above it is the <b>Program</b> or background bus (on air now). The upper row selects sources for a keyer or an aux bus.</td><td class="pg">p. 14</td></tr>
+      <tr><td><b>Keyers module</b></td><td>Picks a key type, adds modifiers like a box or border, and takes keys on and off by themselves.</td><td class="pg">p. 15</td></tr>
+      <tr><td><b>Effects Memory module</b><br>one per row</td><td>Stores and recalls memories and sets rates for the Mix Effects bank that row is assigned to.</td><td class="pg">p. 16</td></tr>
+      <tr><td><b>Transition module</b></td><td>Chooses what's in the next transition and how it looks, then runs it with <kbd class="key">CUT</kbd>, <kbd class="key">AUTO TRANS</kbd> or the fader.</td><td class="pg">p. 18</td></tr>
+      <tr><td><b>Global Memory module</b></td><td>Stores and recalls memories on one or several Mix Effects banks at once. Its keypad enters numbers, rates, clips, and custom controls.</td><td class="pg">p. 15</td></tr>
+      <tr><td><b>Menu Keypad and Positioner</b></td><td>Drive the touchscreen menu from the panel, and move wipes, patterns, and flying keys.</td><td class="pg">p. 17</td></tr>
+      <tr><td><b>Preview and Preview Overlay</b></td><td>Choose what the Preview monitor shows, and add guides such as safe title.</td><td class="pg">p. 18</td></tr>
+      <tr><td><b>Fade to Black</b></td><td>Takes the whole switcher output to black and back.</td><td class="pg">p. 15</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="sub">pp. 19–21</span>Assign the rows</h2>
+  <section class="proc" id="assign-row">
+    <h3>Assign a panel row to a Mix Effects bank</h3>
+    <ol class="steps">
+      <li>Press the <kbd class="key">SEL</kbd> button on the row you want to assign. (On a Double-Down panel, press the mnemonic button at the right end of the row.)</li>
+      <li>Press <span class="path"><b>Assign ME</b></span> on the touchscreen.</li>
+      <li>Press the button for the row you're assigning: <span class="path"><b>Row X</b></span> for a physical row.</li>
+      <li>Press the Mix Effects bank you want, <span class="path"><b>ME X</b></span>. The row's Keyers, Effects Memory, and Transition modules follow it.</li>
+    </ol>
+    <p class="note"><b class="t">Faster</b>Press and hold <kbd class="key">SEL</kbd>, then press a source button on the background or key bus to pick the bank, keyer, or aux bus for that row.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 19 · Assigning a Panel Row to an ME</span></div>
+  </section>
+  <section class="proc" id="assign-keybus">
+    <h3>Point the key bus at a different keyer</h3>
+    <ol class="steps">
+      <li>Press <kbd class="key">SEL</kbd> on the row.</li>
+      <li>Press <span class="path"><b>Select Key/Util Bus</b></span>.</li>
+      <li>Press the keyer you want, <span class="path"><b>KEY X</b></span>. Toggle <span class="path"><b>Lock Key Row</b></span> on to keep it there.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 20 · Assigning a Key bus to a Keyer or Utility Bus</span></div>
+  </section>
+
+  <h2><span class="sub">pp. 27–31</span>Move around the touchscreen</h2>
+  <ul class="bul mt">
+    <li><span class="path"><b>HOME</b></span> always jumps to the Main Menu. Every menu tree starts there.</li>
+    <li><span class="path"><b>UP ONE</b></span> climbs back one level. <span class="path"><b>Back</b></span> and <span class="path"><b>Forward</b></span> work like a web browser.</li>
+    <li>The page count sits next to the menu name: <span class="mono">Main Menu (1-2)</span> means page 1 of 2. Press <span class="path"><b>More</b></span> for the next page.</li>
+    <li>Buttons with a down-arrow open a sub-menu.</li>
+    <li>Turn a knob by circling it on the screen or by tapping just left or right of it. Double-tap a knob to return it to its default. Tap a knob with the edit icon to type a number on a keypad.</li>
+    <li>The menu <b>auto-follows</b>: press <kbd class="key">SEL</kbd> on a keyer and the key menu opens by itself.</li>
+    <li>The lock button holds the current menu so auto-follow can't move it. Copy Up, Copy Down, and Swap move menus between the top and bottom regions.</li>
+  </ul>
+  <p class="note warn mt"><b class="t">Locked panel?</b>Opening the Installation menu puts the switcher in a safe, locked mode: no source selection, transitions, memories, or custom controls. Press <span class="path"><b>Swap</b></span> to move the Installation menu to the top region and return to normal operation.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 27 · Using the Menu System</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> p. 28 · Menu Number Shortcuts</span></div>
+
+  <h2><span class="sub">p. 36</span>The reset, and when never to use it</h2>
+  <section class="proc" id="reset">
+    <h3>Reset Mix Effects banks to their default state</h3>
+    <ol class="steps">
+      <li>On the Global Memory module, press both <kbd class="key">ALL</kbd> buttons at the same time to reset every bank.</li>
+      <li>To reset one bank (1 to 4), press both of its <kbd class="key">ME X</kbd> buttons together. For banks 5 to 8, hold <kbd class="key">+4</kbd> first.</li>
+      <li>To reset only the bank on one row, press <kbd class="key">RECALL</kbd> and <kbd class="key">STORE</kbd> together on that row's Effects Memory module.</li>
+    </ol>
+    <p>After a reset: the first source button (black by default) is selected on every bus, all keys are off air, Background and Dissolve are selected for the next transition, the Mix Effects rate is 15 frames, and the key rate is 8 frames.</p>
+    <p class="note warn"><b class="t">Off air only</b>A reset changes the program output instantly. Never use it during a live show.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 36 · ME Reset (ALL+ALL) · Default State</span><a class="man web" href="https://help.rossvideo.com/acuity/Topics/Operation/Panel/Basics/Soft-reset_acu.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · ME Reset</a></div>
+  </section>
+
+  <div class="drill" data-drill="ch01">
+    <h3><span class="lamp"></span>At the panel</h3>
+    <ul class="checks">
+      <li><label><input type="checkbox"><span>Point to the Preset bus, the Program bus, and the key bus on your row. Say what each one does.</span></label></li>
+      <li><label><input type="checkbox"><span>Find the Keyers, Effects Memory, and Transition modules on your row, and the Global Memory module.</span></label></li>
+      <li><label><input type="checkbox"><span>Press <span class="path"><b>HOME</b></span>, open any sub-menu, then return with <span class="path"><b>UP ONE</b></span>. Find a menu with two pages and use <span class="path"><b>More</b></span>.</span></label></li>
+      <li><label><input type="checkbox"><span>Read the software version at <span class="path"><b>HOME</b><b>Status</b><b>Version Info</b></span>.</span></label></li>
+      <li><label><input type="checkbox"><span>Off air, reset your row with <kbd class="key">RECALL</kbd> + <kbd class="key">STORE</kbd> and confirm the default state.</span></label></li>
+    </ul>
+    <button class="reset" type="button">Clear checks</button>
+  </div>
+
+  <nav class="pager"><a href="#home"><small>Back</small><span>Start here</span></a><a class="next" href="#transitions"><small>Next · 02</small><span>Transitions</span></a></nav>
+</article>
+<article class="view" id="view-transitions" data-route="transitions" hidden>
+  <span class="eyebrow"><span class="num">02</span>Transitions</span>
+  <h1>Include, look, execute</h1>
+  <p class="lede">Every transition is three decisions: what's included, what it looks like, and what makes it happen. Make them in that order, check Preview, then go.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · Transition · pp. 42–49</span></div>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Chapter briefing · 0:24</span></div><audio controls preload="none" src="brief_ch02.mp3"></audio></div>
+    <div class="vidwrap"><video controls preload="metadata" playsinline poster="v02_transitions.jpg" src="v02_transitions.mp4"></video></div>
+    <div class="vidcap"><span>Narrated demonstration · 1:18</span><span>Simplified panel illustration</span></div>
+  </div>
+
+  <figure class="fig">
+    <div class="tri">
+      <div class="col"><h4>1 · Included</h4><p class="q">What changes?</p><div class="keys"><kbd class="key amber">BKGD</kbd> <kbd class="key">KEY 1</kbd> <kbd class="key">KEY 2</kbd> <kbd class="key">KEY 3</kbd> <kbd class="key">KEY 4</kbd></div><p style="font-size:15px;color:var(--ink-2)">Light the elements that will change. Hold the first and press the others to select several.</p></div>
+      <div class="col"><h4>2 · Look</h4><p class="q">How does it change?</p><div class="keys"><kbd class="key amber">DISS</kbd> <kbd class="key">WIPE</kbd> <kbd class="key">DVE</kbd> <kbd class="key">SEQ</kbd></div><p style="font-size:15px;color:var(--ink-2)">Dissolve, a pattern wipe, or a digital video effects move.</p></div>
+      <div class="col"><h4>3 · Execute</h4><p class="q">What makes it happen?</p><div class="keys"><kbd class="key">CUT</kbd> <kbd class="key">AUTO TRANS</kbd> <span class="pill">Fader</span></div><p style="font-size:15px;color:var(--ink-2)">Instant, at the set rate, or at the speed of your hand.</p></div>
+    </div>
+    <figcaption>The Transition module asks the three questions left to right. The Preview monitor shows the answer before you commit.</figcaption>
+  </figure>
+
+  <h2><span class="sub">p. 42</span>The basic transition</h2>
+  <section class="proc" id="perform-transition">
+    <h3>Perform a transition</h3>
+    <ol class="steps">
+      <li>On the Transition module, select the elements to include: <kbd class="key">BKGD</kbd> and any <kbd class="key">KEY X</kbd>. Hold the first button and press the others to select several.</li>
+      <li>Select your sources: the next shot on the Preset bus, and any key sources on the key bus.</li>
+      <li>Select the type: <kbd class="key">DISS</kbd>, <kbd class="key">WIPE</kbd>, or <kbd class="key">DVE</kbd>. Wipes and digital video effects need a pattern or sequence (below).</li>
+      <li>If a video server clip on the incoming source should play with the transition, light <kbd class="key">ROLL CLIP</kbd> (Chapter 07).</li>
+      <li>Check the Preview monitor.</li>
+      <li>Go: <kbd class="key">CUT</kbd> for instant, <kbd class="key">AUTO TRANS</kbd> for the set rate, or move the fader. Grab the fader during an auto transition and it takes over.</li>
+    </ol>
+    <p class="note"><b class="t">Tip</b>Some switchers are set so that a double-press of <kbd class="key">BKGD</kbd> selects the background plus every key that's on air (the BKGD Double Press personality option).</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 42 · To Perform a Transition</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Transitions/To-Trans.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 43–44</span>Rates are counted in frames</h2>
+  <section class="proc" id="rates">
+    <h3>Set the Mix Effects, key, and fade rates</h3>
+    <ol class="steps">
+      <li><b>Mix Effects rate</b> (background transitions): press <kbd class="key">ME RATE</kbd> on the row's Effects Memory module, type the number of frames, press <kbd class="key">ENTER</kbd>.</li>
+      <li><b>Key rate</b> (a key's own transitions): press <kbd class="key">KEY RATE</kbd> on the Effects Memory module, or hold <kbd class="key">KEY RATE</kbd> on the Global Memory module and press <kbd class="key">ME X</kbd>. Type the frames and press <kbd class="key">ENTER</kbd>.</li>
+      <li><b>Fade to black rate</b>: press and hold <kbd class="key">FADE RATE</kbd> on the Global Memory module, type the frames, press <kbd class="key">ENTER</kbd>.</li>
+    </ol>
+    <p>The defaults after a reset are 15 frames for the Mix Effects rate and 8 frames for keys. In a 59.94 interlaced format, 15 frames is about half a second.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 43–44 · Transition Rates</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Transitions/To-Rates-Key_acu.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · Key Rate</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 44–46</span>Wipes and moves</h2>
+  <section class="proc" id="wipe">
+    <h3>Set up a wipe</h3>
+    <ol class="steps">
+      <li>Press <kbd class="key">WIPE</kbd>.</li>
+      <li>Pick a pattern on the touchscreen.</li>
+      <li>Press <span class="path"><b>Direction</b></span> to set Forward or Reverse, and <span class="path"><b>Flip Flop</b></span> to make the next wipe run back the other way.</li>
+      <li>Press <span class="path"><b>Modify Pattern</b></span> to shape it:
+        <ul>
+          <li><span class="path"><b>X / Y</b></span>: position, with the knobs or the positioner.</li>
+          <li><span class="path"><b>Border/Soft</b></span>: border size (0 is off) and edge softness.</li>
+          <li><span class="path"><b>Aspect</b></span>, <span class="path"><b>H-Mult</b></span> or <span class="path"><b>V-Mult</b></span>, and <span class="path"><b>Rotation</b></span> for more character.</li>
+        </ul>
+      </li>
+      <li>Run it with <kbd class="key">AUTO TRANS</kbd> or the fader.</li>
+    </ol>
+    <p class="note"><b class="t">User wipes</b>Eight user wipe buttons can hold your favorite patterns: <span class="path"><b>HOME</b><b>More</b><b>Effects</b><b>Pattern Selection</b><b>Modify Pattern</b><b>Pattern Options</b><b>User Wipes</b></span>.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 44 · To Set Up a Wipe</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Transitions/To-Wipe.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="dve-transition">
+    <h3>Set up a digital video effects transition</h3>
+    <ol class="steps">
+      <li>Press <kbd class="key">DVE</kbd>.</li>
+      <li>Pick the effect. You can also type its number on the keypad and press <kbd class="key">ENTER</kbd> if the Keypad DVE Entry personality option allows it.</li>
+      <li>Set <span class="path"><b>Direction</b></span> and <span class="path"><b>Flip Flop</b></span>.</li>
+      <li>Run it with <kbd class="key">AUTO TRANS</kbd> or the fader.</li>
+    </ol>
+    <p class="note warn"><b class="t">Watch out</b>If there aren't enough digital video effects channels free, the switcher does a dissolve instead. These transitions also start one frame late.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 46 · To Set Up a DVE Transition</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Transitions/To-DVE.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 46–48</span>Professional transition tools</h2>
+  <section class="proc" id="preset-background">
+    <h3>Preset Background: a quick transition to a different background</h3>
+    <ol class="steps">
+      <li>Press and hold <kbd class="key">PST BKGD</kbd>.</li>
+      <li>Press a source on the Preset bus.</li>
+      <li>Select <kbd class="key">DISS</kbd> or <kbd class="key">WIPE</kbd>.</li>
+      <li>Perform the transition.</li>
+    </ol>
+    <p>The switcher remembers the next transition you had set up, so you can return to your plan afterward.</p>
+    <p class="note warn"><b class="t">Watch out</b>Preset Background selects the background <i>and every key that's on air</i> for the transition. A lower third that's up will go off with it. Choose black on the Preset bus and it becomes a quick transition to black.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 46–47 · Preset Background</span><a class="man web" href="https://help.rossvideo.com/acuity/Topics/Operation/Transitions/PST-BGND.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="whiteflash">
+    <h3>WhiteFlash: dissolve through a flash of color</h3>
+    <ol class="steps">
+      <li>Double-press <kbd class="key">DISS</kbd>. It flashes to show WhiteFlash is selected.</li>
+      <li>Press <span class="path"><b>Color</b></span> and choose the flash color.</li>
+      <li>Set <span class="path"><b>ME Rate</b></span> to Yes to use the Mix Effects rate, or No to set your own <span class="path"><b>Timing Settings</b></span>: Onset, Hold, and Fade, in frames.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 47 · WhiteFlash</span></div>
+  </section>
+  <section class="proc" id="transition-preview">
+    <h3>Transition Preview: rehearse it on Preview first</h3>
+    <ol class="steps">
+      <li>Set up the transition.</li>
+      <li>Press and hold <kbd class="key">DISS</kbd>, <kbd class="key">WIPE</kbd>, or <kbd class="key">DVE</kbd>. The Preview output matches Program.</li>
+      <li>Run the transition with the button still held. It plays on Preview only, then Preview returns to normal.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 47 · Transition Preview</span></div>
+  </section>
+  <section class="proc" id="transition-limit">
+    <h3>Transition Limit: stop halfway, then go back</h3>
+    <ol class="steps">
+      <li>To set the stop point: press <kbd class="key">TRANS LIMIT</kbd>, move the fader to where the transition should stop, press <kbd class="key">TRANS LIMIT</kbd> again, then return the fader to where it started.</li>
+      <li>To use it: press <kbd class="key">TRANS LIMIT</kbd>, then <kbd class="key">AUTO TRANS</kbd>. The transition stops at your point.</li>
+      <li>Press <kbd class="key">AUTO TRANS</kbd> again to reverse back to the start.</li>
+    </ol>
+    <p class="note warn"><b class="t">Watch out</b>Pushing the fader all the way to the end while setting the limit spoils the setting. Limits work only with <kbd class="key">AUTO TRANS</kbd>, not the fader, cuts, or key-only transitions.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 48 · Transition Limits</span></div>
+  </section>
+  <section class="proc" id="fade-to-black">
+    <h3>Fade to black</h3>
+    <ol class="steps">
+      <li>On the Fade to Black module, press <kbd class="key">FADE</kbd> to fade at the fade rate, or <kbd class="key">CUT</kbd> to cut to black.</li>
+      <li>While you're at black, the on-air source buttons flash.</li>
+      <li>Press <kbd class="key">FADE</kbd> or <kbd class="key">CUT</kbd> again to come back.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 46 · To Fade to Black</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Transitions/To-FTB.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <div class="drill" data-drill="ch02">
+    <h3><span class="lamp"></span>At the panel</h3>
+    <ul class="checks">
+      <li><label><input type="checkbox"><span>Dissolve from Camera 1 to Camera 2 with <kbd class="key">AUTO TRANS</kbd>, then back with the fader at your own speed.</span></label></li>
+      <li><label><input type="checkbox"><span>Set the Mix Effects rate to 30 frames and confirm it on the display. Set it back to 15.</span></label></li>
+      <li><label><input type="checkbox"><span>Set up a wipe with a soft border. Rehearse it with Transition Preview before taking it.</span></label></li>
+      <li><label><input type="checkbox"><span>Set a transition limit at the halfway point. Take it there, then back.</span></label></li>
+      <li><label><input type="checkbox"><span>Fade to black and back. Watch the on-air buttons flash.</span></label></li>
+    </ul>
+    <button class="reset" type="button">Clear checks</button>
+  </div>
+  <nav class="pager"><a href="#panel"><small>Back · 01</small><span>The panel</span></a><a class="next" href="#keyers"><small>Next · 03</small><span>Keyers</span></a></nav>
+</article>
+<article class="view" id="view-keyers" data-route="keyers" hidden>
+  <span class="eyebrow"><span class="num">03</span>Keyers</span>
+  <h1>Lower thirds, boxes, and green screen</h1>
+  <p class="lede">A key cuts a hole in the picture and fills it with something else. The <b>alpha</b> (also called the key signal) cuts the hole. The <b>fill</b> fills it. Every key type is just a different way of getting an alpha.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · Keying · pp. 50–56</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Key Modifiers · pp. 57–70</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Keyers Module · p. 15</span></div>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Chapter briefing · 0:22</span></div><audio controls preload="none" src="brief_ch03.mp3"></audio></div>
+    <div class="vidwrap"><video controls preload="metadata" playsinline poster="v03_keyers.jpg" src="v03_keyers.mp4"></video></div>
+    <div class="vidcap"><span>Narrated demonstration · 1:37</span><span>Simplified panel illustration</span></div>
+  </div>
+
+  <figure class="fig">
+    <div class="equation">
+      <div class="cell"><img src="still_key_background.jpg" alt="Background: a wide shot of the field" loading="lazy"><span>Background</span></div>
+      <div class="op">+</div>
+      <div class="cell"><img src="still_key_alpha.jpg" alt="Alpha: white where the graphic goes, black elsewhere" loading="lazy"><span>Alpha cuts the hole</span></div>
+      <div class="op">+</div>
+      <div class="cell"><img src="still_key_fill.jpg" alt="Fill: the lower-third graphic" loading="lazy"><span>Fill fills it</span></div>
+      <div class="op">=</div>
+      <div class="cell"><img src="still_key_result.jpg" alt="Result: the graphic keyed over the field" loading="lazy"><span>On air</span></div>
+    </div>
+    <figcaption>White in the alpha means "show the fill here." Black means "keep the background." Gray means partly see-through. Hold <kbd class="key">SHOW ALPHA</kbd> to see any key's alpha on Preview.</figcaption>
+  </figure>
+
+  <h2><span class="sub">pp. 50–55</span>Pick the right key type</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Key type</th><th>Where the alpha comes from</th><th>Use it for</th><th>Manual</th></tr></thead>
+    <tbody>
+      <tr><td><kbd class="key">AUTO SELECT</kbd></td><td>A separate alpha signal paired with the fill once, in setup.</td><td>Graphics from a character generator, a still store, or the Media-Store. The professional default for graphics.</td><td class="pg">p. 50</td></tr>
+      <tr><td><kbd class="key">SELF KEY</kbd></td><td>The brightness of the source itself.</td><td>White text on black from a simple source.</td><td class="pg">p. 50</td></tr>
+      <tr><td><kbd class="key">CHROMA KEY</kbd></td><td>A color, usually green or blue, that the keyer removes.</td><td>Talent in front of a green screen.</td><td class="pg">pp. 51–55</td></tr>
+      <tr><td><kbd class="key">PST PATT</kbd></td><td>A wipe pattern's shape.</td><td>A picture-in-picture box or shaped window. It flies on its own with the digital video effects option.</td><td class="pg">p. 55</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="sub">pp. 50–55</span>Set up each key type</h2>
+  <section class="proc" id="auto-select">
+    <h3>Auto Select key: a graphic with its own alpha</h3>
+    <ol class="steps">
+      <li>On the Keyers module, press <kbd class="key">SEL</kbd> for the keyer you want.</li>
+      <li>Select the graphic on the key bus.</li>
+      <li>Press <kbd class="key">AUTO SELECT</kbd>. <kbd class="key">KEY MEM</kbd> lights to show the stored settings for that source are in use.</li>
+      <li>To adjust it, press <span class="path"><b>Clip/Gain</b></span>, toggle <span class="path"><b>Key Mem</b></span> off, and turn <span class="knob">Clip</span> and <span class="knob">Gain</span>.</li>
+      <li>Optional: press <span class="path"><b>Trans Rate</b></span> for this key's own rate, or toggle <span class="path"><b>Transparency</b></span> on and turn <span class="knob">Transp.</span> from 0% (solid) to 100% (invisible).</li>
+    </ol>
+    <p class="note"><b class="t">Save it</b>To store new clip and gain values with that source, hold <kbd class="key">AUTO SELECT</kbd> and press <kbd class="key">KEY MEM</kbd>. Every Mix Effects bank uses those settings whenever that source is keyed.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 50 · To Set Up an Auto Select Key</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Keying/To-AutoKey.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="auto-key-setup">
+    <h3>Pair a fill with its alpha (done once, in setup)</h3>
+    <p>Auto Select only works after the fill and its alpha have been paired. Usually your instructor or engineer does this once per graphics source.</p>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>Setup</b><b>Installation</b><b>Source Configuration</b><b>Input Type</b></span>.</li>
+      <li>Turn <span class="knob">Input</span> to the alpha input, and set its type to <span class="path"><b>Alpha</b></span>.</li>
+      <li>Press <span class="path"><b>Auto Key Setup</b></span>.</li>
+      <li>Turn <span class="knob">Source</span> to the fill and <span class="knob">Alpha</span> to its alpha.</li>
+      <li>Turn <span class="knob">Mode</span> to <span class="path"><b>Shaped</b></span> or <span class="path"><b>Unshaped</b></span>. Shaped is an additive key; unshaped is multiplicative. Match what your graphics system sends.</li>
+      <li>Press <span class="path"><b>HOME</b><b>Confirm</b></span>.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Setup Manual v9.2 · Video Input Setup</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Setup/Video/Input/To-Auto-Key.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · Auto Key Association</a></div>
+  </section>
+  <section class="proc" id="self-key">
+    <h3>Self key: let brightness cut the hole</h3>
+    <ol class="steps">
+      <li>Press <kbd class="key">SEL</kbd> for the keyer and select the source on the key bus.</li>
+      <li>Press <kbd class="key">SELF KEY</kbd>.</li>
+      <li>Press <span class="path"><b>Clip/Gain</b></span>. <span class="knob">Clip</span> sets the brightness where the key starts to cut. <span class="knob">Gain</span> sets how hard or soft the edge is.</li>
+      <li>Press <span class="path"><b>Make Key Linear</b></span> any time to put clip and gain back to defaults.</li>
+    </ol>
+    <p class="note"><b class="t">Backwards?</b>If black letters should cut the hole instead of white ones, press <kbd class="key">KEY INV</kbd> to flip the alpha.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 50 · To Set Up a Self Key</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Keying/To-SelfKey.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="chroma-key">
+    <h3>Chroma key (basic mode): green screen</h3>
+    <ol class="steps">
+      <li>Press <kbd class="key">SEL</kbd> for the keyer and select the camera on the key bus.</li>
+      <li>Press <kbd class="key">CHROMA KEY</kbd>. Turn <span class="knob">Key Mode</span> to <span class="path"><b>Basic</b></span>.</li>
+      <li>Turn <span class="knob">Color</span> to the backing color to remove.</li>
+      <li>Press <span class="path"><b>Initialize Key</b></span>. This resets every chroma setting to its default, so do it first.</li>
+      <li>Press <span class="path"><b>Background</b></span> and turn <span class="knob">Gain</span>. Lower removes more of the color.</li>
+      <li>Press <span class="path"><b>Foreground</b></span>: <span class="knob">Clip</span> adds or removes low-saturation colors, <span class="knob">Hue</span> fine-tunes the base color, <span class="knob">Reject</span> sets how many neighboring hues are included.</li>
+      <li>Press <span class="path"><b>Spill Suppress</b></span> and turn <span class="knob">Range</span> up to remove green cast from hair and edges.</li>
+      <li>Press <span class="path"><b>Edge Softness</b></span> and adjust <span class="knob">Softness</span> and <span class="knob">Width</span>.</li>
+    </ol>
+    <ul class="bul">
+      <li><b>Person looks see-through, with white or gray patches:</b> adjust Foreground Clip. The Color Map shows which areas the keyer treats as background and which as foreground.</li>
+      <li><b>See-through because of green spill:</b> lower Foreground Reject.</li>
+      <li><b>Green not fully removed:</b> lower Background Gain while watching <kbd class="key">SHOW ALPHA</kbd>.</li>
+      <li><b>Colors shifting on the person:</b> lower Spill Suppress Range.</li>
+    </ul>
+    <p class="note"><b class="t">Save it</b>Hold <kbd class="key">CHROMA KEY</kbd> and press <kbd class="key">KEY MEM</kbd> to store the settings with that camera.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 51–52 · Chroma Key · Fine Tuning Tips</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Keying/To-ChromaKey-Basic.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="preset-pattern">
+    <h3>Preset pattern key: a shaped window</h3>
+    <ol class="steps">
+      <li>Press <kbd class="key">SEL</kbd> for the keyer and select the source on the key bus.</li>
+      <li>Press <kbd class="key">PST PATT</kbd>.</li>
+      <li>Press <span class="path"><b>Pattern Selection</b></span> and choose a pattern, such as a box.</li>
+      <li>Press <span class="path"><b>UP ONE</b></span>. Move it with the positioner; size it by twisting the positioner or with <span class="knob">Size</span>. Soften the edge with <span class="knob">Softness</span>.</li>
+    </ol>
+    <p>With the digital video effects option installed, a preset pattern key flies automatically. Turn fly key off if you want it fixed.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 55 · To Set Up a Preset Pattern Key</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Keying/To-PresetPattern.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">Keyers module · p. 15</span>Check a key before it airs</h2>
+  <ul class="bul mt">
+    <li><b>Hold</b> <kbd class="key">KEY PV</kbd> to show the selected key on Preview. Double-press to latch it; double-press again to release.</li>
+    <li><b>Hold</b> <kbd class="key">SHOW ALPHA</kbd> to see the key's black-and-white alpha. Double-press to lock it on.</li>
+    <li>Press <kbd class="key">KEY INV</kbd> to flip the alpha if the wrong part is cutting the hole.</li>
+  </ul>
+
+  <h2><span class="sub">p. 42 · p. 44</span>Take a key on and off by itself</h2>
+  <section class="proc" id="key-transitions">
+    <h3>Independent key transitions</h3>
+    <ol class="steps">
+      <li>Each keyer has its own <kbd class="key">CUT</kbd> and <kbd class="key">AUTO TRANS</kbd> buttons on the Keyers module.</li>
+      <li>Press <kbd class="key">CUT</kbd> to put the key on or take it off instantly.</li>
+      <li>Press <kbd class="key">AUTO TRANS</kbd> to dissolve it on or off at that key's own rate (8 frames by default).</li>
+    </ol>
+    <p class="note warn"><b class="t">Watch out</b>If that key is also lit in the Next Transition area, pressing its own <kbd class="key">CUT</kbd> or <kbd class="key">AUTO TRANS</kbd> takes it off air, even if it wasn't on, and removes it from the next transition. It will not put the key on. Independent key transitions are cuts and dissolves only.</p>
+    <p>To take a key on <i>with</i> the background, light <kbd class="key">BKGD</kbd> and <kbd class="key">KEY X</kbd> together on the Transition module and press <kbd class="key">AUTO TRANS</kbd>. That transition runs at the Mix Effects rate.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 42 · Independent Key Transitions</span><a class="man web" href="https://help.rossvideo.com/acuity/Topics/Operation/Transitions/KeyTrans.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 57–70</span>Key modifiers: boxes, borders, masks</h2>
+  <figure class="fig"><img src="still_box_result.jpg" alt="A camera keyed as a box with an amber border, over the field, with a lower third" style="width:100%;max-width:640px;border-radius:10px;border:1px solid var(--line)" loading="lazy"><figcaption>A two-key look: a picture-in-picture box with a border on Key 2, and a lower third on Key 1.</figcaption></figure>
+  <section class="proc" id="fly-key">
+    <h3>Fly a key into a box (2D digital video effects)</h3>
+    <ol class="steps">
+      <li>Set up the key type and source first. A <kbd class="key">PST PATT</kbd> key is ready to fly.</li>
+      <li>Select the keyer and press <kbd class="key">2D DVE</kbd>.</li>
+      <li>Press <span class="path"><b>Position</b></span>: turn <span class="knob">X Location</span> for left and right, <span class="knob">Y Location</span> for up and down, or use the positioner.</li>
+      <li>Press <span class="path"><b>Aspect/Size</b></span> and turn <span class="knob">Size</span>.</li>
+      <li>Press <span class="path"><b>More</b></span> for <span class="path"><b>Crop Horizontal</b></span> and <span class="path"><b>Crop Vertical</b></span> if you need to trim the edges.</li>
+    </ol>
+    <p class="note"><b class="t">Channels</b>Self, auto select, and chroma keys use two digital video effects channels to fly, one for the fill and one for the alpha. If you run out, simplify the look.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 57 · To Set Up a 2D DVE Fly Key</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Keying/Modify/To-2D-DVE-Setup.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="dve-border">
+    <h3>Add a border to a flying key</h3>
+    <ol class="steps">
+      <li>In the key's digital video effects menus, press <span class="path"><b>DVE Menu</b><b>Border</b></span>.</li>
+      <li>Press <span class="path"><b>Size</b></span> and set the border thickness. Set size first.</li>
+      <li>Adjust <span class="knob">Softness</span>.</li>
+      <li>Press <span class="path"><b>Color</b></span> and pick the border color.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 59 · To Apply a DVE Border</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Keying/Modify/To-2D-DVE-Border.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="box-mask">
+    <h3>Hide part of a key with a box mask</h3>
+    <ol class="steps">
+      <li>Select the keyer and press <kbd class="key">MASK</kbd>, then <span class="path"><b>Box Mask</b></span>.</li>
+      <li>Press <span class="path"><b>Position/Size</b></span> to place the mask; press <span class="path"><b>Top/Left</b></span> and <span class="path"><b>Bottom/Right</b></span> to set its edges.</li>
+      <li>Toggle <span class="path"><b>Invert</b></span> on to reverse the mask: what was hidden shows, and what showed is hidden. Toggle <span class="path"><b>Force</b></span> on to force the masked area on screen.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 69 · To Set Up a Box Mask</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Keying/To-Mask-Box.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 47–48</span>Which key is on top?</h2>
+  <p class="prose mt">Keys stack in priority order: Key 1 is the bottom layer and the highest key is on top. Put the graphic that must cover everything, like a stinger, on the highest keyer.</p>
+  <section class="proc" id="key-priority">
+    <h3>Change the order right now</h3>
+    <ol class="steps">
+      <li>Hold <kbd class="key">KEY PRIOR</kbd> on the Transition module.</li>
+      <li>Press <kbd class="key">SEL</kbd> for the key that should go on top. Press another <kbd class="key">SEL</kbd> to put that one above it.</li>
+      <li>Release <kbd class="key">KEY PRIOR</kbd>.</li>
+    </ol>
+    <p class="note warn"><b class="t">Watch out</b>This changes the order on air immediately. To change it as a smooth transition instead, use a Key Priority transition (p. 48).</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 48 · To Manually Set the Current Key Priority</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Transitions/To-KeyPrior-Cut.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <div class="drill" data-drill="ch03">
+    <h3><span class="lamp"></span>At the panel</h3>
+    <ul class="checks">
+      <li><label><input type="checkbox"><span>Key a graphic as an auto select key on Key 1. Check it with <kbd class="key">KEY PV</kbd> and <kbd class="key">SHOW ALPHA</kbd> before it airs.</span></label></li>
+      <li><label><input type="checkbox"><span>Take Key 1 on and off with its own <kbd class="key">AUTO TRANS</kbd>. Change the key rate to 15 frames and try again.</span></label></li>
+      <li><label><input type="checkbox"><span>Build a camera box on Key 2 with <kbd class="key">PST PATT</kbd> and <kbd class="key">2D DVE</kbd>. Give it a border.</span></label></li>
+      <li><label><input type="checkbox"><span>Swap which key is on top with <kbd class="key">KEY PRIOR</kbd>, off air.</span></label></li>
+      <li><label><input type="checkbox"><span>If the studio has a green screen: build a basic chroma key and fix one problem using the tips above.</span></label></li>
+    </ul>
+    <button class="reset" type="button">Clear checks</button>
+  </div>
+  <nav class="pager"><a href="#transitions"><small>Back · 02</small><span>Transitions</span></a><a class="next" href="#memory"><small>Next · 04</small><span>Effects memory</span></a></nav>
+</article>
+<article class="view" id="view-memory" data-route="memory" hidden>
+  <span class="eyebrow"><span class="num">04</span>Effects memory</span>
+  <h1>Store a look. Bring it back.</h1>
+  <p class="lede">An effects memory is a snapshot of a whole look on a Mix Effects bank: sources, keys and their settings, box positions, wipe choices, and rates. Attributes decide which parts of that snapshot a recall brings back. Professionals build the show in memories before it airs.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · Memory Functions · pp. 71–75</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Global Memory module · p. 15</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Memory module · p. 16</span></div>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Chapter briefing · 0:20</span></div><audio controls preload="none" src="brief_ch04.mp3"></audio></div>
+    <div class="vidwrap"><video controls preload="metadata" playsinline poster="v04_memory.jpg" src="v04_memory.mp4"></video></div>
+    <div class="vidcap"><span>Narrated demonstration · 1:47</span><span>Simplified panel illustration</span></div>
+  </div>
+
+  <figure class="fig">
+    <div class="flow">
+      <div class="node"><b>BANK</b><span>Two digits · 00–99</span><small>Hold <kbd class="key">BANK</kbd> and key in the bank.</small></div>
+      <div class="node"><b>REGISTER</b><span>One digit · 0–9</span><small>Press the register number.</small></div>
+      <div class="node"><b>MEMORY NUMBER</b><span class="mono" style="font-family:var(--f-mono);font-size:19px">Memory012</span><small>Bank 01, register 2. That gives 1,000 memory numbers for each Mix Effects bank.</small></div>
+    </div>
+    <figcaption>How memories are numbered. Ross's own example: <span class="mono">Memory039</span> is register 9 in bank 03.</figcaption>
+  </figure>
+
+  <h2><span class="sub">p. 73 · set these before you store</span>Attributes: choose what a recall brings back</h2>
+  <section class="proc" id="attributes">
+    <h3>Set the general memory attributes</h3>
+    <ol class="steps">
+      <li>Press <kbd class="key">ATTRIB</kbd> on the row's Effects Memory module, or press <span class="path"><b>HOME</b><b>Attributes</b><b>ME Attributes</b></span>.</li>
+      <li>Press <span class="path"><b>General</b></span> and turn <span class="knob">ME</span> to the bank.</li>
+      <li>Choose the video that comes back:
+        <ul>
+          <li><span class="path"><b>BKGD/PGM</b></span>: the source on the Program bus.</li>
+          <li><span class="path"><b>PST</b></span>: the source on the Preset bus.</li>
+          <li><span class="path"><b>Key X Xpt</b></span>: each keyer's source. <span class="path"><b>Key X State</b></span>: whether the key is on air. <span class="path"><b>Key X Type</b></span>: its key type. Key settings such as clip and gain always come back.</li>
+          <li><span class="path"><b>Chroma Key</b></span>: the chroma settings. Turn it off in a virtual set so you can change shots without disturbing the key.</li>
+        </ul>
+      </li>
+      <li>Choose how the Transition module comes back:
+        <ul>
+          <li><span class="path"><b>Next Trans Buttons</b></span>: which elements are lit for the next transition.</li>
+          <li><span class="path"><b>Transition Area</b></span>: the transition type and its settings.</li>
+          <li><span class="path"><b>Run Auto Trans</b></span>: runs an auto transition right after the recall. Set the transition up before you store.</li>
+        </ul>
+      </li>
+    </ol>
+    <p>Other attribute pages, under the same menu:</p>
+    <ul class="bul">
+      <li><span class="path"><b>Aux Bus</b></span>: which aux buses the memory also recalls.</li>
+      <li><span class="path"><b>Custom Control</b></span>: turn <span class="knob">Bank</span> and <span class="knob">Macro</span> to a custom control, then press <span class="path"><b>Auto Run Custom Control</b></span>. That macro runs every time the memory is recalled.</li>
+      <li><span class="path"><b>Video MediaStore</b></span> and <span class="path"><b>Audio MediaStore</b></span>: which Media-Store channels the memory reloads. These only take effect when the Recall GS MediaStore or Recall ME-Store personality options are set to Attributes.</li>
+    </ul>
+    <p class="note"><b class="t">Override</b>Hold <kbd class="key">ATTRIB</kbd> while you recall a memory to use the default attributes instead of the ones stored with it, for that one recall.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 73–74 · ME Memory Attributes</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Memories/To-Attributes-General.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · General Attributes</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 71–72</span>Store and recall</h2>
+  <section class="proc" id="store-memory">
+    <h3>Store a memory on the Global Memory module</h3>
+    <ol class="steps">
+      <li>Build the look and set its attributes.</li>
+      <li>On the <b>Store</b> side, press the <kbd class="key">ME X</kbd> button for the bank, or <kbd class="key">ALL</kbd>. To add banks, hold the first <kbd class="key">ME X</kbd> and press the others. Hold <kbd class="key">+4</kbd> for banks 5 to 8.</li>
+      <li>Hold <kbd class="key">BANK</kbd> and key in the two-digit bank number. A lit number button means that register already holds a memory; a gray one is empty.</li>
+      <li>Press the register number, <kbd class="key">0</kbd> to <kbd class="key">9</kbd>.</li>
+      <li>Press <kbd class="key">ENTER</kbd>. You can name the memory now or later.</li>
+    </ol>
+    <p class="note"><b class="t">Shortcut</b>Press <kbd class="key">STORE</kbd> on a row's Effects Memory module to store only to the bank that row is assigned to.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 71 · To Store a Memory</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Memories/To-Store-Memories_acu.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="recall-memory">
+    <h3>Recall a memory</h3>
+    <ol class="steps">
+      <li>On the <b>Recall</b> side, press the <kbd class="key">ME X</kbd> button for the bank, or <kbd class="key">ALL</kbd>.</li>
+      <li>Hold <kbd class="key">BANK</kbd> and key in the bank number. Skip this if that bank is already selected.</li>
+      <li>Press the register number. The recall happens on that press; no <kbd class="key">ENTER</kbd> needed.</li>
+    </ol>
+    <p class="note warn"><b class="t">Live</b>Recalling onto the bank that's on air changes the program output instantly. Rehearse recalls off air first.</p>
+    <ul class="bul">
+      <li><kbd class="key">UNDO</kbd> takes back the last recall. It goes out after about ten more button presses.</li>
+      <li><kbd class="key">KEYS ONLY</kbd> recalls only the keyer selections and leaves the Program and Preset buses alone.</li>
+      <li><b>Bus Hold:</b> hold a source button while you recall, and that bus keeps the source you're holding. The stored memory doesn't change.</li>
+    </ul>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 72 · To Recall a Memory</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Memories/To-Recal-Memories_acu.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="safe-recall">
+    <h3>Pro pattern: recall to Preview, then take it</h3>
+    <p>A recall that changes the air instantly is risky. Build looks so a recall only sets up the <i>next</i> transition, and you take it to air with a normal transition.</p>
+    <ol class="steps">
+      <li>Build the look so the background you want is on the Preset bus and the keys you want are lit in the Next Transition area.</li>
+      <li>In <span class="path"><b>General</b></span> attributes, turn <span class="path"><b>BKGD/PGM</b></span> and each <span class="path"><b>Key X State</b></span> off. Turn <span class="path"><b>PST</b></span>, the <span class="path"><b>Key X Xpt</b></span> sources, and <span class="path"><b>Next Trans Buttons</b></span> on.</li>
+      <li>Store the memory.</li>
+      <li>On the show: recall it, check Preview, then press <kbd class="key">AUTO TRANS</kbd>.</li>
+    </ol>
+    <p class="note warn"><b class="t">Limit</b>Keyer settings always come back with a recall, and <span class="path"><b>Key X Xpt</b></span> changes a keyer's source at once. If one of those keys is already on air, the change shows on air. The pattern is clean when the look's keys are off air at the moment you recall.</p>
+    <p class="note pro"><b class="t">Verify</b>This pattern is built from the documented attributes. Rehearse it twice off air and confirm the program output does not change on the recall before you trust it on a show.</p>
+  </section>
+
+  <h2><span class="sub">p. 75</span>Glide between looks</h2>
+  <section class="proc" id="effects-dissolve">
+    <h3>Effects dissolve</h3>
+    <ol class="steps">
+      <li>Store both memories. Each one carries its own effects rate.</li>
+      <li>Recall the first memory.</li>
+      <li>Turn on <kbd class="key">EFF DISS</kbd>.</li>
+      <li>Recall the second memory. Positions, sizes, and key levels glide to it at the effects rate stored in the second memory.</li>
+    </ol>
+    <p>To set an effects rate: press <kbd class="key">EFF RATE</kbd>, type the frames, press <kbd class="key">ENTER</kbd>. Sources, key priority, and pattern choices don't glide; they switch at the start and then the move happens.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 75 · Effects Dissolve</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Memories/To-EffDiss.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 72–75</span>Keep your memories safe</h2>
+  <section class="proc" id="name-lock">
+    <h3>Name and lock a memory</h3>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>Attributes</b><b>Memories Setup</b></span>.</li>
+      <li>Turn <span class="knob">ME</span> to the bank and <span class="knob">Memory</span> to the register.</li>
+      <li>To name it: press <span class="path"><b>Rename</b></span>, then <span class="path"><b>Name</b></span>, type the name, and press <span class="path"><b>Accept New Name</b></span>.</li>
+      <li>To lock it: press <span class="path"><b>Lock Memory</b></span> so it reads Yes. <span class="path"><b>Lock Bank</b></span> locks the whole bank.</li>
+    </ol>
+    <p class="note warn"><b class="t">Note</b>A full recall from a saved setup (Chapter 08) can still overwrite locked memories.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 72–73 · Naming and Locking Memories</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Memories/To-Lock-Memories.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · Lock</a></div>
+  </section>
+  <section class="proc" id="copy-memory">
+    <h3>Copy, move, or swap a memory</h3>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>Attributes</b><b>Memories Setup</b><b>More</b><b>Copy/Move Memory</b></span>.</li>
+      <li>Press <span class="path"><b>Source</b></span> and pick it with <span class="knob">ME</span> and <span class="knob">Memory</span>.</li>
+      <li>Press <span class="path"><b>Destination</b></span> and pick where it goes.</li>
+      <li>Press <span class="path"><b>Copy</b></span>, <span class="path"><b>Move</b></span> (empties the source), or <span class="path"><b>Swap</b></span>.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 75 · Copying and Swapping Memories</span></div>
+  </section>
+  <section class="proc" id="delete-memory">
+    <h3>Delete a memory</h3>
+    <ol class="steps">
+      <li>Off air, reset the bank (both <kbd class="key">ME X</kbd> buttons, or <kbd class="key">RECALL</kbd> + <kbd class="key">STORE</kbd> on its row).</li>
+      <li>Within 10 seconds, store to the register you want to clear. Its number button turns gray.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 72 · To Delete a Memory</span></div>
+  </section>
+
+  <div class="drill" data-drill="ch04">
+    <h3><span class="lamp"></span>At the panel</h3>
+    <ul class="checks">
+      <li><label><input type="checkbox"><span>Build an opening look: Camera 1, a lower third, and a camera box. Store it to your team's bank, register 1.</span></label></li>
+      <li><label><input type="checkbox"><span>Build a second look with the box on the other side. Store it to register 2.</span></label></li>
+      <li><label><input type="checkbox"><span>Reset off air, then recall register 1. Use <kbd class="key">UNDO</kbd> once.</span></label></li>
+      <li><label><input type="checkbox"><span>Glide from register 1 to register 2 with <kbd class="key">EFF DISS</kbd>.</span></label></li>
+      <li><label><input type="checkbox"><span>Name and lock both memories.</span></label></li>
+    </ul>
+    <button class="reset" type="button">Clear checks</button>
+  </div>
+  <nav class="pager"><a href="#keyers"><small>Back · 03</small><span>Keyers</span></a><a class="next" href="#macros"><small>Next · 05</small><span>Custom controls</span></a></nav>
+</article>
+<article class="view" id="view-macros" data-route="macros" hidden>
+  <span class="eyebrow"><span class="num">05</span>Custom controls</span>
+  <h1>One press does the work of twenty</h1>
+  <p class="lede">A custom control is Ross's name for a macro: a recording of button presses and special events that plays back with one press. The switcher holds up to 2,304 of them, organized in banks.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · Custom Controls · pp. 87–111</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Custom Control Bus · p. 14</span></div>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Chapter briefing · 0:19</span></div><audio controls preload="none" src="brief_ch05.mp3"></audio></div>
+    <div class="vidwrap"><video controls preload="metadata" playsinline poster="v05_customcontrols.jpg" src="v05_customcontrols.mp4"></video></div>
+    <div class="vidcap"><span>Narrated demonstration · 1:36</span><span>Simplified panel illustration</span></div>
+  </div>
+
+  <h2><span class="sub">pp. 87–90</span>Rules before you record</h2>
+  <ul class="bul mt">
+    <li><b>Fader moves are not recorded.</b> Use <kbd class="key">CUT</kbd> or <kbd class="key">AUTO TRANS</kbd> inside a macro.</li>
+    <li><b>Events run as fast as the switcher can go.</b> It does not wait for a transition or a memory recall to finish. Insert a pause after each one.</li>
+    <li><b>Buttons record the press, not the state.</b> A button that toggles something will toggle it again on playback. When you need a key definitely on or definitely off, use the <span class="path"><b>Keys Cut</b></span> or <span class="path"><b>Keys Trans</b></span> special events.</li>
+    <li><b>Turn on <span class="path"><b>Offline Mode</b></span></b> so the switcher does not carry out each event while you record.</li>
+    <li><b>A reset (both <kbd class="key">ALL</kbd> buttons) belongs last</b> in a macro, or store the reset state in a memory and recall that memory instead.</li>
+    <li><b>Sources are recorded by name, not by button position,</b> so a macro still works if the bus map changes, as long as the source exists.</li>
+  </ul>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 87 · Working With Custom Controls</span><a class="man web" href="https://help.rossvideo.com/acuity/Topics/Operation/CustomControls/Working.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+
+  <h2><span class="sub">p. 90</span>Record</h2>
+  <section class="proc" id="record-cc">
+    <h3>Record a custom control from the menu</h3>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>Custom Controls</b></span>.</li>
+      <li>Turn <span class="knob">Bank</span> to the bank and <span class="knob">Button</span> to the custom control button you want to record to.</li>
+      <li>Optional: toggle <span class="path"><b>Offline Mode</b></span> on.</li>
+      <li>Press <span class="path"><b>Start Recording</b></span>. The custom control button flashes and the menu shows CC RECORDING.</li>
+      <li>Press the panel buttons in order. For special events, press <span class="path"><b>Insert Event</b></span> (below).</li>
+      <li>Press <span class="path"><b>Finish Recording</b></span>. The button stops flashing.</li>
+    </ol>
+    <p class="note"><b class="t">Grayed out?</b>Another panel has the custom control menu open. <span class="path"><b>HOME</b><b>Setup</b><b>More</b><b>Exclusive Panel Menu Status</b><b>Force CC Menu Change</b></span> takes it back and cancels that panel's recording.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 90 · To Record a Custom Control</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/CustomControls/To-Record-CC.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="record-shortcut">
+    <h3>Record without the menu</h3>
+    <ol class="steps">
+      <li>Hold the <kbd class="key">RECORD</kbd> shortcut button and press the custom control button to record to. Both flash red.</li>
+      <li>Press the panel buttons in order.</li>
+      <li>Press the custom control button again to save, or press <kbd class="key">RECORD</kbd> to cancel.</li>
+    </ol>
+    <p>Shortcut buttons such as Record, Pause, Bank, Delete, Run, and Stop are assigned in <span class="path"><b>HOME</b><b>Setup</b><b>Installation</b><b>More</b><b>Custom Controls</b></span>. On Double-Down panels they sit at the right end of the custom control row.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 107–108 · Custom Control Shortcuts</span><a class="man web" href="https://help.rossvideo.com/acuity/Topics/Operation/CustomControls/Shortcuts.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 91–102 · Insert Event</span>Pauses, holds, and special events</h2>
+  <section class="proc" id="pause-hold">
+    <h3>Add a pause or a hold</h3>
+    <ul class="bul">
+      <li><b>Pause</b> (a timer): while recording, press <span class="path"><b>Insert Event</b><b>Special</b></span> and choose <span class="path"><b>Pause CC</b></span>. Or hold the <kbd class="key">PAUSE</kbd> shortcut button and pick a length from the custom control row.</li>
+      <li><b>Hold</b> (waits for you): choose <span class="path"><b>Hold CC</b></span>. The macro stops there and its button shows <b>Held</b> until you press the button again, or a trigger arrives from a general purpose interface (a contact closure from other equipment).</li>
+      <li><b>Variable pause</b> (one setting changes many macros): choose <span class="path"><b>V Pause CC</b></span> and type an equation of variables. Set the variables at <span class="path"><b>HOME</b><b>Custom Controls</b><b>More</b><b>Set Variables</b></span> with <span class="knob">Frames</span> and <span class="knob">Seconds</span>.</li>
+    </ul>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 109 · Variable Pause</span><a class="man web" href="https://help.rossvideo.com/acuity/Topics/Operation/CustomControls/Special-CC.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · Custom Control events</a></div>
+  </section>
+  <div class="tbl"><table>
+    <thead><tr><th>Special event</th><th>Path while recording</th><th>Useful for</th><th>Manual</th></tr></thead>
+    <tbody>
+      <tr><td>Keys Cut / Keys Trans</td><td><span class="path"><b>Insert Event</b><b>Special</b></span></td><td>Put a key definitely on or definitely off. Also Trans Type, Keys Include, Preset Bkgd, Roll Clip.</td><td class="pg">p. 102</td></tr>
+      <tr><td>Memory Recall</td><td><span class="path"><b>Insert Event</b><b>Special</b></span></td><td>Recall a memory on chosen banks. Add a pause after it.</td><td class="pg">p. 97</td></tr>
+      <tr><td>Set Xpt</td><td><span class="path"><b>Insert Event</b><b>Special</b></span></td><td>Select a source on a bank, aux bus, or AuxKey.</td><td class="pg">p. 101</td></tr>
+      <tr><td>Play CC · Stop Specific CC</td><td><span class="path"><b>Insert Event</b><b>Special</b></span></td><td>Start or stop another custom control.</td><td class="pg">p. 94</td></tr>
+      <tr><td>Run Sequence</td><td><span class="path"><b>Insert Event</b><b>Special</b></span></td><td>Run a digital video effects sequence (pre-loaded).</td><td class="pg">p. 101</td></tr>
+      <tr><td>VTR events</td><td><span class="path"><b>Insert Event</b><b>VTR</b></span></td><td>Cue, play, pause, recue, or stop a clip on a video server.</td><td class="pg">p. 102</td></tr>
+      <tr><td>DVE events</td><td><span class="path"><b>Insert Event</b><b>DVE</b></span></td><td>Recall, play, or rewind a digital video effects move.</td><td class="pg">p. 96</td></tr>
+      <tr><td>CG events</td><td><span class="path"><b>Insert Event</b><b>CG</b></span></td><td>Take, load, or clear pages on a character generator.</td><td class="pg">p. 95</td></tr>
+      <tr><td>RossTalk</td><td><span class="path"><b>Insert Event</b><b>More</b><b>RossTalk</b></span></td><td>Send commands to Ross graphics systems, such as Take or Next.</td><td class="pg">p. 98</td></tr>
+      <tr><td>GPO / Tally</td><td><span class="path"><b>Insert Event</b><b>More</b><b>More</b><b>GPO/Tally</b></span></td><td>Fire a contact closure or tally.</td><td class="pg">p. 96</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="sub">p. 103 · p. 15</span>Run and stop</h2>
+  <ul class="bul mt">
+    <li>Press the custom control button on the custom control bus, an aux panel, or the soft shot box (<span class="path"><b>HOME</b><b>More</b><b>Effects</b><b>More</b><b>CC Shot Box</b></span>).</li>
+    <li>From the Global Memory module: press <kbd class="key">RECALL CLIP/CC</kbd>, key in the two-digit bank and press <kbd class="key">ENTER</kbd>, key in the two-digit custom control and press <kbd class="key">ENTER</kbd>, then press <kbd class="key">RUN CC</kbd>. It turns red while running. (The CC Global Recall personality option sets whether this button recalls clips or custom controls.)</li>
+    <li>Recall a memory set to auto-run it (Chapter 04), or press a panel button it's attached to (below).</li>
+    <li><b>Stop:</b> press its button again. Or hold the <kbd class="key">STOP</kbd> shortcut and press the custom control; double-press <kbd class="key">STOP</kbd> to stop all of them. <kbd class="key">STOP</kbd> cannot stop a macro that is at a hold.</li>
+  </ul>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 103 · Starting and Stopping</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/CustomControls/To-GlobalMemory_acu.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · Global Memory</a></div>
+
+  <h2><span class="sub">pp. 103–106</span>Fix, name, and organize</h2>
+  <section class="proc" id="edit-cc">
+    <h3>Edit one step</h3>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>Custom Controls</b></span> and select the macro with <span class="knob">Bank</span> and <span class="knob">Button</span>.</li>
+      <li>Press <span class="path"><b>Edit</b></span>. Turn <span class="knob">Event</span> to the step.</li>
+      <li>Use <span class="path"><b>Modify Event</b></span>, <span class="path"><b>Insert Event</b></span> (adds before the selected step), or <span class="path"><b>Delete Event</b></span>. <span class="path"><b>Event Up</b></span> and <span class="path"><b>Event Down</b></span> reorder. Only some events can be modified; if one can't, delete it and insert a new one in its place.</li>
+      <li>Test with <span class="path"><b>Run Single Event</b></span> or <span class="path"><b>Run From Here</b></span>.</li>
+    </ol>
+    <p class="note"><b class="t">Tip</b><span class="path"><b>More</b><b>Visualize</b></span> draws the macro's logic so you can check a long one at a glance.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 104–105 · Editing Custom Controls</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/CustomControls/To-Edit-CC.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="name-cc">
+    <h3>Name, copy, and delete</h3>
+    <ul class="bul">
+      <li><b>Name:</b> <span class="path"><b>HOME</b><b>Custom Controls</b></span>, select it, then <span class="path"><b>Modify Name</b><b>Name</b></span>. Type it, press <span class="path"><b>Acuity Mnemonic</b></span>, choose <span class="path"><b>Font</b></span> and <span class="path"><b>Color</b></span>, and press <span class="path"><b>Accept New Name</b></span>.</li>
+      <li><b>Copy, move, or swap:</b> <span class="path"><b>HOME</b><b>Custom Controls</b><b>Copy/Move Macros</b></span>, set <span class="path"><b>Source</b></span> and <span class="path"><b>Destination</b></span>, then press <span class="path"><b>Copy</b></span>, <span class="path"><b>Move</b></span>, or <span class="path"><b>Swap</b></span>.</li>
+      <li><b>Delete:</b> select it and press <span class="path"><b>Delete Macro</b><b>Confirm</b></span>. Or hold the <kbd class="key">DELETE</kbd> shortcut, press the macro's button, and press it again to confirm.</li>
+    </ul>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 103, 106</span></div>
+  </section>
+
+  <h2><span class="sub">pp. 105–107</span>Make a macro fire by itself</h2>
+  <section class="proc" id="attach-cc">
+    <h3>Attach a macro to any panel button</h3>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>Custom Controls</b><b>More</b><b>Attach Macros</b></span>.</li>
+      <li>Press the panel button you want.</li>
+      <li>Select the macro with <span class="knob">Bank</span> and <span class="knob">Macro</span>.</li>
+      <li>Turn <span class="knob">Attach Type</span>: <span class="path"><b>Post-Attach</b></span> runs the button's normal action, then the macro. <span class="path"><b>Pre-Attach</b></span> runs the macro first. <span class="path"><b>Replace</b></span> runs only the macro.</li>
+      <li>Press <span class="path"><b>Attach</b></span>.</li>
+    </ol>
+    <p class="note"><b class="t">Must be on</b>The CC/Macro Attachments personality option must be on. The <kbd class="key">ATTACH</kbd> shortcut button toggles it.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 106 · Attaching Custom Controls to Panel Buttons</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/CustomControls/To-Attach-CC.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="onair-cc">
+    <h3>Run a macro when a source goes on air</h3>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>Setup</b><b>Installation</b><b>Source Configuration</b><b>More</b><b>More</b><b>Attach CCs</b><b>On Air CC</b></span>.</li>
+      <li>Turn <span class="knob">Source</span> to the input and <span class="knob">Cust Ctrl</span> to the macro.</li>
+      <li>Choose <span class="path"><b>Always Active</b></span>, or <span class="path"><b>Follow Roll Clip</b></span> to run only when Roll Clip is lit.</li>
+      <li>Set <span class="knob">Preroll</span>: the switcher starts the macro, waits that long, then transitions.</li>
+    </ol>
+    <p><span class="path"><b>Off Air CC</b></span> works the same way with a postroll, and runs when the source leaves the air.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 105 · On-Air/Off-Air Run Custom Control</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/CustomControls/To-OnAirCC.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="banks">
+    <h3>Banks and logic</h3>
+    <ul class="bul">
+      <li><b>Banks:</b> set up at <span class="path"><b>HOME</b><b>Setup</b><b>Installation</b><b>More</b><b>Custom Controls</b><b>Setup Banks</b></span>. Name them at <span class="path"><b>Modify Bank Name</b></span>. Hold the <kbd class="key">BANK</kbd> shortcut and press a button to switch banks.</li>
+      <li><b>Logic:</b> while recording, <span class="path"><b>Insert Event</b><b>More</b><b>More</b><b>Logic</b></span> adds If, Else If, Else, and End If. A condition can test a source, a key's state, or a custom control variable. Plan the logic on paper first and check it with Visualize.</li>
+    </ul>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 88 · Custom Control Banks</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> p. 110 · Logical Expressions</span></div>
+  </section>
+
+  <div class="drill" data-drill="ch05">
+    <h3><span class="lamp"></span>At the panel</h3>
+    <ul class="checks">
+      <li><label><input type="checkbox"><span>Record "OPEN": Camera 2 on Preset, <kbd class="key">AUTO TRANS</kbd>, a pause, then Key 1 <kbd class="key">AUTO TRANS</kbd> for the lower third.</span></label></li>
+      <li><label><input type="checkbox"><span>Name it and run it twice. Does it behave the same both times? If not, which button toggled?</span></label></li>
+      <li><label><input type="checkbox"><span>Edit the pause length and test with <span class="path"><b>Run From Here</b></span>.</span></label></li>
+      <li><label><input type="checkbox"><span>Record "CLOSE" with a hold before the last step. Run it and release the hold yourself.</span></label></li>
+      <li><label><input type="checkbox"><span>Attach "OPEN" to a panel button with Post-Attach.</span></label></li>
+    </ul>
+    <button class="reset" type="button">Clear checks</button>
+  </div>
+  <nav class="pager"><a href="#memory"><small>Back · 04</small><span>Effects memory</span></a><a class="next" href="#motion"><small>Next · 06</small><span>Motion graphics</span></a></nav>
+</article>
+<article class="view" id="view-motion" data-route="motion" hidden>
+  <span class="eyebrow"><span class="num">06</span>Motion graphics</span>
+  <h1>From your graphics software to an animated key</h1>
+  <p class="lede">The Media-Store is the Acuity's built-in player for stills and animations. You build an animation in your graphics software, bring it in as a numbered image sequence, set it to play when it goes to air, and key it like any graphic.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · Media-Store · pp. 79–86</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> DVE Sequences · pp. 122–124</span></div>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Chapter briefing · 0:22</span></div><audio controls preload="none" src="brief_ch06.mp3"></audio></div>
+    <div class="vidwrap"><video controls preload="metadata" playsinline poster="v06_motion.jpg" src="v06_motion.mp4"></video></div>
+    <div class="vidcap"><span>Narrated demonstration · 2:02</span><span>Simplified panel illustration</span></div>
+  </div>
+
+  <figure class="fig">
+    <div class="flow">
+      <div class="node"><b>1 · BUILD</b><span>Graphics software</span><small>Animate with transparency. Render a numbered sequence.</small></div>
+      <div class="node"><b>2 · CARRY</b><span>Flash drive</span><small>FAT32, files at the top level.</small></div>
+      <div class="node"><b>3 · COPY</b><span>Copy From USB</span><small>Files land in the switcher's USB folder.</small></div>
+      <div class="node"><b>4 · LOAD</b><span>Media-Store channel</span><small>Fill in one channel, its alpha in the paired channel.</small></div>
+      <div class="node"><b>5 · KEY</b><span>Auto Select key</span><small>Auto Play starts it the moment it goes to air.</small></div>
+    </div>
+    <figcaption>The motion graphics pipeline. Each step below names the menu and the manual page.</figcaption>
+  </figure>
+
+  <h2><span class="sub">p. 80</span>Step 1 · Build the files right</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Rule</th><th>What the Media-Store expects</th></tr></thead>
+    <tbody>
+      <tr><td>File type</td><td>Targa (<span class="mono">.tga</span>), <span class="mono">.png</span>, or <span class="mono">.jpg</span>. Use 32-bit <span class="mono">.tga</span> or <span class="mono">.png</span> so each frame carries an alpha. A 24-bit file has no alpha.</td></tr>
+      <tr><td>Frame size</td><td>No larger than the screen: 1920 × 1080 in 1080 formats, 1280 × 720 in 720 formats. The size field turns red on the load menu if a file is too big.</td></tr>
+      <tr><td>Animation</td><td>A numbered image sequence, one file per frame.</td></tr>
+      <tr><td>Numbering</td><td>Name, underscore, then a number that starts at <b>0</b>. Use 2 to 5 digits with leading zeros, the same count on every frame: <span class="mono">Replay_0000.png</span> through <span class="mono">Replay_0029.png</span> is a 30-frame animation.</td></tr>
+      <tr><td>Name length</td><td>Up to 32 characters, but 12 or fewer display properly. Use letters, numbers, spaces, dashes, underscores, and periods.</td></tr>
+      <tr><td>Audio</td><td>A two-channel <span class="mono">.wav</span> at 48 kHz with the same name as the video. Only the Global-Store plays audio.</td></tr>
+    </tbody>
+  </table></div>
+  <figure class="fig">
+    <div class="strip">
+      <figure class="hot"><img src="still_stinger_00.jpg" alt="Frame 0, fully transparent" loading="lazy"><figcaption>Replay_0000</figcaption></figure>
+      <figure><img src="still_stinger_04.jpg" alt="Frame 4" loading="lazy"><figcaption>_0004</figcaption></figure>
+      <figure><img src="still_stinger_08.jpg" alt="Frame 8" loading="lazy"><figcaption>_0008</figcaption></figure>
+      <figure><img src="still_stinger_11.jpg" alt="Frame 11, full cover" loading="lazy"><figcaption>_0011</figcaption></figure>
+      <figure><img src="still_stinger_14.jpg" alt="Frame 14, full cover with title" loading="lazy"><figcaption>_0014</figcaption></figure>
+      <figure><img src="still_stinger_18.jpg" alt="Frame 18" loading="lazy"><figcaption>_0018</figcaption></figure>
+      <figure><img src="still_stinger_22.jpg" alt="Frame 22" loading="lazy"><figcaption>_0022</figcaption></figure>
+      <figure><img src="still_stinger_29.jpg" alt="Frame 29, fully transparent" loading="lazy"><figcaption>_0029</figcaption></figure>
+    </div>
+    <figcaption>The 30-frame stinger used in the demonstrations. Checkerboard means transparent. It starts and ends fully transparent, so keying it on and off is invisible.</figcaption>
+  </figure>
+  <p class="note mt"><b class="t">Shaped or unshaped</b>Graphics programs export alpha as "straight" or "premultiplied." On the switcher, an unshaped key multiplies the fill by the alpha, and a shaped key expects the fill already multiplied. As a rule of thumb, straight matches unshaped and premultiplied matches shaped. If edges show a dark or bright fringe, switch the setting in the file's Base properties.</p>
+
+  <h2><span class="sub">p. 83</span>Steps 2–3 · Carry and copy</h2>
+  <section class="proc" id="usb-transfer">
+    <h3>Copy files from a flash drive</h3>
+    <ol class="steps">
+      <li>Copy the files to the top level of a blank flash drive formatted FAT32. NTFS will not work, and the files must be the only files on the drive.</li>
+      <li>Plug the drive into the port on top of the control panel.</li>
+      <li>Press <span class="path"><b>HOME</b><b>More</b><b>Effects</b><b>MediaStore</b><b>Select/Manage</b></span>.</li>
+      <li>Press <span class="path"><b>Copy From USB</b></span>. Valid files copy into the switcher's USB folder.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 83 · To Transfer Media Files From a USB</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/MediaStores/To-USB-Tx.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 81, 84</span>Step 4 · Load it and set it to play</h2>
+  <section class="proc" id="load-media">
+    <h3>Load a file into a Media-Store channel</h3>
+    <ol class="steps">
+      <li>Press the source button for the Media-Store channel, or <span class="path"><b>HOME</b><b>More</b><b>Effects</b><b>MediaStore</b></span>.</li>
+      <li>Turn <span class="knob">Location</span> and <span class="knob">Channel</span> to pick the channel, such as Global-Store channel 1.</li>
+      <li>Press <span class="path"><b>Select/Manage</b></span> and open the USB folder. <span class="path"><b>Parent Directory</b></span> goes up a level.</li>
+      <li>Double-tap the file. It appears in the preview window.</li>
+    </ol>
+    <ul class="bul">
+      <li>Know the media number? Key it in on the memory keypad and press <kbd class="key">ENTER</kbd>. Entering 0 clears the channel.</li>
+      <li><span class="path"><b>Assign as Default</b></span> loads this file into the channel every time the switcher starts.</li>
+      <li>Load large animations before the show. Loading takes time, and the size shown is the full, uncompressed size in memory.</li>
+    </ul>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 81 · To Load a Media File</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/MediaStores/To-Load-Media.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="animation-properties">
+    <h3>Set the animation to play on air</h3>
+    <ol class="steps">
+      <li>With the file loaded, press <span class="path"><b>On-Air Properties</b><b>Video</b></span>.</li>
+      <li>Turn <span class="path"><b>Auto Play</b></span> on. The animation starts the moment it goes to air.</li>
+      <li>Set <span class="path"><b>Looping</b></span>: on for a background that cycles, off for a one-time stinger.</li>
+      <li>Optional, Global-Store only: <span class="path"><b>Play Speed</b></span>, <span class="path"><b>Trim Animation</b></span> (start and end trim), and <span class="path"><b>Single Frame</b></span>. <span class="path"><b>Reverse Play</b></span> runs it backward.</li>
+      <li>Press <span class="path"><b>Set Properties as Default</b></span>.</li>
+    </ol>
+    <p>The <span class="path"><b>Base</b></span> page sets position, shaped or unshaped video, and whether the alpha loads with the file.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 84 · To Set Animation Properties</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/MediaStores/To-Animation-Props.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">p. 50</span>Step 5 · Key it</h2>
+  <section class="proc" id="key-animation">
+    <h3>Key a Media-Store animation</h3>
+    <ol class="steps">
+      <li>Make sure the fill channel is paired with an alpha channel in Auto Key Setup (Chapter 03), for example Global-Store 1 with Global-Store 2. When you load a file that has an alpha, the alpha lands in the paired channel.</li>
+      <li>Press <kbd class="key">SEL</kbd> for a keyer. Use the highest keyer if the graphic must cover everything.</li>
+      <li>Select the fill channel on the key bus.</li>
+      <li>Press <kbd class="key">AUTO SELECT</kbd>.</li>
+      <li>Take the key on with its <kbd class="key">CUT</kbd> button. Auto Play starts the animation.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 50 · To Set Up an Auto Select Key</span></div>
+  </section>
+
+  <h2><span class="sub">p. 83</span>Grab a frame from video</h2>
+  <section class="proc" id="capture">
+    <h3>Capture to a Media-Store</h3>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>More</b><b>Effects</b><b>MediaStore</b><b>Capture</b></span>.</li>
+      <li>Press <span class="path"><b>Change Directory</b></span>, choose the folder, and press <span class="path"><b>Select Directory</b></span>.</li>
+      <li>Press <span class="path"><b>Source</b></span> and turn <span class="knob">Vid Src</span> to Preview or an aux bus.</li>
+      <li>Choose <span class="path"><b>Video Capture</b></span>, <span class="path"><b>Alpha Capture</b></span>, or both. Set the length with <span class="knob">Video Frames</span>. One frame makes a still.</li>
+      <li>Press <span class="path"><b>More</b></span>, then <span class="path"><b>Capture To Disk</b></span> to capture, save, and load in one step.</li>
+    </ol>
+    <p class="note warn"><b class="t">Save first</b><span class="path"><b>Capture To RAM</b></span> is not saved until you press <span class="path"><b>Save Capture To Disk</b></span>. Capturing again or loading other media loses it.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 83 · To Capture to a Media-Store</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/MediaStores/To-Capture-Media.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 122–124</span>The switcher's own motion: digital video effects sequences</h2>
+  <p class="prose mt">A sequence is a set of keyframes for a flying key: a box that slides in, grows, and settles. Sequences live on digital video effects keys and can run on their own or as a transition.</p>
+  <section class="proc" id="dve-sequence">
+    <h3>Build, save, and run a sequence</h3>
+    <ol class="steps">
+      <li>On a flying key, press <span class="path"><b>DVE Menu</b><b>Sequence</b></span>.</li>
+      <li>Position the key where the move starts. Press <span class="path"><b>Duration</b></span> and turn <span class="knob">Frames</span>. Turn <span class="knob">Type</span> to Smooth, Spline, or Linear. Press <span class="path"><b>Insert</b></span>.</li>
+      <li>Move the key to the next position and press <span class="path"><b>Insert</b></span> again. Repeat for each keyframe.</li>
+      <li>To save: <span class="path"><b>Load/Save Sequence</b></span>, pick a register, <span class="path"><b>Save Sequence</b></span>, then <span class="path"><b>Rename Sequence</b></span>.</li>
+      <li>To run: press <kbd class="key">SEQ</kbd> on the Transition module, pick the sequence, then <kbd class="key">AUTO TRANS</kbd> or the fader.</li>
+    </ol>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 122–123 · DVE Sequences</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/DVE/Sequences/To-Create-Seq.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <p class="note pro mt"><b class="t">External graphics</b>A character generator such as Ross XPression sends a fill and an alpha into the switcher. Key it as an Auto Select key, and trigger its pages from custom controls with the <span class="path"><b>CG</b></span> or <span class="path"><b>RossTalk</b></span> events (Chapter 05).</p>
+
+  <div class="drill" data-drill="ch06">
+    <h3><span class="lamp"></span>At the panel</h3>
+    <ul class="checks">
+      <li><label><input type="checkbox"><span>Render a 1-second animation with transparency as a numbered .png sequence starting at 0000.</span></label></li>
+      <li><label><input type="checkbox"><span>Copy it onto your FAT32 flash drive, top level, nothing else on the drive.</span></label></li>
+      <li><label><input type="checkbox"><span>Copy From USB, then load it into a Global-Store channel.</span></label></li>
+      <li><label><input type="checkbox"><span>Turn Auto Play on and Looping off. Set properties as default.</span></label></li>
+      <li><label><input type="checkbox"><span>Key it as an Auto Select key on the top keyer and cut it on. Check the edges with <kbd class="key">SHOW ALPHA</kbd>.</span></label></li>
+    </ul>
+    <button class="reset" type="button">Clear checks</button>
+  </div>
+  <nav class="pager"><a href="#macros"><small>Back · 05</small><span>Custom controls</span></a><a class="next" href="#replay"><small>Next · 07</small><span>Replay</span></a></nav>
+</article>
+<article class="view" id="view-replay" data-route="replay" hidden>
+  <span class="eyebrow"><span class="num">07</span>Replay build &amp; assembly</span>
+  <h1>Stinger, hidden cut, replay tag</h1>
+  <p class="lede">A professional replay package: an animated stinger covers the screen, the switcher cuts to the replay server underneath it, a replay tag appears, and the stinger clears. The Acuity has no built-in stinger transition (the Transition module's <kbd class="key">MEDIA</kbd> button is documented as not used), so you assemble the package from parts you already know.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · Roll Clip · p. 49</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Custom Controls · pp. 87–111</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Media-Store · pp. 79–86</span></div>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Chapter briefing · 0:22</span></div><audio controls preload="none" src="brief_ch07.mp3"></audio></div>
+    <div class="vidwrap"><video controls preload="metadata" playsinline poster="v07_replay.jpg" src="v07_replay.mp4"></video></div>
+    <div class="vidcap"><span>Narrated demonstration · 2:08</span><span>Includes the hidden cut at one eighth speed</span></div>
+  </div>
+
+  <h2><span class="sub">The parts list</span>What you need before you record</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Part</th><th>Where it comes from</th><th>Chapter</th></tr></thead>
+    <tbody>
+      <tr><td><b>Replay server</b> on a source button, under switcher control</td><td>Set up once in installation (below). Clips can be assigned to clip registers.</td><td>07</td></tr>
+      <tr><td><b>Stinger animation</b> in Global-Store 1, Auto Play on, Looping off</td><td>Your graphics software, loaded into the Media-Store, with its alpha in the paired channel.</td><td>06</td></tr>
+      <tr><td><b>Replay tag</b> graphic on Key 3</td><td>A still with alpha, keyed as Auto Select.</td><td>03 · 06</td></tr>
+      <tr><td><b>Stinger key</b> on Key 4, the top keyer</td><td>Global-Store 1 on the key bus, Auto Select.</td><td>03</td></tr>
+      <tr><td><b>Roll Clip</b> in Arm mode</td><td>The Roll Clip Mode personality option.</td><td>07</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="sub">Measured from the demonstration stinger</span>Find the frame where the cut can hide</h2>
+  <figure class="fig">
+    <div class="mapwrap" style="margin-top:0"><svg class="chart" viewBox="0 0 900 300" role="img" aria-label="Stinger coverage by frame. Full cover from frame 11 to 16; the cut is placed at frame 12."><rect class="full" x="368.55172413793105" y="24" width="142.0689655172414" height="222"/><line class="grid" x1="56" x2="880" y1="246" y2="246"/><text x="48" y="250" text-anchor="end">0%</text><line class="grid" x1="56" x2="880" y1="190.5" y2="190.5"/><text x="48" y="194.5" text-anchor="end">25%</text><line class="grid" x1="56" x2="880" y1="135.0" y2="135.0"/><text x="48" y="139.0" text-anchor="end">50%</text><line class="grid" x1="56" x2="880" y1="79.5" y2="79.5"/><text x="48" y="83.5" text-anchor="end">75%</text><line class="grid" x1="56" x2="880" y1="24.0" y2="24.0"/><text x="48" y="28.0" text-anchor="end">100%</text><polygon class="area" points="56.0,246.0 56.0,246.0 84.4,240.5 112.8,223.5 141.2,198.4 169.7,172.9 198.1,147.6 226.5,122.2 254.9,96.8 283.3,71.3 311.7,46.3 340.1,29.4 368.6,24.0 397.0,24.0 425.4,24.0 453.8,24.0 482.2,24.0 510.6,24.2 539.0,32.1 567.4,51.5 595.9,76.9 624.3,102.2 652.7,127.7 681.1,153.0 709.5,178.5 737.9,203.9 766.3,228.2 794.8,242.6 823.2,246.0 851.6,246.0 880.0,246.0 880.0,246.0"/><text x="56.0" y="264" text-anchor="middle">0</text><text x="112.8" y="264" text-anchor="middle">2</text><text x="169.7" y="264" text-anchor="middle">4</text><text x="226.5" y="264" text-anchor="middle">6</text><text x="283.3" y="264" text-anchor="middle">8</text><text x="340.1" y="264" text-anchor="middle">10</text><text x="397.0" y="264" text-anchor="middle">12</text><text x="453.8" y="264" text-anchor="middle">14</text><text x="510.6" y="264" text-anchor="middle">16</text><text x="567.4" y="264" text-anchor="middle">18</text><text x="624.3" y="264" text-anchor="middle">20</text><text x="681.1" y="264" text-anchor="middle">22</text><text x="737.9" y="264" text-anchor="middle">24</text><text x="794.8" y="264" text-anchor="middle">26</text><text x="851.6" y="264" text-anchor="middle">28</text><text class="lbl" x="468.0" y="292" text-anchor="middle">FRAME AFTER KEY 4 CUT</text><line class="cut" x1="396.9655172413793" x2="396.9655172413793" y1="18" y2="246"/><text class="cutt" x="404.9655172413793" y="36">CUT · FRAME 12</text><text class="lbl" x="372.55172413793105" y="236" style="fill:var(--pst)">FULL COVER</text><circle class="dot" cx="880.0" cy="246" r="4"/><text x="874.0" y="236" text-anchor="end">clear at 27 · key off at 30</text></svg></div>
+    <figcaption>Share of the screen fully covered by the stinger, frame by frame. In this 30-frame animation, frames 11 to 16 cover every pixel, so the cut goes at frame 12. Measure your own stinger the same way: step through it and note the frames where nothing of the picture behind shows.</figcaption>
+  </figure>
+  <div class="strip" style="margin-top:12px">
+    <figure><img src="still_stinger_04.jpg" alt="Frame 4: bars entering" loading="lazy"><figcaption>frame 4</figcaption></figure>
+    <figure><img src="still_stinger_08.jpg" alt="Frame 8: most of the screen covered" loading="lazy"><figcaption>frame 8</figcaption></figure>
+    <figure class="hot"><img src="still_stinger_11.jpg" alt="Frame 11: full cover" loading="lazy"><figcaption>frame 11 · full</figcaption></figure>
+    <figure class="hot"><img src="still_stinger_14.jpg" alt="Frame 14: full cover with title" loading="lazy"><figcaption>frame 14 · full</figcaption></figure>
+    <figure><img src="still_stinger_18.jpg" alt="Frame 18: clearing" loading="lazy"><figcaption>frame 18</figcaption></figure>
+    <figure><img src="still_stinger_22.jpg" alt="Frame 22: clearing" loading="lazy"><figcaption>frame 22</figcaption></figure>
+    <figure><img src="still_stinger_29.jpg" alt="Frame 29: transparent" loading="lazy"><figcaption>frame 29 · clear</figcaption></figure>
+    <figure><img src="still_server.jpg" alt="The replay server picture after the stinger clears" loading="lazy"><figcaption>result</figcaption></figure>
+  </div>
+
+  <h2><span class="sub">Done once · Setup Manual and online help</span>Put the replay server under switcher control</h2>
+  <p class="prose mt">This is installation work, usually done by your instructor or engineer. Students should know it exists, because Roll Clip and the clip events depend on it.</p>
+  <section class="proc" id="server-setup">
+    <h3>Connect and assign the server</h3>
+    <ol class="steps">
+      <li><b>Communications:</b> <span class="path"><b>HOME</b><b>Setup</b><b>Installation</b><b>Com Setup</b></span>. Pick the port, set <span class="knob">Device</span> to <span class="path"><b>VTR (CLIP)</b></span>, press <span class="path"><b>Select Device</b></span> and choose the server's protocol (for example <span class="path"><b>VDCP</b></span>). Set <span class="knob">Device Preroll</span> to 0 for the replay package, the connection type (<span class="path"><b>RS-422</b></span> or <span class="path"><b>Network TCP</b></span>), and the target machine. Press <span class="path"><b>HOME</b><b>Confirm</b></span>.</li>
+      <li><b>Input:</b> <span class="path"><b>HOME</b><b>Setup</b><b>Installation</b><b>Source Configuration</b><b>Input Type</b></span>. Turn <span class="knob">Input</span> to the server's input and set its type to <span class="path"><b>VTR</b></span>. Under <span class="path"><b>More</b><b>VTR/VDCP/AMP Xpts</b></span>, pick the controller, and set the channel in <span class="path"><b>Video Server Setup</b></span>. Press <span class="path"><b>HOME</b><b>Confirm</b></span>.</li>
+      <li><b>Clips (optional):</b> <span class="path"><b>HOME</b><b>Clips</b><b>Assign Clips</b></span>. Turn <span class="knob">Clip</span> to a register, name it, pick the server input with <span class="knob">Device</span>, choose the clip, and set in and out points if you need them.</li>
+    </ol>
+    <div class="refs"><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Devices/Video-Server/To-Clip-Setup.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · Clip Setup</a><a class="man web" href="https://help.rossvideo.com/acuity-device/Topics/Devices/Video-Server/Video-Server.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Device Setup · Video Servers</a></div>
+  </section>
+
+  <h2><span class="sub">p. 49</span>Roll Clip</h2>
+  <section class="proc" id="roll-clip">
+    <h3>How Roll Clip plays the server</h3>
+    <p><kbd class="key">ROLL CLIP</kbd> on the Transition module ties a server clip on the incoming source to the next transition. The Roll Clip Mode personality option (<span class="path"><b>HOME</b><b>Setup</b><b>Personality</b></span>) sets how it behaves for every bank:</p>
+    <ul class="bul">
+      <li><b>Arm</b>: the clip plays with the next <kbd class="key">CUT</kbd> or <kbd class="key">AUTO TRANS</kbd> on that Transition module. You can also double-press the source's button to play it. Use this for the replay package.</li>
+      <li><b>Play</b>: pressing <kbd class="key">ROLL CLIP</kbd> plays the clip immediately. You take it to air yourself.</li>
+      <li><b>Armed Always</b>: Roll Clip is locked on.</li>
+    </ul>
+    <p class="note warn"><b class="t">Preroll</b>If the server has a preroll time set and Roll Clip is on, the switcher waits out the preroll before it transitions. For the replay package that delay would push the cut past the frames where the stinger covers the screen, so set the server's Device Preroll to 0.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 49 · Roll Clip</span><a class="man web" href="https://help.rossvideo.com/acuity/Topics/Setup/Personality/Option-List/RollClip.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · Roll Clip Mode</a></div>
+  </section>
+
+  <h2><span class="sub">Assembly · built from documented custom control events</span>Record Replay In</h2>
+  <section class="proc" id="replay-in">
+    <h3>The seven events</h3>
+    <ol class="steps">
+      <li><b>Key 4 <kbd class="key">CUT</kbd>.</b> The stinger goes to air and Auto Play starts it.</li>
+      <li><b>Pause, 12 frames.</b> Wait until the stinger fully covers the screen. Use your own stinger's full-cover frame.</li>
+      <li><b>The replay server's source on the Preset bus</b> (the <kbd class="key">SERVER</kbd> button in the demonstration).</li>
+      <li><b><kbd class="key">CUT</kbd></b> on the Transition module, with only <kbd class="key">BKGD</kbd> lit. The background cut and the clip roll happen behind the stinger.</li>
+      <li><b>Key 3 <kbd class="key">CUT</kbd>.</b> The replay tag goes on, also hidden by the stinger.</li>
+      <li><b>Pause, 18 frames.</b> Wait until the stinger has fully cleared (frame 30 in the demonstration).</li>
+      <li><b>Key 4 <kbd class="key">CUT</kbd>.</b> The empty stinger key comes off air, ready for next time.</li>
+    </ol>
+    <p>Record it with <span class="path"><b>HOME</b><b>Custom Controls</b></span>, <span class="knob">Bank</span>, <span class="knob">Button</span>, <span class="path"><b>Start Recording</b></span>, the events above, then <span class="path"><b>Finish Recording</b></span>. Add each pause with <span class="path"><b>Insert Event</b><b>Special</b><b>Pause CC</b></span>. Name it REPLAY IN.</p>
+    <p class="note warn"><b class="t">Before you record</b>Keep only <kbd class="key">BKGD</kbd> lit in the Next Transition area. If a key is also lit there, pressing that key's own <kbd class="key">CUT</kbd> takes it off air and removes it from the next transition. The stinger would never come on.</p>
+    <p class="note pro"><b class="t">Roll every time</b>To guarantee the clip rolls on every run, add <span class="path"><b>Insert Event</b><b>Special</b><b>Roll Clip</b></span> set to Enable just before the <kbd class="key">CUT</kbd> event.</p>
+    <p class="note pro"><b class="t">Make it bulletproof</b>A key's <kbd class="key">CUT</kbd> button flips the key. If a run might start with a key already on, record <span class="path"><b>Insert Event</b><b>Special</b><b>Keys Cut</b></span> instead, which sets the key on or off outright.</p>
+  </section>
+  <section class="proc" id="replay-out">
+    <h3>Record Replay Out: the mirror image</h3>
+    <ol class="steps">
+      <li>Key 4 <kbd class="key">CUT</kbd>: stinger on.</li>
+      <li>Pause, 12 frames.</li>
+      <li>A camera on the Preset bus.</li>
+      <li><kbd class="key">CUT</kbd>.</li>
+      <li>Key 3 <kbd class="key">CUT</kbd>: replay tag off.</li>
+      <li>Pause, 18 frames.</li>
+      <li>Key 4 <kbd class="key">CUT</kbd>: stinger off.</li>
+    </ol>
+    <p>Optional: add a <span class="path"><b>Insert Event</b><b>VTR</b></span> event such as <span class="path"><b>Recue</b></span> at the end so the server is ready for the next replay.</p>
+  </section>
+
+  <h2><span class="sub">Measure before you trust it</span>Rehearse and trim</h2>
+  <ul class="bul mt">
+    <li>Run Replay In twice in a row. Confirm the stinger starts from its first frame each time.</li>
+    <li>Watch Program at full speed. If you see a flash of the old shot or the server before the stinger covers, move the cut later. If you see it after, move it earlier.</li>
+    <li>Open <span class="path"><b>Edit</b></span>, turn <span class="knob">Event</span> to the pause, and use <span class="path"><b>Modify Event</b></span>. If the pause can't be modified, delete it and insert a new one. Test with <span class="path"><b>Run From Here</b></span>.</li>
+    <li>Put both macros on the custom control bus (REPLAY IN, REPLAY OUT), or attach Replay In to a panel button (Chapter 05).</li>
+  </ul>
+
+  <div class="drill" data-drill="ch07">
+    <h3><span class="lamp"></span>At the panel</h3>
+    <ul class="checks">
+      <li><label><input type="checkbox"><span>Load your stinger into Global-Store 1 with Auto Play on and Looping off. Key it on Key 4.</span></label></li>
+      <li><label><input type="checkbox"><span>Step through your stinger and write down its full-cover frames.</span></label></li>
+      <li><label><input type="checkbox"><span>Build a replay tag on Key 3.</span></label></li>
+      <li><label><input type="checkbox"><span>Record REPLAY IN with your measured pause. Record REPLAY OUT.</span></label></li>
+      <li><label><input type="checkbox"><span>Rehearse both twice in a row. Trim until no one watching Program can see the cut.</span></label></li>
+    </ul>
+    <button class="reset" type="button">Clear checks</button>
+  </div>
+  <nav class="pager"><a href="#motion"><small>Back · 06</small><span>Motion graphics</span></a><a class="next" href="#showprep"><small>Next · 08</small><span>Show prep</span></a></nav>
+</article>
+<article class="view" id="view-showprep" data-route="showprep" hidden>
+  <span class="eyebrow"><span class="num">08</span>Show prep &amp; recovery</span>
+  <h1>Save your work. Recover fast.</h1>
+  <p class="lede">Everything you build lives on the switcher until someone overwrites it. Save your whole setup to your own drive, know the tools that layer and copy looks, and know your recovery moves before you need them. When something goes wrong on air: do less, not more.</p>
+  <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · Switcher Setups · pp. 76–78</span><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Switcher Basics · pp. 34–41</span></div>
+
+  <div class="media">
+    <div class="listen"><div class="tag"><b>Listen</b><span>Chapter briefing · 0:23</span></div><audio controls preload="none" src="brief_ch08.mp3"></audio></div>
+    <div class="vidwrap"><video controls preload="metadata" playsinline poster="v08_showprep.jpg" src="v08_showprep.mp4"></video></div>
+    <div class="vidcap"><span>Narrated demonstration · 1:18</span><span>Simplified panel illustration</span></div>
+  </div>
+
+  <h2><span class="sub">pp. 76–78</span>Save and reload your setup</h2>
+  <section class="proc" id="store-setup">
+    <h3>Store your setup to a flash drive</h3>
+    <ol class="steps">
+      <li>Plug your flash drive into the control panel.</li>
+      <li>Press <span class="path"><b>HOME</b><b>Disk</b><b>Destination/Source</b></span>.</li>
+      <li>Turn <span class="knob">Disk Type</span> to <span class="path"><b>USB</b></span>. Turn <span class="knob">Set Names</span> to the set you want to use.</li>
+      <li>Press <span class="path"><b>Store</b></span>, then <span class="path"><b>All</b></span>. Or press individual items; each one stores as you press it.</li>
+    </ol>
+    <p>A setup holds memories, custom controls, sequences, bus maps, shot box pages, clips, personality settings, and more.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 76 · To Store a Switcher Setup</span><a class="man web" href="https://help.rossvideo.com/acuity/Topics/Operation/Setups/Setups.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+  <section class="proc" id="recall-setup">
+    <h3>Recall it next class</h3>
+    <ol class="steps">
+      <li>Press <span class="path"><b>HOME</b><b>Disk</b><b>Destination/Source</b></span> and turn <span class="knob">Disk Type</span> to <span class="path"><b>USB</b></span>.</li>
+      <li>Turn <span class="knob">Set Names</span> to your set.</li>
+      <li>Press <span class="path"><b>Recall</b></span>, then <span class="path"><b>All</b></span>, or just the items you need.</li>
+      <li>If the set includes the Media-Store, restart afterward: <span class="path"><b>HOME</b><b>More</b><b>System Shutdown</b><b>Restart</b></span>.</li>
+    </ol>
+    <p class="note warn"><b class="t">Careful</b>Recall All overwrites what's on the switcher, including memories someone else locked. Store individual items (<span class="path"><b>Store Individual</b></span>, <span class="path"><b>Recall Individual</b></span>) when you share the room.</p>
+    <p class="note"><b class="t">One drive, not both at once</b>Setups accept FAT or NTFS drives; Media-Store transfers need FAT32 with the media files alone on the drive. A FAT32 drive works for both, but move your setup off before you copy media, or carry a second drive for media.</p>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 77 · To Recall a Switcher Setup</span></div>
+  </section>
+
+  <h2><span class="sub">pp. 18, 37–39</span>Check your framing</h2>
+  <section class="proc" id="safe-title">
+    <h3>Safe title and other preview guides</h3>
+    <ul class="bul">
+      <li>Press <kbd class="key">SAFE TITLE</kbd> on the Preview Overlay module to show the safe title guides on Preview. Keep text and graphics inside the inner box.</li>
+      <li><kbd class="key">CENTER</kbd> adds a center cross, <kbd class="key">SOURCE ID</kbd> labels the source, and <kbd class="key">HIDE OVLY</kbd> turns every overlay off.</li>
+      <li>To adjust the guides: <span class="path"><b>HOME</b><b>More</b><b>Effects</b><b>More</b><b>More</b><b>Preview Overlay</b><b>Safe Title Setup</b></span>.</li>
+    </ul>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 18 · Preview Overlay</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Panel/Preview/To-SafeTitle.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 34–35</span>Stack banks with re-entry</h2>
+  <section class="proc" id="re-entry">
+    <h3>Re-enter one Mix Effects bank into another</h3>
+    <p>Re-entry uses one bank's whole output as a source on another bank. Build a complex look on Mix Effects 1, then use it as the background or a key on Mix Effects 2 and add more on top.</p>
+    <ol class="steps">
+      <li>Build Mix Effects 1 with a background and a key.</li>
+      <li>Build Mix Effects 2 with a key.</li>
+      <li>On Mix Effects 2, select <kbd class="key">ME 1</kbd> on the background bus. Mix Effects 1's whole picture is now Mix Effects 2's background.</li>
+    </ol>
+    <ul class="bul">
+      <li>A bank can't be re-entered into itself, or into a bank that's already re-entered into it.</li>
+      <li>Keep chains to 4 banks or fewer. Longer chains can drop lines.</li>
+    </ul>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · p. 35 · ME Re-Entry</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Panel/Basics/To-Re-entry.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help</a></div>
+  </section>
+
+  <h2><span class="sub">pp. 40–41</span>Copy and swap</h2>
+  <section class="proc" id="copy-swap">
+    <h3>Copy a bank, a key, or a bus</h3>
+    <ul class="bul">
+      <li><b>Copy a whole bank:</b> <span class="path"><b>HOME</b><b>Attributes</b><b>Copy ME</b></span>, pick <span class="path"><b>Source</b></span> and <span class="path"><b>Destination</b></span>, press <span class="path"><b>Copy</b></span>. Panel shortcut: hold the destination bank's <kbd class="key">BKGD</kbd>, then press the source bank's <kbd class="key">BKGD</kbd>.</li>
+      <li><b>Copy or swap a key:</b> <span class="path"><b>HOME</b><b>Attributes</b><b>Copy Keys</b></span>. Panel shortcut to copy: hold the destination key's <kbd class="key">SEL</kbd>, then press the source key's <kbd class="key">SEL</kbd>.</li>
+      <li><b>Copy or swap a bus:</b> <span class="path"><b>HOME</b><b>Attributes</b><b>Copy Buses</b></span>.</li>
+    </ul>
+    <div class="refs"><span class="man"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M2 3.2c2-.9 4-.9 6 .4 2-1.3 4-1.3 6-.4v9.6c-2-.9-4-.9-6 .4-2-1.3-4-1.3-6-.4z M8 3.6v9.6"/></svg> Ops Manual v9.2 · pp. 40–41 · Copy and Swap</span><a class="man web" href="https://help.rossvideo.com/acuity/Tasks/Operation/Panel/CopySwap/To-Key-Copy.html" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 2.5h4.5V7 M13.3 2.7 7.5 8.5 M11.5 9.5v3.5h-9v-9H6"/></svg> Online help · Keyer copy</a></div>
+  </section>
+
+  <h2><span class="sub">Do less, not more</span>Recovery moves</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>What happened</th><th>The move</th><th>Manual</th></tr></thead>
+    <tbody>
+      <tr><td>Recalled the wrong memory</td><td><kbd class="key">UNDO</kbd> on the Global Memory module, right away. It goes out after about ten more button presses.</td><td class="pg">p. 15</td></tr>
+      <tr><td>A recall is about to change a bus you need to keep</td><td>Hold that source button while you recall (Bus Hold).</td><td class="pg">p. 72</td></tr>
+      <tr><td>A key is on that shouldn't be</td><td>That key's <kbd class="key">CUT</kbd> on the Keyers module. One press.</td><td class="pg">p. 42</td></tr>
+      <tr><td>A macro is running away</td><td>Press its button again, or hold <kbd class="key">STOP</kbd> and press it. A held macro waits for its own button.</td><td class="pg">p. 103</td></tr>
+      <tr><td>Everything is wrong on air</td><td><kbd class="key">FADE</kbd> on the Fade to Black module buys you time. Fix it, then fade back up.</td><td class="pg">p. 46</td></tr>
+      <tr><td>Panel won't take transitions or memories</td><td>The Installation menu may be open. Press <span class="path"><b>Swap</b></span> to move it to the top region.</td><td class="pg">p. 27</td></tr>
+      <tr><td>Strange state, off air</td><td>Reset the bank: both <kbd class="key">ALL</kbd>, both <kbd class="key">ME X</kbd>, or <kbd class="key">RECALL</kbd> + <kbd class="key">STORE</kbd> on the row. Never on air.</td><td class="pg">p. 36</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="drill" data-drill="ch08">
+    <h3><span class="lamp"></span>Pre-show checklist</h3>
+    <ul class="checks">
+      <li><label><input type="checkbox"><span>Software version checked at <span class="path"><b>HOME</b><b>Status</b><b>Version Info</b></span>.</span></label></li>
+      <li><label><input type="checkbox"><span>Your setup recalled from your flash drive. Restarted if it included the Media-Store.</span></label></li>
+      <li><label><input type="checkbox"><span>Animations loaded before the show. Auto Play and Looping set.</span></label></li>
+      <li><label><input type="checkbox"><span>Mix Effects, key, and fade rates set and confirmed on the displays.</span></label></li>
+      <li><label><input type="checkbox"><span>Every macro rehearsed twice in a row, off air.</span></label></li>
+      <li><label><input type="checkbox"><span>Graphics checked against <kbd class="key">SAFE TITLE</kbd>.</span></label></li>
+      <li><label><input type="checkbox"><span>After the show: setup stored to your flash drive.</span></label></li>
+    </ul>
+    <button class="reset" type="button">Clear checks</button>
+  </div>
+  <nav class="pager"><a href="#replay"><small>Back · 07</small><span>Replay</span></a><a class="next" href="#reference"><small>Next · 09</small><span>Quick reference</span></a></nav>
+</article>
+<article class="view" id="view-reference" data-route="reference" hidden>
+  <span class="eyebrow"><span class="num">09</span>Quick reference</span>
+  <h1>Everything on one page</h1>
+  <p class="lede">The short version of every procedure in this guide, with the page in the Operation Manual (version 9.2) where the full procedure lives.</p>
+
+  <h2><span class="sub">Find a task</span>Tasks</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Task</th><th>Short version</th><th>Manual</th></tr></thead>
+    <tbody>
+      <tr><td>Check software version</td><td><span class="path"><b>HOME</b><b>Status</b><b>Version Info</b></span></td><td class="pg">online help</td></tr>
+      <tr><td>Assign a row to a bank</td><td><kbd class="key">SEL</kbd> › <span class="path"><b>Assign ME</b></span> › <span class="path"><b>Row X</b></span> › <span class="path"><b>ME X</b></span></td><td class="pg">p. 19</td></tr>
+      <tr><td>Reset banks (off air)</td><td>Both <kbd class="key">ALL</kbd> · or <kbd class="key">RECALL</kbd> + <kbd class="key">STORE</kbd> on a row</td><td class="pg">p. 36</td></tr>
+      <tr><td>Basic transition</td><td><kbd class="key">BKGD</kbd> and keys › source on Preset › <kbd class="key">DISS</kbd> / <kbd class="key">WIPE</kbd> / <kbd class="key">DVE</kbd> › <kbd class="key">AUTO TRANS</kbd></td><td class="pg">p. 42</td></tr>
+      <tr><td>Mix Effects rate</td><td><kbd class="key">ME RATE</kbd> › frames › <kbd class="key">ENTER</kbd> (default 15)</td><td class="pg">p. 43</td></tr>
+      <tr><td>Key rate</td><td><kbd class="key">KEY RATE</kbd> › frames › <kbd class="key">ENTER</kbd> (default 8)</td><td class="pg">p. 44</td></tr>
+      <tr><td>Wipe</td><td><kbd class="key">WIPE</kbd> › pattern › <span class="path"><b>Modify Pattern</b></span></td><td class="pg">p. 44</td></tr>
+      <tr><td>Preset Background</td><td>Hold <kbd class="key">PST BKGD</kbd> › Preset source › type › go</td><td class="pg">pp. 46–47</td></tr>
+      <tr><td>WhiteFlash</td><td>Double-press <kbd class="key">DISS</kbd> › <span class="path"><b>Color</b></span></td><td class="pg">p. 47</td></tr>
+      <tr><td>Transition Preview</td><td>Hold <kbd class="key">DISS</kbd> / <kbd class="key">WIPE</kbd> / <kbd class="key">DVE</kbd> while you run it</td><td class="pg">p. 47</td></tr>
+      <tr><td>Transition Limit</td><td><kbd class="key">TRANS LIMIT</kbd> › fader to stop point › <kbd class="key">TRANS LIMIT</kbd> › fader back</td><td class="pg">p. 48</td></tr>
+      <tr><td>Fade to black</td><td><kbd class="key">FADE</kbd> or <kbd class="key">CUT</kbd> on Fade to Black · again to return. Turned on per bank at <span class="path"><b>HOME</b><b>Setup</b><b>Installation</b><b>Output</b><b>Fade To Black</b></span></td><td class="pg">p. 46</td></tr>
+      <tr><td>Auto Select key</td><td><kbd class="key">SEL</kbd> › source on key bus › <kbd class="key">AUTO SELECT</kbd></td><td class="pg">p. 50</td></tr>
+      <tr><td>Self key</td><td><kbd class="key">SEL</kbd> › source › <kbd class="key">SELF KEY</kbd> › <span class="path"><b>Clip/Gain</b></span></td><td class="pg">p. 50</td></tr>
+      <tr><td>Chroma key</td><td><kbd class="key">SEL</kbd> › camera › <kbd class="key">CHROMA KEY</kbd> › <span class="knob">Key Mode</span> Basic › <span class="path"><b>Initialize Key</b></span></td><td class="pg">p. 51</td></tr>
+      <tr><td>Preset pattern key</td><td><kbd class="key">SEL</kbd> › source › <kbd class="key">PST PATT</kbd> › <span class="path"><b>Pattern Selection</b></span></td><td class="pg">p. 55</td></tr>
+      <tr><td>Check a key</td><td>Hold <kbd class="key">KEY PV</kbd> · hold <kbd class="key">SHOW ALPHA</kbd> · <kbd class="key">KEY INV</kbd> flips</td><td class="pg">p. 15</td></tr>
+      <tr><td>Key on/off alone</td><td>Key's <kbd class="key">CUT</kbd> or <kbd class="key">AUTO TRANS</kbd> on the Keyers module</td><td class="pg">p. 42</td></tr>
+      <tr><td>Fly a key into a box</td><td><kbd class="key">2D DVE</kbd> › <span class="path"><b>Position</b></span> › <span class="path"><b>Aspect/Size</b></span></td><td class="pg">p. 57</td></tr>
+      <tr><td>Border on a flying key</td><td><span class="path"><b>DVE Menu</b><b>Border</b></span> › <span class="path"><b>Size</b></span> › <span class="path"><b>Color</b></span></td><td class="pg">p. 59</td></tr>
+      <tr><td>Box mask</td><td><kbd class="key">MASK</kbd> › <span class="path"><b>Box Mask</b></span> › <span class="path"><b>Position/Size</b></span></td><td class="pg">p. 69</td></tr>
+      <tr><td>Key order now</td><td>Hold <kbd class="key">KEY PRIOR</kbd> › <kbd class="key">SEL</kbd> of the key for the top</td><td class="pg">p. 48</td></tr>
+      <tr><td>Memory attributes</td><td><kbd class="key">ATTRIB</kbd> › <span class="path"><b>General</b></span></td><td class="pg">p. 73</td></tr>
+      <tr><td>Store a memory</td><td>Store side <kbd class="key">ME X</kbd> › hold <kbd class="key">BANK</kbd> + 2 digits › register › <kbd class="key">ENTER</kbd></td><td class="pg">p. 71</td></tr>
+      <tr><td>Recall a memory</td><td>Recall side <kbd class="key">ME X</kbd> › hold <kbd class="key">BANK</kbd> + 2 digits › register</td><td class="pg">p. 72</td></tr>
+      <tr><td>Undo a recall</td><td><kbd class="key">UNDO</kbd></td><td class="pg">p. 15</td></tr>
+      <tr><td>Effects dissolve</td><td>Recall first › <kbd class="key">EFF DISS</kbd> on › recall second</td><td class="pg">p. 75</td></tr>
+      <tr><td>Name / lock memory</td><td><span class="path"><b>HOME</b><b>Attributes</b><b>Memories Setup</b></span></td><td class="pg">pp. 72–73</td></tr>
+      <tr><td>Record a macro</td><td><span class="path"><b>HOME</b><b>Custom Controls</b></span> › <span class="knob">Bank</span> <span class="knob">Button</span> › <span class="path"><b>Start Recording</b></span> … <span class="path"><b>Finish Recording</b></span></td><td class="pg">p. 90</td></tr>
+      <tr><td>Pause / hold in a macro</td><td><span class="path"><b>Insert Event</b><b>Special</b></span> › <span class="path"><b>Pause CC</b></span> / <span class="path"><b>Hold CC</b></span></td><td class="pg">p. 94</td></tr>
+      <tr><td>Edit a macro step</td><td><span class="path"><b>Edit</b></span> › <span class="knob">Event</span> › <span class="path"><b>Modify Event</b></span></td><td class="pg">p. 104</td></tr>
+      <tr><td>Run a macro by number</td><td><kbd class="key">RECALL CLIP/CC</kbd> › bank › <kbd class="key">ENTER</kbd> › number › <kbd class="key">ENTER</kbd> › <kbd class="key">RUN CC</kbd></td><td class="pg">p. 89</td></tr>
+      <tr><td>Attach a macro to a button</td><td><span class="path"><b>HOME</b><b>Custom Controls</b><b>More</b><b>Attach Macros</b></span></td><td class="pg">p. 106</td></tr>
+      <tr><td>Macro when a source airs</td><td><span class="path"><b>Source Configuration</b><b>More</b><b>More</b><b>Attach CCs</b><b>On Air CC</b></span></td><td class="pg">p. 105</td></tr>
+      <tr><td>Media from a flash drive</td><td><span class="path"><b>HOME</b><b>More</b><b>Effects</b><b>MediaStore</b><b>Select/Manage</b><b>Copy From USB</b></span></td><td class="pg">p. 83</td></tr>
+      <tr><td>Load media</td><td><span class="knob">Location</span> <span class="knob">Channel</span> › <span class="path"><b>Select/Manage</b></span> › double-tap</td><td class="pg">p. 81</td></tr>
+      <tr><td>Animation playback</td><td><span class="path"><b>On-Air Properties</b><b>Video</b></span> › Auto Play · Looping</td><td class="pg">p. 84</td></tr>
+      <tr><td>Capture a frame</td><td><span class="path"><b>MediaStore</b><b>Capture</b></span> › <span class="path"><b>Capture To Disk</b></span></td><td class="pg">p. 83</td></tr>
+      <tr><td>Sequence</td><td><span class="path"><b>DVE Menu</b><b>Sequence</b></span> › keyframes › <kbd class="key">SEQ</kbd> to run</td><td class="pg">pp. 122–123</td></tr>
+      <tr><td>Roll a server clip</td><td><kbd class="key">ROLL CLIP</kbd> (Arm mode) › <kbd class="key">CUT</kbd> or <kbd class="key">AUTO TRANS</kbd></td><td class="pg">p. 49</td></tr>
+      <tr><td>Save setup</td><td><span class="path"><b>HOME</b><b>Disk</b><b>Destination/Source</b></span> › <span class="knob">Disk Type</span> USB › <span class="path"><b>Store</b></span> › <span class="path"><b>All</b></span></td><td class="pg">p. 76</td></tr>
+      <tr><td>Safe title</td><td><kbd class="key">SAFE TITLE</kbd> on Preview Overlay</td><td class="pg">p. 18</td></tr>
+      <tr><td>Re-entry</td><td>Select <kbd class="key">ME 1</kbd> on another bank's background bus</td><td class="pg">p. 35</td></tr>
+      <tr><td>Manual on the switcher</td><td>Manuals button · <span class="path"><b>HOME</b><b>More</b><b>Help</b><b>Copy Manuals To USB</b></span></td><td class="pg">p. 31</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="sub">HOME › Setup › Personality</span>Personality options that change behavior</h2>
+  <p class="prose mt">If a procedure here doesn't behave as described, one of these settings is often the reason. Ask before changing them; they affect everyone who uses the room.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Option</th><th>What it changes</th></tr></thead>
+    <tbody>
+      <tr><td>Roll Clip Mode</td><td>Play, Arm, or Armed Always for <kbd class="key">ROLL CLIP</kbd>.</td></tr>
+      <tr><td>CC/Macro Attachments</td><td>Must be on for macros attached to panel buttons to run.</td></tr>
+      <tr><td>CC Global Recall</td><td>Whether <kbd class="key">RECALL CLIP/CC</kbd> recalls clips or runs custom controls.</td></tr>
+      <tr><td>CC Held/Paused Display</td><td>What a held or paused macro shows on its button.</td></tr>
+      <tr><td>Auto Recall</td><td>When off, Effects Dissolve and Keys Only can't be stored or recalled with a memory.</td></tr>
+      <tr><td>Recall Empty Memory</td><td>Whether empty or "Don't Recall" memories are recalled.</td></tr>
+      <tr><td>Fixed Memories</td><td>Recall on the exact bank stored, or at the same distance from the Program bank.</td></tr>
+      <tr><td>Recall GS MediaStore · Recall ME-Store</td><td>Never, Always, or Attributes: whether memories reload Media-Store channels.</td></tr>
+      <tr><td>Default Trans Active</td><td>Lets you set the rates a reset returns to.</td></tr>
+      <tr><td>Keypad DVE Entry</td><td>Whether you can key in digital video effects numbers.</td></tr>
+      <tr><td>Swap Keyer Cut &amp; Auto</td><td>Swaps the two key transition buttons.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="sub">Words you'll hear in the control room</span>Glossary</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Alpha (key signal)</td><td>The black-and-white signal that cuts the hole for a key. White shows the fill.</td></tr>
+      <tr><td>Fill</td><td>The picture that fills the hole a key cuts.</td></tr>
+      <tr><td>Bus</td><td>A row of source buttons that feeds one destination: Program, Preset, a keyer, or an aux output.</td></tr>
+      <tr><td>Mix Effects bank</td><td>One complete set of background, keys, and transition. Labeled ME on the panel.</td></tr>
+      <tr><td>Re-entry</td><td>Using one Mix Effects bank's output as a source on another.</td></tr>
+      <tr><td>Bank and register</td><td>How memories are numbered: two-digit bank, one-digit register.</td></tr>
+      <tr><td>Attributes</td><td>Settings stored with a memory that decide what a recall brings back.</td></tr>
+      <tr><td>Custom control</td><td>Ross's name for a macro.</td></tr>
+      <tr><td>Media-Store</td><td>The switcher's built-in still and animation player: Global-Store channels shared by all banks, and an ME-Store per bank.</td></tr>
+      <tr><td>Shaped / unshaped</td><td>Whether a fill arrives already multiplied by its alpha (shaped) or not (unshaped).</td></tr>
+      <tr><td>Stinger</td><td>A short animation that covers the screen to hide a cut. On the Acuity, you assemble it from a Media-Store animation, a key, and a custom control.</td></tr>
+      <tr><td>Roll Clip</td><td>Ties playback of a server clip to the next transition.</td></tr>
+      <tr><td>Personality</td><td>Settings that change how the panel behaves for everyone.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="sub">What this guide is built from</span>Sources and versions</h2>
+  <ul class="bul mt">
+    <li>Created by Harold Garcia, instructor, RTVF 065E Technical Directing, Hofstra University.</li>
+    <li><a href="https://documentation.rossvideo.com/files/Manuals/Production%20Switchers/Acuity/Acuity-Operation(4820DR-110).pdf" target="_blank" rel="noopener">Ross Video, Acuity Operation Manual, version 9.2, part number 4820DR-110</a>. All page numbers in this guide refer to this manual.</li>
+    <li><a href="https://help.rossvideo.com/acuity/index.html" target="_blank" rel="noopener">Ross Video Acuity online help, version 15.0</a>. Step wording and menu paths follow this version.</li>
+    <li>Ross Video, Acuity Setup Manual, part number 4820DR-120, for installation topics.</li>
+    <li>The videos are narrated illustrations of a simplified panel. Source names such as CAM 1, GFX, SERVER, and GS 1 are examples; your panel's names may differ.</li>
+  </ul>
+  <p class="foot">The Acuity Playbook was created by Harold Garcia for RTVF 065E Technical Directing, Lawrence Herbert School of Communication, Hofstra University. Procedures are paraphrased from Ross Video documentation; page numbers refer to the Acuity Operation Manual version 9.2 (part 4820DR-110). Ross, Acuity, and XPression are trademarks of Ross Video Limited. Videos and stills are original illustrations. © 2026 Harold Garcia. All rights reserved.</p>
+  <nav class="pager"><a href="#showprep"><small>Back · 08</small><span>Show prep</span></a><a class="next" href="#home"><small>Return</small><span>Start here</span></a></nav>
+</article>
+</main>
+</div>
+<script>
+(function(){
+  var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var navs = Array.prototype.slice.call(document.querySelectorAll('[data-nav]'));
+  function show(hash){
+    var id = (hash || '').replace('#','') || 'home';
+    var view = document.getElementById('view-' + id);
+    var target = null;
+    if(!view){
+      target = document.getElementById(id);
+      view = target ? target.closest('.view') : null;
+    }
+    if(!view){ view = document.getElementById('view-home'); target = null; }
+    var route = view.getAttribute('data-route');
+    views.forEach(function(v){ v.hidden = (v !== view); });
+    navs.forEach(function(n){ if(n.getAttribute('data-nav') === route){ n.setAttribute('aria-current','page'); } else { n.removeAttribute('aria-current'); } });
+    document.querySelectorAll('video,audio').forEach(function(m){ if(!view.contains(m)){ try{ m.pause(); }catch(e){} } });
+    function place(){ if(target){ target.scrollIntoView({block:'start'}); } else { window.scrollTo(0,0); } }
+    place(); requestAnimationFrame(place);
+    var rail = document.querySelector('.rail');
+    var cur = document.querySelector('.navkey[aria-current="page"]');
+    if(rail && cur && rail.scrollWidth > rail.clientWidth){
+      rail.scrollLeft = cur.offsetLeft - rail.clientWidth / 2 + cur.clientWidth / 2;
+    }
+  }
+  window.addEventListener('hashchange', function(){ show(location.hash); });
+  show(location.hash);
+  // drill checklists remember progress in this browser only
+  document.querySelectorAll('.drill').forEach(function(d){
+    var key = 'acuity-playbook-' + d.getAttribute('data-drill');
+    var boxes = Array.prototype.slice.call(d.querySelectorAll('input[type=checkbox]'));
+    boxes.forEach(function(b,i){ b.id = key + '-' + i; });
+    var saved = [];
+    try { saved = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { saved = []; }
+    boxes.forEach(function(b,i){ b.checked = !!saved[i]; });
+    function save(){ try { localStorage.setItem(key, JSON.stringify(boxes.map(function(b){ return b.checked; }))); } catch(e) {} }
+    boxes.forEach(function(b){ b.addEventListener('change', save); });
+    var r = d.querySelector('.reset');
+    if(r){ r.addEventListener('click', function(){ boxes.forEach(function(b){ b.checked = false; }); save(); }); }
+  });
+})();
+</script>
+
+</body>
+</html>
