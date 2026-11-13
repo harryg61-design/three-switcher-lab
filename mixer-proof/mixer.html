@@ -79,7 +79,7 @@ small.note{font-size:15px;color:var(--m)}
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 0.2</div>
+  <div id="status">build 0.3</div>
   <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
@@ -135,6 +135,10 @@ small.note{font-size:15px;color:var(--m)}
     <div class="card"><h2>When to mix</h2><div class="two"><button class="btn" id="autoOn">Automatic at the set time</button><button class="btn" id="autoOff">Only on the pedal</button></div></div>
     <div class="card"><h2>Pedals and keys</h2><small class="note">1 or Left arrow: Loop A · 2 or Up arrow: Run it again · 3 or Down arrow: Loop B · 4 or Right arrow: Mix now</small></div>
   </div>
+  <div class="card"><h2>Saved mixes</h2>
+    <button class="btn" id="mxSave">Save this mix</button>
+    <small class="note" id="mxNote">Saves both songs, the out point, the in point, the fade and the count-in. Tap Load to bring a saved mix back.</small>
+    <div id="mixes"></div></div>
   <div class="card"><h2>Playlist</h2>
     <div style="display:flex;gap:8px"><input type="url" id="plLink" placeholder="Paste a YouTube playlist link" aria-label="YouTube playlist link"><button class="btn" id="plLoad" style="flex:none">Load playlist</button></div>
     <small class="note" id="plNote">Songs from the playlist appear here. Tap A or B to put a song on that side.</small>
@@ -320,7 +324,7 @@ function fillSetup(){
   $("iM").value = Math.floor((S.inAt||0)/60); $("iS").value = Math.floor((S.inAt||0)%60);
   chips("fadeC", S.fade); chips("countC", S.countIn);
   $("autoOn").classList.toggle("main", !!S.auto); $("autoOff").classList.toggle("main", !S.auto);
-  marksFor(out, "oMarks", (t) => setOut(t)); marksFor(inn, "iMarks", (t) => setIn(t)); renderQueue();
+  marksFor(out, "oMarks", (t) => setOut(t)); marksFor(inn, "iMarks", (t) => setIn(t)); renderQueue(); renderMixes();
   if (document.activeElement !== $("linkA")) $("linkA").value = S.ids.A ? "https://youtu.be/" + S.ids.A : "";
   if (document.activeElement !== $("linkB")) $("linkB").value = S.ids.B ? "https://youtu.be/" + S.ids.B : "";
   $("level").value = S.level;
@@ -420,6 +424,37 @@ function startOver(){
 }
 $("vOver").onclick = startOver;
 $("plLoad").onclick = () => { const m = ($("plLink").value || "").match(/[?&]list=([\w-]+)/) || ($("plLink").value || "").trim().match(/^((?:PL|UU|FL|OL|RD)[\w-]{10,})$/); if (!m) return banner("That is not a playlist link. A playlist link has list= in it."); importPlaylist(m[1]); };
+
+/* ---------- saved mixes ---------- */
+S.mixes = S.mixes || [];
+const tc = (t) => (t == null || isNaN(t)) ? "not set" : Math.floor(t/60) + ":" + String(Math.floor(t%60)).padStart(2,"0");
+function titleOf(d){ const q = S.queue.find(x => x.id === S.ids[d]); if (q && q.title) return q.title; try { return P[d].getVideoData().title || ""; } catch(e){ return ""; } }
+function renderMixes(){
+  const el = $("mixes"); if (!el) return; el.innerHTML = "";
+  S.mixes.forEach((m, i) => {
+    const r = document.createElement("div"); r.className = "qrow";
+    const n = document.createElement("span"); n.className = "qn"; n.textContent = String(i+1);
+    const t = document.createElement("span"); t.className = "qt"; t.textContent = (m.ta || "Song A") + "  to  " + (m.tb || "Song B") + "  (out " + tc(m.outAt) + ", in " + tc(m.inAt) + ")";
+    const l = document.createElement("button"); l.className = "ba"; l.textContent = "Load"; l.style.width = "76px"; l.setAttribute("aria-label", "Load saved mix " + (i+1)); l.onclick = () => loadMix(i);
+    const x = document.createElement("button"); x.className = "bb"; x.textContent = "Remove"; x.style.width = "96px"; x.setAttribute("aria-label", "Remove saved mix " + (i+1)); x.onclick = () => { S.mixes.splice(i, 1); save(); renderMixes(); };
+    r.appendChild(n); r.appendChild(t); r.appendChild(l); r.appendChild(x); el.appendChild(r);
+  });
+}
+function saveMix(){
+  if (!S.ids[out] || !S.ids[inn]) return banner("Load two songs first, then save the mix.");
+  if (S.outAt == null) return banner("Set the out point first, then save the mix.");
+  S.mixes.push({a:S.ids[out], b:S.ids[inn], outAt:S.outAt, inAt:S.inAt, fade:S.fade, countIn:S.countIn, ta:titleOf(out), tb:titleOf(inn)});
+  save(); renderMixes(); banner("Mix " + S.mixes.length + " saved.", 2500); log("mix saved");
+}
+async function loadMix(i){
+  const m = S.mixes[i]; if (!m) return;
+  if (phase !== "idle") return banner("Wait for the mix to finish, then load a saved mix.");
+  const put = () => { S.outAt = m.outAt; S.inAt = m.inAt; S.fade = m.fade; S.countIn = m.countIn; save(); };
+  out = "A"; inn = "B"; put(); loadSong("A", m.a); loadSong("B", m.b);
+  for (let k = 0; k < 60; k++){ await sleep(250); if (ready.A && ready.B) break; }
+  put(); startOver(); banner("Saved mix " + (i+1) + " loaded. Press play on Song A.", 3500); log("mix " + (i+1) + " loaded");
+}
+$("mxSave").onclick = saveMix;
 
 /* ---------- start ---------- */
 if (location.hash === "#demo"){ S.ids = {A:"M7lc1UVf-VE", B:"M7lc1UVf-VE"}; S.outAt = 60; S.inAt = 420; S.fade = 8; S.countIn = 4; S.auto = true; save(); }
