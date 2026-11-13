@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mixer proof build</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;padding:14px;background:#0B0D0F;color:#F2F4F5;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:18px;line-height:1.35}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:20px;margin:22px 0 8px}
+p{margin:6px 0;color:#B4BBC3}
+.decks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:10px}
+.deck{min-width:0;display:flex;flex-direction:column;gap:8px}
+.deck h3{margin:0;font-size:20px}
+.a h3{color:#6CB4FF}.b h3{color:#FFA24D}
+.frame{height:220px;min-width:200px;background:#000;border-radius:10px;overflow:hidden;border:2px solid #2E343B}
+.a .frame{border-color:#6CB4FF}.b .frame{border-color:#FFA24D}
+input[type=text]{width:100%;height:56px;padding:0 12px;border-radius:10px;border:2px solid #3A4149;background:#000;color:#F2F4F5;font-size:18px}
+button{min-height:60px;padding:0 18px;border-radius:12px;border:1px solid #3A4149;background:#171A1E;color:#F2F4F5;font-size:19px;font-weight:600;font-family:inherit}
+button.main{background:#F2F4F5;color:#101214;border-color:#F2F4F5;font-weight:700}
+button:disabled{opacity:.45}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+table{width:100%;border-collapse:collapse;margin-top:6px}
+td{padding:10px 8px;border-top:1px solid #2E343B;vertical-align:top;font-size:17px}
+td.s{width:110px;font-weight:700;white-space:nowrap}
+.PASS{color:#7BD88F}.FAIL{color:#FF7A7A}.RUNNING{color:#FFD166}.WAIT{color:#B4BBC3}.NOTE{color:#6CB4FF}
+#keys{min-height:60px;padding:12px;border-radius:10px;background:#171A1E;font-variant-numeric:tabular-nums}
+#log,#out{width:100%;height:220px;padding:10px;border-radius:10px;background:#000;border:1px solid #2E343B;color:#D5DAE0;font:14px/1.4 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow:auto}
+.small{font-size:16px}
+#pcwrap{width:220px}
+#pcwrap .frame{height:200px}
+</style>
+</head>
+<body>
+<h1>Mixer · proof build 0.1</h1>
+<p>This page tests what the mixer depends on, on the device it is opened on. It is a test bench, not the mixer.</p>
+<p id="env" class="small"></p>
+
+<div class="decks">
+  <div class="deck a"><h3>Song A</h3><div class="frame"><div id="pa"></div></div>
+    <input type="text" id="la" aria-label="YouTube link for Song A" placeholder="YouTube link for Song A (optional)"></div>
+  <div class="deck b"><h3>Song B</h3><div class="frame"><div id="pb"></div></div>
+    <input type="text" id="lb" aria-label="YouTube link for Song B" placeholder="YouTube link for Song B (optional)"></div>
+</div>
+
+<div class="row">
+  <button id="load">1 · Load both songs</button>
+  <button id="runall" class="main">2 · Run the automatic tests</button>
+</div>
+<p class="small">On a phone: after loading, tap each video once so it starts, then pause it, then press "Run the automatic tests".</p>
+
+<h2>Automatic tests</h2>
+<table id="res"></table>
+
+<h2>Listening checks</h2>
+<div class="row">
+  <button id="hearBoth">Play both for 10 seconds</button>
+  <button id="ansBoth">I heard both together</button>
+  <button id="ansOne">I heard only one</button>
+</div>
+<div class="row">
+  <button id="fade">Fade from A to B over 8 seconds</button>
+  <button id="ansSmooth">The fade was smooth</button>
+  <button id="ansJump">It jumped or did nothing</button>
+</div>
+<div class="row"><button id="stop">Stop both songs</button></div>
+
+<h2>Pedal and keyboard check</h2>
+<p class="small">Press each pedal once, then hold one pedal down for three seconds.</p>
+<div id="keys">No keys seen yet.</div>
+
+<h2>Blocked-song detector</h2>
+<p class="small">The automatic test proves the detector fires on a dead link. To test a real blocked song, paste its link here.</p>
+<div class="row">
+  <input type="text" id="lc" aria-label="Link to check" placeholder="Paste a YouTube link to check" style="flex:1 1 260px">
+  <button id="check">Check this link</button>
+</div>
+<div id="pcwrap"><div class="frame"><div id="pc"></div></div></div>
+
+<h2>Event log</h2>
+<p class="small">Leave this page, take a call, open another app beside it, or switch on airplane mode. Each event is recorded here with the time.</p>
+<div id="log"></div>
+
+<h2>Results to send back</h2>
+<div class="row"><button id="copy" class="main">Copy the results</button></div>
+<textarea id="out" readonly aria-label="Results text"></textarea>
+
+<script>
+"use strict";
+const DEFAULT_ID = "M7lc1UVf-VE";            // the sample video from YouTube's own player documentation
+const DEAD_ID    = "aaaaaaaaaaa";            // a link that cannot exist: positive control for the error detector
+const $ = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const now = () => performance.now();
+const STATE = {"-1":"unstarted","0":"ended","1":"playing","2":"paused","3":"buffering","5":"cued"};
+let A = null, B = null, C = null, apiReady = null;
+const errors = {A:[],B:[],C:[]};
+const t0 = Date.now();
+
+/* ---------- log ---------- */
+const logLines = [];
+function log(msg){
+  const s = ((Date.now()-t0)/1000).toFixed(1).padStart(7," ") + "s  " + msg;
+  logLines.push(s); if (logLines.length > 300) logLines.shift();
+  $("log").textContent = logLines.join("\n"); $("log").scrollTop = 1e9; refreshOut();
+}
+
+/* ---------- results ---------- */
+const TESTS = [
+  ["env","Device and browser"],["wake","Keep the screen awake"],["ready","Both players load"],
+  ["rates","Playback speeds offered"],["volume","Level control responds"],["both","Two songs play at the same time"],
+  ["start","Cued song starts on command"],["seek","Jump lands where asked"],["loop","Loop jump-back gap"],
+  ["detector","Error detector fires on a dead link"],["hear","Listening: both songs audible together"],
+  ["fadeq","Listening: fade is smooth"],["keys","Pedal or keyboard presses seen"],["blocked","Blocked-song check on a pasted link"]
+];
+const R = {}; TESTS.forEach(([k,n]) => R[k] = {name:n,status:"WAIT",detail:"not run yet"});
+function set(k,status,detail){ R[k].status=status; R[k].detail=detail; render(); log(R[k].name+": "+status+" — "+detail); }
+function render(){
+  $("res").innerHTML = TESTS.map(([k]) => `<tr><td class="s ${R[k].status}">${R[k].status}</td><td><b>${R[k].name}</b><br><span class="small">${R[k].detail}</span></td></tr>`).join("");
+  refreshOut();
+}
+function refreshOut(){
+  const lines = ["MIXER PROOF BUILD 0.1 — " + new Date().toString(), $("env").textContent, ""];
+  TESTS.forEach(([k]) => lines.push(R[k].status.padEnd(8) + R[k].name + " :: " + R[k].detail));
+  lines.push("", "EVENT LOG", ...logLines.slice(-80));
+  $("out").value = lines.join("\n");
+}
+
+/* ---------- YouTube ---------- */
+function parseId(s){
+  s = (s||"").trim(); if (!s) return null;
+  if (/^[\w-]{11}$/.test(s)) return s;
+  const m = s.match(/(?:v=|youtu\.be\/|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+function loadApi(){
+  if (apiReady) return apiReady;
+  apiReady = new Promise((res, rej) => {
+    window.onYouTubeIframeAPIReady = () => res();
+    const s = document.createElement("script"); s.src = "https://www.youtube.com/iframe_api";
+    s.onerror = () => rej(new Error("The YouTube player script did not load"));
+    document.head.appendChild(s);
+    setTimeout(() => rej(new Error("The YouTube player script timed out")), 15000);
+  });
+  return apiReady;
+}
+function makePlayer(elId, name, videoId){
+  return new Promise((res, rej) => {
+    const timer = setTimeout(() => rej(new Error(name+" did not become ready in 15 seconds")), 15000);
+    const p = new YT.Player(elId, {
+      width:"100%", height:"100%", videoId,
+      playerVars:{playsinline:1, rel:0, controls:1},
+      events:{
+        onReady: () => { clearTimeout(timer); res(p); },
+        onStateChange: (e) => log(name+" state: "+(STATE[e.data]||e.data)),
+        onError: (e) => { errors[name].push(e.data); log(name+" ERROR code "+e.data); if (name!=="C") {} }
+      }
+    });
+  });
+}
+async function loadBoth(){
+  set("ready","RUNNING","loading the YouTube player and two songs");
+  try{
+    await loadApi();
+    const ida = parseId($("la").value) || DEFAULT_ID, idb = parseId($("lb").value) || DEFAULT_ID;
+    if (A && A.destroy) { A.destroy(); A=null; } if (B && B.destroy) { B.destroy(); B=null; }
+    $("pa").outerHTML = '<div id="pa"></div>'; $("pb").outerHTML = '<div id="pb"></div>';
+    errors.A.length = 0; errors.B.length = 0;
+    [A,B] = await Promise.all([makePlayer("pa","A",ida), makePlayer("pb","B",idb)]);
+    set("ready","PASS",`A = ${ida}, B = ${idb}; both players reported ready`);
+    return true;
+  }catch(e){ set("ready","FAIL",e.message); return false; }
+}
+async function waitFor(fn, ms, step=40){ const end = now()+ms; while(now()<end){ if (fn()) return true; await sleep(step); } return false; }
+/* Wait until a player's clock is truly advancing; returns {ms, first} or null. */
+async function waitAdvancing(p, ms){
+  const start = now(); let last = p.getCurrentTime(), first = null;
+  while (now()-start < ms){
+    await sleep(40);
+    const c = p.getCurrentTime();
+    if (p.getPlayerState() === 1 && c > last + 0.01){ return {ms: now()-start, first: c}; }
+    last = c;
+  }
+  return null;
+}
+
+/* ---------- automatic tests ---------- */
+function tEnv(){
+  const d = `${navigator.userAgent} | viewport ${innerWidth}×${innerHeight} | pixel ratio ${devicePixelRatio} | screen ${screen.width}×${screen.height} | secure context: ${isSecureContext} | installed mode: ${matchMedia("(display-mode: standalone)").matches} | online: ${navigator.onLine} | address ${location.origin}`;
+  $("env").textContent = d;
+  set("env","NOTE",`viewport ${innerWidth}×${innerHeight}, pixel ratio ${devicePixelRatio}; two 200-wide video windows side by side ${innerWidth >= 460 ? "fit" : "do NOT fit"}`);
+}
+async function tWake(){
+  if (!("wakeLock" in navigator)) return set("wake","FAIL","this browser does not offer the screen wake lock");
+  try{ const l = await navigator.wakeLock.request("screen"); const ok = !l.released; await l.release(); set("wake", ok?"PASS":"FAIL", ok?"wake lock granted and released":"lock came back already released"); }
+  catch(e){ set("wake","FAIL","request refused: "+e.name+" "+e.message); }
+}
+function tRates(){ const r = A.getAvailablePlaybackRates(); set("rates", r && r.length>1 ? "PASS":"FAIL", "Song A offers: "+(r||[]).join(", ")); }
+async function tVolume(){
+  A.setVolume(30); await sleep(400); const v1 = A.getVolume();
+  A.setVolume(80); await sleep(400); const v2 = A.getVolume();
+  A.setVolume(50);
+  set("volume", (v1===30 && v2===80) ? "PASS":"FAIL", `asked 30 then 80, player reported ${v1} then ${v2} (this proves the control, the listening check proves the sound)`);
+}
+async function tBoth(){
+  set("both","RUNNING","playing both for 6 seconds");
+  A.setVolume(50); B.setVolume(50); A.seekTo(20,true); B.seekTo(60,true); await sleep(300);
+  A.playVideo(); B.playVideo();
+  const ra = waitAdvancing(A, 8000), rb = waitAdvancing(B, 8000);
+  const [sa, sb] = await Promise.all([ra, rb]);
+  if (!sa || !sb){ A.pauseVideo(); B.pauseVideo(); return set("both","FAIL",`clock moving — A: ${!!sa}, B: ${!!sb}; states A ${STATE[A.getPlayerState()]}, B ${STATE[B.getPlayerState()]}. On a phone, tap each video once first, then run again.`); }
+  const a0 = A.getCurrentTime(), b0 = B.getCurrentTime(), w0 = now();
+  await sleep(5000);
+  const da = A.getCurrentTime()-a0, db = B.getCurrentTime()-b0, wall = (now()-w0)/1000;
+  const sA = A.getPlayerState(), sB = B.getPlayerState();
+  A.pauseVideo(); B.pauseVideo();
+  const ok = da > wall*0.8 && db > wall*0.8;
+  set("both", ok?"PASS":"FAIL", `over ${wall.toFixed(1)} s of real time, A advanced ${da.toFixed(2)} s and B advanced ${db.toFixed(2)} s; end states A ${STATE[sA]}, B ${STATE[sB]}`);
+}
+async function tStart(){
+  set("start","RUNNING","cueing Song B paused, then starting it 5 times");
+  const dur = B.getDuration() || 600, lat = [];
+  for (let i=0;i<5;i++){
+    const t = Math.min(30 + i*17.3, dur-20);
+    B.seekTo(t,true); B.playVideo(); await waitAdvancing(B,6000); B.pauseVideo(); B.seekTo(t,true); await sleep(900);
+    const r = (B.playVideo(), await waitAdvancing(B, 6000)); B.pauseVideo();
+    if (!r) return set("start","FAIL",`start ${i+1} never began playing`);
+    lat.push(r.ms); await sleep(250);
+  }
+  const avg = lat.reduce((a,b)=>a+b,0)/lat.length, mx = Math.max(...lat);
+  set("start", mx < 700 ? "PASS":"FAIL", `time from the play command to sound moving: ${lat.map(x=>x.toFixed(0)).join(", ")} milliseconds (average ${avg.toFixed(0)}, worst ${mx.toFixed(0)}; pass is under 700)`);
+}
+async function tSeek(){
+  set("seek","RUNNING","6 jumps on Song B while it plays");
+  const dur = B.getDuration() || 600, targets = [41.0, 73.5, 22.25, 118.0, 55.75, 96.5].map(t => Math.min(t, dur-15)), errs = [], gaps = [];
+  B.playVideo(); await waitAdvancing(B, 6000);
+  for (const t of targets){
+    const c0 = now(); B.seekTo(t, true);
+    const ok = await waitFor(() => { const c = B.getCurrentTime(); return B.getPlayerState()===1 && c >= t-3 && c < t+3; }, 6000, 20);
+    if (!ok){ B.pauseVideo(); return set("seek","FAIL",`jump to ${t} did not settle; state ${STATE[B.getPlayerState()]}, clock ${B.getCurrentTime().toFixed(2)}`); }
+    const r = await waitAdvancing(B, 5000); if (!r){ B.pauseVideo(); return set("seek","FAIL",`after the jump to ${t} the song did not resume`); }
+    gaps.push(now()-c0); errs.push(r.first - t - 0.04);
+    await sleep(600);
+  }
+  B.pauseVideo();
+  const worst = Math.max(...errs.map(Math.abs)), wg = Math.max(...gaps);
+  set("seek", worst <= 2.5 ? "PASS":"FAIL", `landing error for each jump, in seconds: ${errs.map(e=>(e>=0?"+":"")+e.toFixed(2)).join(", ")} (worst ${worst.toFixed(2)}); time to resume: ${gaps.map(g=>g.toFixed(0)).join(", ")} milliseconds (worst ${wg.toFixed(0)})`);
+}
+async function tLoop(){
+  set("loop","RUNNING","looping 5 seconds of Song A, 4 passes");
+  const s = 40, e = 45, gaps = [], lands = [];
+  A.seekTo(s,true); A.playVideo(); if (!(await waitAdvancing(A,6000))){ A.pauseVideo(); return set("loop","FAIL","Song A did not start"); }
+  for (let i=0;i<4;i++){
+    const reached = await waitFor(() => A.getCurrentTime() >= e, 9000, 15);
+    if (!reached){ A.pauseVideo(); return set("loop","FAIL",`pass ${i+1}: never reached the loop end; clock ${A.getCurrentTime().toFixed(2)}`); }
+    const c0 = now(); A.seekTo(s,true);
+    const back = await waitFor(() => { const c = A.getCurrentTime(); return c < e-1 && c >= s-3; }, 5000, 10);
+    const r = back ? await waitAdvancing(A, 5000) : null;
+    if (!r){ A.pauseVideo(); return set("loop","FAIL",`pass ${i+1}: the jump back did not resume`); }
+    gaps.push(now()-c0); lands.push(r.first - s);
+  }
+  A.pauseVideo();
+  const avg = gaps.reduce((a,b)=>a+b,0)/gaps.length, mx = Math.max(...gaps);
+  set("loop", mx < 600 ? "PASS":"FAIL", `gap at each jump back: ${gaps.map(g=>g.toFixed(0)).join(", ")} milliseconds (average ${avg.toFixed(0)}, worst ${mx.toFixed(0)}; pass is under 600); landed ${lands.map(l=>(l>=0?"+":"")+l.toFixed(2)).join(", ")} seconds from the loop start`);
+}
+async function loadC(id){
+  if (C && C.destroy){ C.destroy(); C=null; } $("pc").outerHTML = '<div id="pc"></div>'; errors.C.length = 0;
+  let ready = false;
+  try{ C = await makePlayer("pc","C",id); ready = true; }catch(e){}
+  await waitFor(() => errors.C.length > 0, 6000, 100);
+  if (!errors.C.length && ready){ try{ C.mute(); C.playVideo(); }catch(e){} await waitFor(() => errors.C.length > 0 || C.getPlayerState()===1, 6000, 100); try{ C.pauseVideo(); }catch(e){} }
+  return {ready, codes:[...errors.C]};
+}
+async function tDetector(){
+  set("detector","RUNNING","loading a link that cannot exist");
+  await loadApi(); const r = await loadC(DEAD_ID);
+  set("detector", r.codes.length ? "PASS":"FAIL", r.codes.length ? `dead link reported error code ${r.codes.join(", ")}, so the detector is live` : "the dead link raised no error, so the detector cannot be trusted");
+}
+async function runAll(){
+  $("runall").disabled = true;
+  try{
+    tEnv(); await tWake();
+    if (!A || !B){ if (!(await loadBoth())) return; }
+    tRates(); await tVolume(); await tBoth(); await tStart(); await tSeek(); await tLoop(); await tDetector();
+    log("AUTOMATIC TESTS FINISHED");
+  }catch(e){ log("TEST RUN STOPPED: "+e.message); }
+  finally{ $("runall").disabled = false; }
+}
+
+/* ---------- listening checks ---------- */
+async function hearBoth(){ if(!A||!B) return; A.setVolume(50); B.setVolume(50); A.playVideo(); B.playVideo(); log("listening check: both playing for 10 seconds"); await sleep(10000); A.pauseVideo(); B.pauseVideo(); }
+async function fade(){
+  if(!A||!B) return; A.setVolume(100); B.setVolume(0); A.playVideo(); B.playVideo(); log("fade check: A to B over 8 seconds");
+  await sleep(1500); const steps = 80;
+  for (let i=0;i<=steps;i++){ const x = i/steps; A.setVolume(Math.round(100*Math.cos(x*Math.PI/2))); B.setVolume(Math.round(100*Math.sin(x*Math.PI/2))); await sleep(100); }
+  await sleep(1500); A.pauseVideo(); log("fade check finished; B continues");
+}
+
+/* ---------- keys ---------- */
+const keyCount = {}; let repeats = 0;
+addEventListener("keydown", (e) => {
+  if (e.target && e.target.tagName === "INPUT") return;
+  const k = `${e.key === " " ? "Space" : e.key} (${e.code})`;
+  if (e.repeat) repeats++; else keyCount[k] = (keyCount[k]||0)+1;
+  const txt = Object.entries(keyCount).map(([k,n]) => `${k} × ${n}`).join(" · ") + ` · repeats while held: ${repeats}`;
+  $("keys").textContent = txt;
+  R.keys.status = "NOTE"; R.keys.detail = txt; render();
+  if (["ArrowUp","ArrowDown","PageUp","PageDown"," "].includes(e.key)) e.preventDefault();
+});
+
+/* ---------- environment events ---------- */
+document.addEventListener("visibilitychange", () => log("page is now "+document.visibilityState));
+addEventListener("online", () => log("connection: online")); addEventListener("offline", () => log("connection: OFFLINE"));
+addEventListener("blur", () => log("window lost focus")); addEventListener("focus", () => log("window has focus"));
+addEventListener("resize", () => log(`viewport is now ${innerWidth}×${innerHeight}`));
+
+/* ---------- buttons ---------- */
+$("load").onclick = loadBoth; $("runall").onclick = runAll;
+$("hearBoth").onclick = hearBoth; $("fade").onclick = fade;
+$("stop").onclick = () => { try{A.pauseVideo();B.pauseVideo();}catch(e){} };
+$("ansBoth").onclick = () => set("hear","PASS","listener confirmed both songs were audible together");
+$("ansOne").onclick  = () => set("hear","FAIL","listener heard only one song");
+$("ansSmooth").onclick = () => set("fadeq","PASS","listener confirmed a smooth fade from A to B");
+$("ansJump").onclick   = () => set("fadeq","FAIL","listener reported the fade jumped or did nothing");
+$("check").onclick = async () => {
+  const id = parseId($("lc").value); if (!id) return set("blocked","FAIL","that is not a YouTube link the page can read");
+  set("blocked","RUNNING","checking "+id); await loadApi(); const r = await loadC(id);
+  const blocked = r.codes.some(c => c===101 || c===150);
+  set("blocked","NOTE", r.codes.length ? `${id}: error code ${r.codes.join(", ")}${blocked ? " — the owner blocks outside players" : ""}` : `${id}: no error, this song is allowed to play here`);
+};
+$("copy").onclick = async () => {
+  refreshOut(); const ta = $("out");
+  try{ await navigator.clipboard.writeText(ta.value); $("copy").textContent = "Copied"; }
+  catch(e){ ta.focus(); ta.select(); $("copy").textContent = "Selected — press and hold, then Copy"; }
+  setTimeout(() => $("copy").textContent = "Copy the results", 2500);
+};
+render(); tEnv(); log("page opened");
+</script>
+</body>
+</html>
