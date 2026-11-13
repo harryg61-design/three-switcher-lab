@@ -34,7 +34,7 @@ td.s{width:110px;font-weight:700;white-space:nowrap}
 </style>
 </head>
 <body>
-<h1>Mixer · proof build 0.5</h1>
+<h1>Mixer · proof build 0.6</h1>
 <p>This page tests what the mixer depends on, on the device it is opened on. It is a test bench, not the mixer.</p>
 <p id="env" class="small"></p>
 
@@ -122,10 +122,11 @@ function render(){
   refreshOut();
 }
 function refreshOut(){
-  const lines = ["MIXER PROOF BUILD 0.5 — " + new Date().toString(), $("env").textContent, ""];
+  const lines = ["MIXER PROOF BUILD 0.6 — " + new Date().toString(), $("env").textContent, ""];
   TESTS.forEach(([k]) => lines.push(R[k].status.padEnd(8) + R[k].name + " :: " + R[k].detail));
   lines.push("", "EVENT LOG", ...logLines.slice(-80));
   $("out").value = lines.join("\n");
+  if (R.both.status !== "WAIT" || R.hear.status !== "WAIT"){ try { localStorage.setItem("mixerProofLast", $("out").value); } catch(e){} }
 }
 
 /* ---------- YouTube ---------- */
@@ -383,6 +384,18 @@ if (location.hash === "#listen"){
   $("l2").onclick = ans("TWO VOICES", "PASS", "listener heard two voices at once");
   $("l1").onclick = ans("ONE VOICE", "FAIL", "listener heard only one voice");
   $("l0").onclick = ans("NOTHING", "FAIL", "listener heard nothing");
+}
+/* ---------- results survive leaving the page ---------- */
+let SAVED = null; try { SAVED = localStorage.getItem("mixerProofLast"); } catch(e){}
+if (SAVED && SAVED.length > 200){
+  const b = document.createElement("div");
+  b.style.cssText = "display:flex;flex-direction:column;gap:14px;padding:18px;margin:10px 0 18px;border:3px solid #7BD88F;border-radius:20px;text-align:center";
+  const when = (SAVED.split("\n")[0].split(" — ")[1] || "").replace(/ GMT.*/, "");
+  b.innerHTML = '<div style="font-size:26px;font-weight:700">Your last test results are saved on this phone.</div><div class="small">From: ' + when.replace(/[<>&]/g, "") + '</div>';
+  const c = document.createElement("button"); c.className = "main"; c.textContent = "Copy the saved results";
+  c.style.cssText = "min-height:140px;font-size:36px;border-radius:22px";
+  c.onclick = async () => { try { await navigator.clipboard.writeText(SAVED); c.textContent = "Copied. Now paste it to Claude."; } catch(e){ c.textContent = "Copy did not work. Send a screenshot instead."; } };
+  b.appendChild(c); document.querySelector("h1").after(b);
 }
 render(); tEnv(); log("page opened");
 </script>
