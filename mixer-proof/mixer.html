@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mixer</title>
+<style>
+:root{color-scheme:dark;--bg:#0B0D0F;--p:#171A1E;--t:#F2F4F5;--m:#B4BBC3;--l:#3A4149;--a:#6CB4FF;--b:#FFA24D;--ad:#0B1A2A;--bd:#2A1500}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--t);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input{font-family:inherit}
+#app{max-width:1000px;margin:0 auto;padding:8px 12px 14px;display:flex;flex-direction:column;gap:8px;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;height:44px}
+header h1{margin:0;font-size:22px}
+#status{font-size:16px;color:var(--m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0}
+nav{display:flex;gap:4px;padding:3px;background:var(--p);border-radius:12px;flex:none}
+nav button{height:38px;padding:0 16px;border-radius:9px;border:none;background:transparent;color:#D5DAE0;font-size:17px;font-weight:600}
+nav button.on{background:var(--t);color:#101214;font-weight:700}
+#banner{display:none;padding:10px 14px;border-radius:12px;background:#FFD166;color:#101214;font-size:18px;font-weight:700;text-align:center}
+.halves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.deck{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dh{display:flex;align-items:center;gap:8px;height:30px}
+.badge{width:28px;height:28px;border-radius:50%;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none}
+.A .badge{background:var(--a);color:var(--ad)}.B .badge{background:var(--b);color:var(--bd)}
+.title{font-size:18px;font-weight:600;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dstate{font-size:15px;color:var(--m);flex:none}
+.frame{height:200px;min-width:200px;border-radius:10px;background:#000;overflow:hidden;border:2px solid var(--l);display:flex;align-items:center;justify-content:center;color:var(--m);font-size:16px;text-align:center}
+.A .frame{border-color:var(--a)}.B .frame{border-color:var(--b)}
+.read{height:118px;border-radius:14px;background:var(--p);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;padding:0 6px}
+.read .lab{font-size:16px;font-weight:700;letter-spacing:.08em;color:var(--m)}
+.read .num{font-size:66px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.read .sub{font-size:15px;color:#D5DAE0;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.A .read .num{color:var(--a)}.B .read .num{color:var(--b)}
+.A .read.hot{background:var(--a)}.B .read.hot{background:var(--b)}
+.read.hot .lab,.read.hot .sub{color:#101214}.A .read.hot .num{color:var(--ad)}.B .read.hot .num{color:var(--bd)}
+#fader{display:flex;align-items:center;gap:10px;height:40px}
+#fader b{font-size:20px;width:16px;text-align:center}
+#ftrack{position:relative;flex:1 1 auto;height:40px;border-radius:12px;background:#000;border:1px solid #2E343B}
+#ftrack i{position:absolute;left:16px;right:16px;top:19px;height:2px;background:var(--l)}
+#fh{position:absolute;top:4px;width:64px;height:30px;border-radius:8px;background:var(--t);left:4px}
+.tool{height:48px;border-radius:12px;border:1px solid var(--l);background:transparent;color:var(--t);font-size:16px;font-weight:600;padding:0 4px}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:center}
+.pad{height:104px;border-radius:18px;border:2px solid var(--l);background:var(--p);color:var(--t);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 4px}
+.pad .k{font-size:14px;font-weight:700;letter-spacing:.08em;color:var(--m)}
+.pad .n{font-size:24px;font-weight:700;line-height:1.05}
+.pad .s{font-size:15px;color:var(--m)}
+.pad.white{background:var(--t);border-color:var(--t);color:#101214}.pad.white .k,.pad.white .s{color:#2E343B}
+.pad.blue{background:var(--a);border-color:var(--a);color:var(--ad)}.pad.blue .k,.pad.blue .s{color:var(--ad)}
+.pad.orange{background:var(--b);border-color:var(--b);color:var(--bd)}.pad.orange .k,.pad.orange .s{color:var(--bd)}
+#arm{display:none;min-height:120px;border-radius:20px;border:none;background:#FFD166;color:#101214;font-size:30px;font-weight:700}
+.card{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--p);border-radius:14px;min-width:0}
+.card h2{margin:0;font-size:18px}
+.card.A{border-top:4px solid var(--a)}.card.B{border-top:4px solid var(--b)}
+input[type=text],input[type=url]{width:100%;height:56px;padding:0 12px;border-radius:12px;border:2px solid var(--l);background:#000;color:var(--t);font-size:18px}
+.time{display:flex;align-items:center;gap:8px}
+.time input{width:84px;height:72px;border-radius:12px;border:2px solid var(--l);background:#000;color:var(--t);font-size:38px;font-weight:600;text-align:center}
+.time span{font-size:38px;color:var(--m)}
+.time small{font-size:15px;color:var(--m)}
+.btn{min-height:56px;border-radius:12px;border:1px solid var(--l);background:transparent;color:var(--t);font-size:17px;font-weight:600;padding:0 10px}
+.btn.main{background:var(--t);color:#101214;border-color:var(--t);font-weight:700}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.chips button{height:56px;border-radius:12px;border:1px solid var(--l);background:transparent;color:var(--t);font-size:20px;font-weight:600}
+.chips button.on{background:var(--t);color:#101214;border-color:var(--t);font-weight:700}
+.marks{display:flex;flex-wrap:wrap;gap:6px}
+.marks button{height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--l);background:transparent;color:var(--t);font-size:16px}
+#level{width:100%;height:40px;accent-color:#F2F4F5}
+#setup{display:none;flex-direction:column;gap:8px}
+#play{display:flex;flex-direction:column;gap:8px}
+small.note{font-size:15px;color:var(--m)}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <h1>Mixer</h1>
+  <div id="status">build 0.1</div>
+  <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button></nav>
+</header>
+<div id="banner" role="status"></div>
+<button id="arm">Tap once to get both songs ready</button>
+
+<div class="halves">
+  <section class="deck A" aria-label="Song A">
+    <div class="dh"><span class="badge">A</span><span class="title" id="tA">No song yet</span><span class="dstate" id="sA"></span></div>
+    <div class="frame"><div id="pA">Add a YouTube link in Set up</div></div>
+    <div class="read" id="rA"><span class="lab"></span><span class="num"></span><span class="sub"></span></div>
+  </section>
+  <section class="deck B" aria-label="Song B">
+    <div class="dh"><span class="badge">B</span><span class="title" id="tB">No song yet</span><span class="dstate" id="sB"></span></div>
+    <div class="frame"><div id="pB">Add a YouTube link in Set up</div></div>
+    <div class="read" id="rB"><span class="lab"></span><span class="num"></span><span class="sub"></span></div>
+  </section>
+</div>
+
+<div id="play">
+  <div id="fader"><b style="color:var(--a)">A</b><div id="ftrack" role="img" aria-label="Crossfader"><i></i><div id="fh"></div></div><b style="color:var(--b)">B</b></div>
+  <div class="halves">
+    <div class="two"><button class="tool" id="mark">Mark this spot</button><button class="tool" id="speed">Speed 100%</button></div>
+    <div class="two"><label style="font-size:15px;color:var(--m)">Music level <input type="range" id="level" min="0" max="100" step="5" aria-label="Music level"></label><button class="tool" id="release">Release all loops</button></div>
+  </div>
+  <div class="halves">
+    <div class="two"><button class="pad" id="k1"><span class="k">PEDAL 1</span><span class="n">Loop A</span><span class="s" id="k1s">set start</span></button>
+      <button class="pad" id="k2"><span class="k">PEDAL 2</span><span class="n">Run it again</span><span class="s">replay the mix</span></button></div>
+    <div class="two"><button class="pad" id="k3"><span class="k">PEDAL 3</span><span class="n">Loop B</span><span class="s" id="k3s">set start</span></button>
+      <button class="pad white" id="k4"><span class="k">PEDAL 4</span><span class="n">Mix now</span><span class="s" id="k4s"></span></button></div>
+  </div>
+</div>
+
+<div id="setup">
+  <div class="halves">
+    <div class="card A"><h2>Song A link</h2><input type="url" id="linkA" placeholder="Paste a YouTube link" aria-label="YouTube link for Song A"><button class="btn" id="loadA">Load Song A</button></div>
+    <div class="card B"><h2>Song B link</h2><input type="url" id="linkB" placeholder="Paste a YouTube link" aria-label="YouTube link for Song B"><button class="btn" id="loadB">Load Song B</button></div>
+  </div>
+  <div class="halves">
+    <div class="card" id="cOut"><h2 id="hOut">Leave Song A at</h2>
+      <div class="time"><div><input id="oM" inputmode="numeric" aria-label="Leave at, minutes"><br><small>minutes</small></div><span>:</span><div><input id="oS" inputmode="numeric" aria-label="Leave at, seconds"><br><small>seconds</small></div></div>
+      <div class="two"><button class="btn" id="oNow">Use time playing now</button><button class="btn" id="oClear">No set time</button></div>
+      <div class="marks" id="oMarks"></div></div>
+    <div class="card" id="cIn"><h2 id="hIn">Bring Song B in at</h2>
+      <div class="time"><div><input id="iM" inputmode="numeric" aria-label="Bring in at, minutes"><br><small>minutes</small></div><span>:</span><div><input id="iS" inputmode="numeric" aria-label="Bring in at, seconds"><br><small>seconds</small></div></div>
+      <div class="two"><button class="btn" id="iNow">Use time playing now</button><button class="btn" id="iZero">From the start</button></div>
+      <div class="marks" id="iMarks"></div></div>
+  </div>
+  <div class="halves">
+    <div class="card"><h2>Fade length, in seconds</h2><div class="chips" id="fadeC"><button data-v="0" style="font-size:17px">Cut</button><button data-v="4">4</button><button data-v="8">8</button><button data-v="16">16</button></div></div>
+    <div class="card"><h2>Count-in, in seconds</h2><div class="chips" id="countC"><button data-v="0" style="font-size:17px">None</button><button data-v="4">4</button><button data-v="8">8</button><button data-v="16">16</button></div></div>
+  </div>
+  <div class="halves">
+    <div class="card"><h2>When to mix</h2><div class="two"><button class="btn" id="autoOn">Automatic at the set time</button><button class="btn" id="autoOff">Only on the pedal</button></div></div>
+    <div class="card"><h2>Pedals and keys</h2><small class="note">1 or Left arrow: Loop A · 2 or Up arrow: Run it again · 3 or Down arrow: Loop B · 4 or Right arrow: Mix now</small></div>
+  </div>
+  <button class="btn main" id="done" style="min-height:66px;font-size:24px">Done</button>
+</div>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const now = () => performance.now();
+const OTHER = {A:"B", B:"A"};
+const STATE = {"-1":"unstarted","0":"ended","1":"playing","2":"paused","3":"buffering","5":"cued"};
+const LEAD = 0.3;                      // measured on the Fold and the laptop: a cued song starts about 0.3 second after the command
+const DEF = {ids:{A:null,B:null}, outAt:null, inAt:0, fade:8, countIn:4, auto:true, level:80, marks:{}};
+let S; try { S = Object.assign({}, DEF, JSON.parse(localStorage.getItem("mixerState") || "{}")); } catch(e){ S = Object.assign({}, DEF); }
+S.ids = Object.assign({A:null,B:null}, S.ids || {}); S.marks = S.marks || {};
+const save = () => { try { localStorage.setItem("mixerState", JSON.stringify(S)); } catch(e){} };
+
+const P = {A:null, B:null}, ready = {A:false, B:false}, gain = {A:1, B:0}, wd = {A:0, B:0};
+const loop = {A:{st:0,s:0,e:0,n:0,hold:0}, B:{st:0,s:0,e:0,n:0,hold:0}};
+let out = "A", inn = "B", armed = false, phase = "idle", mixAt = 0, fadeT0 = 0, lastMix = null, rate = 1, apiP = null, wake = null, rescues = 0;
+const LOG = [];
+function log(m){ LOG.push(((now()/1000).toFixed(1)) + " " + m); if (LOG.length > 400) LOG.shift(); }
+
+/* ---------- helpers ---------- */
+const fmt = (s) => { if (s == null || !isFinite(s)) return "–:––"; s = Math.max(0, s); const m = Math.floor(s/60), r = Math.floor(s%60); return m + ":" + String(r).padStart(2,"0"); };
+function banner(t, ms){ const b = $("banner"); b.textContent = t; b.style.display = "block"; clearTimeout(banner.t); banner.t = setTimeout(() => b.style.display = "none", ms || 4000); log("banner: " + t); }
+function parseId(s){ s = (s||"").trim(); if (!s) return null; if (/^[\w-]{11}$/.test(s)) return s; const m = s.match(/(?:v=|youtu\.be\/|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/); return m ? m[1] : null; }
+const cur = (d) => { try { return P[d] && ready[d] ? P[d].getCurrentTime() : null; } catch(e){ return null; } };
+const st  = (d) => { try { return P[d] && ready[d] ? P[d].getPlayerState() : null; } catch(e){ return null; } };
+function vol(d, g){ gain[d] = g; try { if (P[d] && ready[d]) P[d].setVolume(Math.round(g * S.level)); } catch(e){} }
+
+/* A jump can hang in "buffering" (found and reproduced in the proof build on both devices). Every jump gets a watchdog. */
+function seekPlay(d, t){
+  if (!P[d] || !ready[d]) return;
+  const token = ++wd[d]; P[d].seekTo(t, true); P[d].playVideo();
+  const check = (n) => setTimeout(() => {
+    if (token !== wd[d]) return;
+    const s = st(d);
+    if (s === 1) return;
+    if (n >= 3){ banner("Song " + d + " is not responding. Check the connection."); return; }
+    rescues++; log("rescue " + n + " on " + d + ": stuck in " + STATE[s] + " at " + (cur(d)||0).toFixed(1));
+    P[d].seekTo(t + 0.3*n, true); P[d].playVideo(); check(n+1);
+  }, n === 1 ? 2500 : 3500);
+  check(1);
+}
+function cue(d, t){ if (!P[d] || !ready[d]) return; wd[d]++; P[d].seekTo(t, true); P[d].pauseVideo(); }
+
+/* ---------- YouTube ---------- */
+function loadApi(){
+  if (apiP) return apiP;
+  apiP = new Promise((res, rej) => { window.onYouTubeIframeAPIReady = () => res(); const s = document.createElement("script"); s.src = "https://www.youtube.com/iframe_api"; s.onerror = () => rej(new Error("The YouTube player did not load")); document.head.appendChild(s); });
+  return apiP;
+}
+async function loadSong(d, id){
+  S.ids[d] = id; save();
+  try { await loadApi(); } catch(e){ banner(e.message); return; }
+  if (P[d] && ready[d]){ P[d].cueVideoById({videoId:id, startSeconds: d === inn ? (S.inAt||0) : 0}); log("cued " + id + " on " + d); return; }
+  ready[d] = false;
+  P[d] = new YT.Player("p" + d, { width:"100%", height:"100%", videoId:id, playerVars:{playsinline:1, rel:0, controls:1},
+    events:{
+      onReady: () => { ready[d] = true; vol(d, gain[d]); log(d + " ready"); if (!armed) $("arm").style.display = "block"; },
+      onStateChange: (e) => { log(d + " " + (STATE[e.data]||e.data)); if (e.data === 0 && d === out && phase === "idle") log(d + " reached its end"); },
+      onError: (e) => { log(d + " error " + e.data); banner("Song " + d + " cannot be played here (code " + e.data + "). Try another link.", 8000); }
+    }});
+}
+function titleOf(d){ try { const v = P[d] && ready[d] && P[d].getVideoData && P[d].getVideoData(); return v && v.title ? v.title : (S.ids[d] ? "Song " + d : "No song yet"); } catch(e){ return "Song " + d; } }
+
+/* ---------- arming: a phone only lets a page start sound after a tap ---------- */
+async function arm(){
+  const ds = ["A","B"].filter(d => P[d] && ready[d]); if (!ds.length){ banner("Load a song in Set up first."); return; }
+  ds.forEach(d => { try { P[d].mute(); P[d].playVideo(); } catch(e){} });
+  $("arm").textContent = "Getting ready…";
+  await new Promise(r => setTimeout(r, 1200));
+  ds.forEach(d => { try { P[d].pauseVideo(); P[d].unMute(); } catch(e){} });
+  gain[out] = 1; gain[inn] = 0; ds.forEach(d => vol(d, gain[d]));
+  if (ds.includes(out)) cue(out, 0); if (ds.includes(inn)) cue(inn, S.inAt || 0);
+  armed = true; $("arm").style.display = "none"; $("arm").textContent = "Tap once to get both songs ready";
+  try { if ("wakeLock" in navigator) wake = await navigator.wakeLock.request("screen"); } catch(e){ log("wake lock refused: " + e.name); }
+  banner("Ready. Press play on Song " + out + " to begin.", 5000); log("armed " + ds.join("+"));
+}
+document.addEventListener("visibilitychange", async () => { log("page " + document.visibilityState); if (document.visibilityState === "visible" && armed){ try { if ("wakeLock" in navigator) wake = await navigator.wakeLock.request("screen"); } catch(e){} } });
+addEventListener("offline", () => banner("Waiting for the connection.", 8000));
+
+/* ---------- the mix ---------- */
+function startCount(seconds){
+  if (phase !== "idle") return;
+  if (!ready[inn] || !S.ids[inn]){ banner("Load Song " + inn + " first."); return; }
+  if (seconds <= 0){ execute(); return; }
+  phase = "count"; mixAt = now() + seconds*1000; log("count-in " + seconds.toFixed(1) + " s");
+}
+function execute(){
+  const o = out, i = inn; phase = "mix";
+  lastMix = {out:o, inn:i, outAt: S.outAt != null ? S.outAt : (cur(o)||0), inAt: S.inAt||0};
+  const f = Math.max(0, S.fade|0);
+  vol(i, f ? 0 : 1);
+  const c = cur(i); if (c == null || Math.abs(c - lastMix.inAt) > 0.6 || st(i) === 0) seekPlay(i, lastMix.inAt); else { const tk = ++wd[i]; P[i].playVideo(); setTimeout(() => { if (tk === wd[i] && st(i) !== 1) seekPlay(i, lastMix.inAt + 0.3); }, 2500); }
+  fadeT0 = now(); log("MIX " + o + " to " + i + (f ? " over " + f + " s" : " as a cut"));
+  if (!f) finishMix(o, i);
+}
+function finishMix(o, i){
+  vol(i, 1); vol(o, 0); try { wd[o]++; P[o].pauseVideo(); } catch(e){}
+  loop[o].st = 0; out = i; inn = o; phase = "idle"; S.outAt = null; S.inAt = 0; save(); fillSetup(); log("mix finished; now playing " + i);
+}
+function mixNow(){
+  if (!armed){ banner("Tap the yellow button first."); return; }
+  if (phase === "count"){ log("count-in skipped"); execute(); return; }
+  if (phase === "mix") return;
+  startCount(S.countIn|0);
+}
+function runAgain(){
+  if (!armed){ banner("Tap the yellow button first."); return; }
+  let m = lastMix; if (!m && S.outAt != null) m = {out, inn, outAt:S.outAt, inAt:S.inAt||0};
+  if (!m){ banner("Set a mix point first, or do one mix."); return; }
+  phase = "idle"; out = m.out; inn = m.inn; S.outAt = m.outAt; S.inAt = m.inAt; save(); fillSetup();
+  loop[out].st = 0; loop[inn].st = 0;
+  vol(inn, 0); cue(inn, m.inAt); vol(out, 1); seekPlay(out, Math.max(0, m.outAt - 10)); log("run it again from " + fmt(Math.max(0, m.outAt - 10)));
+}
+
+/* ---------- loops ---------- */
+function loopPress(d){
+  if (!armed || !ready[d]){ banner("Song " + d + " is not ready."); return; }
+  const L = loop[d], t = cur(d);
+  if (L.st === 0){ L.s = t; L.st = 1; log("loop " + d + " start " + t.toFixed(2)); }
+  else if (L.st === 1){ if (t - L.s < 1){ banner("That loop is under one second. Press again a little later."); return; } L.e = t; L.n = 1; L.st = 2; L.hold = now() + 900; seekPlay(d, L.s); log("loop " + d + " " + L.s.toFixed(2) + " to " + L.e.toFixed(2)); }
+  else { L.st = 0; log("loop " + d + " released"); }
+}
+function releaseAll(){ loop.A.st = 0; loop.B.st = 0; log("all loops released"); }
+
+/* ---------- the clock: runs ten times a second ---------- */
+function tick(){
+  const t = now();
+  for (const d of ["A","B"]){ const L = loop[d]; if (L.st === 2 && t > L.hold){ const c = cur(d); if (c != null && (c >= L.e || c < L.s - 1.5)){ L.n++; L.hold = t + 900; seekPlay(d, L.s); } } }
+  if (phase === "idle" && armed && S.auto && S.outAt != null && loop[out].st !== 2 && st(out) === 1 && ready[inn] && S.ids[inn]){
+    const rem = (S.outAt - cur(out)) / rate;
+    if (rem <= (S.countIn|0) + 0.05 && rem > -1){ phase = "count"; mixAt = t + rem*1000; log("automatic count-in, " + rem.toFixed(1) + " s to the mix"); }
+  }
+  if (phase === "count" && t >= mixAt - LEAD*1000) execute();
+  if (phase === "mix"){
+    const f = Math.max(0.001, S.fade|0), x = Math.min(1, (t - fadeT0) / (f*1000)), o = out, i = inn;
+    vol(o, Math.cos(x*Math.PI/2)); vol(i, Math.sin(x*Math.PI/2));
+    if (x >= 1) finishMix(o, i);
+  }
+  draw();
+}
+
+/* ---------- drawing ---------- */
+function setRead(d, lab, num, sub, hot){ const r = $("r"+d); r.children[0].textContent = lab; r.children[1].textContent = num; r.children[2].textContent = sub; r.classList.toggle("hot", !!hot); }
+function draw(){
+  const t = now();
+  for (const d of ["A","B"]){
+    const c = cur(d), s = st(d), L = loop[d];
+    $("t"+d).textContent = titleOf(d);
+    $("s"+d).textContent = !S.ids[d] ? "" : !ready[d] ? "Loading" : (STATE[s] || "");
+    if (!S.ids[d]){ setRead(d, "NO SONG", "–:––", "add a link in Set up"); continue; }
+    if (!ready[d]){ setRead(d, "LOADING", "–:––", ""); continue; }
+    if (phase === "count"){ const n = Math.max(0, Math.ceil((mixAt - t)/1000)); setRead(d, d === out ? (S.fade ? "FADES OUT IN" : "CUTS OUT IN") : "STARTS IN", String(n), "", true); continue; }
+    if (L.st === 2){ setRead(d, "LOOPING", fmt(L.e - L.s), "from " + fmt(L.s) + " to " + fmt(L.e) + " · pass " + L.n); continue; }
+    if (L.st === 1){ setRead(d, "LOOP START SET", fmt(c), "press Loop " + d + " again at the end"); continue; }
+    if (d === out){
+      if (phase === "mix"){ setRead(d, "FADING OUT", fmt(c), "to Song " + inn); }
+      else if (S.outAt != null && s === 1 && S.outAt - c > -1){ setRead(d, S.auto ? "LEAVES IN" : "MIX POINT IN", fmt((S.outAt - c)/rate), "out at " + fmt(S.outAt) + " · now " + fmt(c)); }
+      else setRead(d, s === 1 ? "PLAYING" : "STOPPED AT", fmt(c), S.outAt != null ? "out at " + fmt(S.outAt) : "no set time · mix on the pedal");
+    } else {
+      if (phase === "mix") setRead(d, "COMING IN", fmt(c), "from Song " + out);
+      else setRead(d, "COMES IN AT", fmt(S.inAt||0), (armed ? "ready" : "not ready") + " · " + (S.fade ? S.fade + " second fade" : "cut"));
+    }
+  }
+  const gA = gain.A, gB = gain.B, pos = (gA + gB) > 0 ? gB/(gA+gB) : (out === "A" ? 0 : 1);
+  const tr = $("ftrack").clientWidth - 72; $("fh").style.left = (4 + pos*Math.max(0,tr)) + "px";
+  const padL = (d, pad, sub) => { const L = loop[d]; sub.textContent = L.st === 0 ? "set start" : L.st === 1 ? "set end" : "release"; pad.className = "pad" + (L.st ? (d === "A" ? " blue" : " orange") : ""); };
+  padL("A", $("k1"), $("k1s")); padL("B", $("k3"), $("k3s"));
+  $("k4s").textContent = phase === "count" ? "skip the count-in" : (S.auto && S.outAt != null ? "or at " + fmt(S.outAt) : "Song " + out + " to Song " + inn);
+  $("status").textContent = (armed ? "" : "not ready · ") + "Song " + out + " to Song " + inn + (rescues ? " · rescues " + rescues : "");
+}
+
+/* ---------- set up screen ---------- */
+function chips(box, val){ Array.from($(box).children).forEach(b => b.classList.toggle("on", Number(b.dataset.v) === Number(val))); }
+function marksFor(d, box, apply){
+  const el = $(box); el.innerHTML = ""; const id = S.ids[d], ms = (id && S.marks[id]) || [];
+  ms.forEach(t => { const b = document.createElement("button"); b.textContent = "Marker " + fmt(t); b.onclick = () => apply(t); el.appendChild(b); });
+}
+function fillSetup(){
+  $("hOut").textContent = "Leave Song " + out + " at"; $("hIn").textContent = "Bring Song " + inn + " in at";
+  $("cOut").className = "card " + out; $("cIn").className = "card " + inn;
+  $("oM").value = S.outAt == null ? "" : Math.floor(S.outAt/60); $("oS").value = S.outAt == null ? "" : Math.floor(S.outAt%60);
+  $("iM").value = Math.floor((S.inAt||0)/60); $("iS").value = Math.floor((S.inAt||0)%60);
+  chips("fadeC", S.fade); chips("countC", S.countIn);
+  $("autoOn").classList.toggle("main", !!S.auto); $("autoOff").classList.toggle("main", !S.auto);
+  marksFor(out, "oMarks", (t) => setOut(t)); marksFor(inn, "iMarks", (t) => setIn(t));
+  if (document.activeElement !== $("linkA")) $("linkA").value = S.ids.A ? "https://youtu.be/" + S.ids.A : "";
+  if (document.activeElement !== $("linkB")) $("linkB").value = S.ids.B ? "https://youtu.be/" + S.ids.B : "";
+  $("level").value = S.level;
+}
+function setOut(t){ S.outAt = t == null ? null : Math.max(0, t); save(); fillSetup(); }
+function setIn(t){ S.inAt = Math.max(0, t||0); save(); fillSetup(); if (armed && phase === "idle") cue(inn, S.inAt); }
+const readTime = (m, s) => { const a = parseInt($(m).value, 10), b = parseInt($(s).value, 10); if (isNaN(a) && isNaN(b)) return null; return (isNaN(a)?0:a)*60 + (isNaN(b)?0:b); };
+$("oM").onchange = $("oS").onchange = () => setOut(readTime("oM","oS"));
+$("iM").onchange = $("iS").onchange = () => setIn(readTime("iM","iS") || 0);
+$("oNow").onclick = () => { const c = cur(out); if (c == null) return banner("Song " + out + " is not loaded."); setOut(c); };
+$("oClear").onclick = () => setOut(null);
+$("iNow").onclick = () => { const c = cur(inn); if (c == null) return banner("Song " + inn + " is not loaded."); setIn(c); };
+$("iZero").onclick = () => setIn(0);
+$("fadeC").onclick = (e) => { if (e.target.dataset.v != null){ S.fade = Number(e.target.dataset.v); save(); fillSetup(); } };
+$("countC").onclick = (e) => { if (e.target.dataset.v != null){ S.countIn = Number(e.target.dataset.v); save(); fillSetup(); } };
+$("autoOn").onclick = () => { S.auto = true; save(); fillSetup(); }; $("autoOff").onclick = () => { S.auto = false; save(); fillSetup(); };
+for (const d of ["A","B"]) $("load"+d).onclick = () => { const id = parseId($("link"+d).value); if (!id) return banner("That is not a YouTube link."); loadSong(d, id); banner("Loading Song " + d + "."); };
+function view(v){ $("play").style.display = v === "play" ? "flex" : "none"; $("setup").style.display = v === "setup" ? "flex" : "none"; $("vPlay").classList.toggle("on", v === "play"); $("vSetup").classList.toggle("on", v === "setup"); if (v === "setup") fillSetup(); }
+$("vPlay").onclick = $("done").onclick = () => view("play"); $("vSetup").onclick = () => view("setup");
+
+/* ---------- play screen controls ---------- */
+$("arm").onclick = arm;
+$("k1").onclick = () => loopPress("A"); $("k2").onclick = runAgain; $("k3").onclick = () => loopPress("B"); $("k4").onclick = mixNow;
+$("release").onclick = releaseAll;
+$("level").oninput = () => { S.level = Number($("level").value); save(); vol("A", gain.A); vol("B", gain.B); };
+$("speed").onclick = () => { const r = [1, 0.75, 0.5]; rate = r[(r.indexOf(rate)+1) % r.length]; for (const d of ["A","B"]) try { if (ready[d]) P[d].setPlaybackRate(rate); } catch(e){} $("speed").textContent = "Speed " + Math.round(rate*100) + "%"; };
+$("mark").onclick = () => { const d = out, c = cur(d), id = S.ids[d]; if (c == null || !id) return banner("Nothing is playing to mark."); (S.marks[id] = S.marks[id] || []).push(Math.round(c*10)/10); S.marks[id].sort((a,b) => a-b); save(); banner("Marked " + fmt(c) + " on Song " + d + ".", 2500); };
+const KEYS = {"1":() => loopPress("A"), "ArrowLeft":() => loopPress("A"), "2":runAgain, "ArrowUp":runAgain, "3":() => loopPress("B"), "ArrowDown":() => loopPress("B"), "4":mixNow, "ArrowRight":mixNow};
+addEventListener("keydown", (e) => { if (e.repeat) return; const tg = e.target && e.target.tagName; if (tg === "INPUT") return; const f = KEYS[e.key]; if (f){ e.preventDefault(); log("key " + e.key); f(); } });
+
+/* ---------- start ---------- */
+if (location.hash === "#demo"){ S.ids = {A:"M7lc1UVf-VE", B:"M7lc1UVf-VE"}; S.outAt = 60; S.inAt = 420; S.fade = 8; S.countIn = 4; S.auto = true; save(); }
+fillSetup(); view(S.ids.A || S.ids.B ? "play" : "setup");
+for (const d of ["A","B"]) if (S.ids[d]) loadSong(d, S.ids[d]);
+setInterval(tick, 100); draw();
+</script>
+</body>
+</html>
