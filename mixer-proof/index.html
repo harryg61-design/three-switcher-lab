@@ -34,7 +34,7 @@ td.s{width:110px;font-weight:700;white-space:nowrap}
 </style>
 </head>
 <body>
-<h1>Mixer · proof build 0.3</h1>
+<h1>Mixer · proof build 0.5</h1>
 <p>This page tests what the mixer depends on, on the device it is opened on. It is a test bench, not the mixer.</p>
 <p id="env" class="small"></p>
 
@@ -122,7 +122,7 @@ function render(){
   refreshOut();
 }
 function refreshOut(){
-  const lines = ["MIXER PROOF BUILD 0.3 — " + new Date().toString(), $("env").textContent, ""];
+  const lines = ["MIXER PROOF BUILD 0.5 — " + new Date().toString(), $("env").textContent, ""];
   TESTS.forEach(([k]) => lines.push(R[k].status.padEnd(8) + R[k].name + " :: " + R[k].detail));
   lines.push("", "EVENT LOG", ...logLines.slice(-80));
   $("out").value = lines.join("\n");
@@ -208,8 +208,8 @@ async function tBoth(){
   set("both","RUNNING","playing both for 6 seconds");
   A.setVolume(50); B.setVolume(50); A.seekTo(20,true); B.seekTo(60,true); await sleep(300);
   A.playVideo(); B.playVideo();
-  const ra = waitAdvancing(A, 8000), rb = waitAdvancing(B, 8000);
-  const [sa, sb] = await Promise.all([ra, rb]);
+  const go = async (p, t) => { let r = await waitAdvancing(p, 3000), rescues = 0; while (!r && rescues < 3){ rescues++; log("rescue " + rescues + ": a player is stuck in " + STATE[p.getPlayerState()] + " at " + p.getCurrentTime().toFixed(1) + " s, jumping again"); p.seekTo(t + 0.3*rescues, true); p.playVideo(); r = await waitAdvancing(p, 5000); } if (r) r.rescues = rescues; return r; };
+  const [sa, sb] = await Promise.all([go(A, 20), go(B, 60)]);
   if (!sa || !sb){ A.pauseVideo(); B.pauseVideo(); return set("both","FAIL",`clock moving — A: ${!!sa}, B: ${!!sb}; states A ${STATE[A.getPlayerState()]}, B ${STATE[B.getPlayerState()]}. On a phone, tap each video once first, then run again.`); }
   const a0 = A.getCurrentTime(), b0 = B.getCurrentTime(), w0 = now();
   await sleep(5000);
@@ -217,7 +217,7 @@ async function tBoth(){
   const sA = A.getPlayerState(), sB = B.getPlayerState();
   A.pauseVideo(); B.pauseVideo();
   const ok = da > wall*0.8 && db > wall*0.8;
-  set("both", ok?"PASS":"FAIL", `over ${wall.toFixed(1)} s of real time, A advanced ${da.toFixed(2)} s and B advanced ${db.toFixed(2)} s; end states A ${STATE[sA]}, B ${STATE[sB]}`);
+  set("both", ok?"PASS":"FAIL", `over ${wall.toFixed(1)} s of real time, A advanced ${da.toFixed(2)} s and B advanced ${db.toFixed(2)} s; end states A ${STATE[sA]}, B ${STATE[sB]}; rescues needed after a stuck jump: A ${sa.rescues}, B ${sb.rescues}`);
 }
 async function tStart(){
   set("start","RUNNING","cueing Song B paused, then starting it 5 times");
@@ -369,7 +369,17 @@ if (location.hash === "#listen"){
     msg("What did you hear? (Clocks: A " + sa + " at " + ca.toFixed(0) + " s, B " + sb + " at " + cb.toFixed(0) + " s)");
     $("lans").style.display = "flex"; $("lgo").textContent = "Play both again"; $("lgo").disabled = false;
   };
-  const ans = (word, status, detail) => () => { set("hear", status, detail); msg("Recorded. Tell Claude: " + word); };
+  const ans = (word, status, detail) => async () => {
+    set("hear", status, detail);
+    $("lans").style.display = "none"; $("lgo").style.display = "none";
+    msg("Recorded: " + word + ". Now running the automatic tests by itself. About 2 minutes. Keep this page in front and the screen on. You will hear starts, jumps and loops.");
+    await runAll();
+    msg("FINISHED. Tap the button below, then paste into the chat with Claude.");
+    const c = document.createElement("button"); c.className = "main"; c.textContent = "Copy the results";
+    c.style.cssText = "min-height:150px;font-size:38px;border-radius:22px";
+    c.onclick = async () => { refreshOut(); try { await navigator.clipboard.writeText($("out").value); c.textContent = "Copied. Now paste it to Claude."; } catch(e) { c.textContent = "Copy did not work. Send screenshots instead."; } };
+    p.appendChild(c);
+  };
   $("l2").onclick = ans("TWO VOICES", "PASS", "listener heard two voices at once");
   $("l1").onclick = ans("ONE VOICE", "FAIL", "listener heard only one voice");
   $("l0").onclick = ans("NOTHING", "FAIL", "listener heard nothing");
