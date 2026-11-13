@@ -67,14 +67,20 @@ input[type=text],input[type=url]{width:100%;height:56px;padding:0 12px;border-ra
 #setup{display:none;flex-direction:column;gap:8px}
 #play{display:flex;flex-direction:column;gap:8px}
 small.note{font-size:15px;color:var(--m)}
+.qrow{display:flex;align-items:center;gap:8px;min-height:52px;padding:4px 0;border-top:1px solid #2E343B}
+.qrow .qn{width:30px;color:var(--m);font-size:15px;text-align:right;flex:none}
+.qrow .qt{flex:1 1 auto;min-width:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qrow .qf{color:#FFD166;font-size:14px;flex:none}
+.qrow button{width:58px;height:44px;border-radius:10px;border:1px solid var(--l);background:transparent;font-size:18px;font-weight:700;flex:none}
+.qrow .ba{color:var(--a)}.qrow .bb{color:var(--b)}
 </style>
 </head>
 <body>
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 0.1</div>
-  <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button></nav>
+  <div id="status">build 0.2</div>
+  <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
 <button id="arm">Tap once to get both songs ready</button>
@@ -129,6 +135,10 @@ small.note{font-size:15px;color:var(--m)}
     <div class="card"><h2>When to mix</h2><div class="two"><button class="btn" id="autoOn">Automatic at the set time</button><button class="btn" id="autoOff">Only on the pedal</button></div></div>
     <div class="card"><h2>Pedals and keys</h2><small class="note">1 or Left arrow: Loop A · 2 or Up arrow: Run it again · 3 or Down arrow: Loop B · 4 or Right arrow: Mix now</small></div>
   </div>
+  <div class="card"><h2>Playlist</h2>
+    <div style="display:flex;gap:8px"><input type="url" id="plLink" placeholder="Paste a YouTube playlist link" aria-label="YouTube playlist link"><button class="btn" id="plLoad" style="flex:none">Load playlist</button></div>
+    <small class="note" id="plNote">Songs from the playlist appear here. Tap A or B to put a song on that side.</small>
+    <div id="queue"></div></div>
   <button class="btn main" id="done" style="min-height:66px;font-size:24px">Done</button>
 </div>
 </div>
@@ -185,13 +195,7 @@ async function loadSong(d, id){
   S.ids[d] = id; save();
   try { await loadApi(); } catch(e){ banner(e.message); return; }
   if (P[d] && ready[d]){ P[d].cueVideoById({videoId:id, startSeconds: d === inn ? (S.inAt||0) : 0}); log("cued " + id + " on " + d); return; }
-  ready[d] = false;
-  P[d] = new YT.Player("p" + d, { width:"100%", height:"100%", videoId:id, playerVars:{playsinline:1, rel:0, controls:1},
-    events:{
-      onReady: () => { ready[d] = true; vol(d, gain[d]); log(d + " ready"); if (!armed) $("arm").style.display = "block"; },
-      onStateChange: (e) => { log(d + " " + (STATE[e.data]||e.data)); if (e.data === 0 && d === out && phase === "idle") log(d + " reached its end"); },
-      onError: (e) => { log(d + " error " + e.data); banner("Song " + d + " cannot be played here (code " + e.data + "). Try another link.", 8000); }
-    }});
+  makePlayer(d, {videoId:id});
 }
 function titleOf(d){ try { const v = P[d] && ready[d] && P[d].getVideoData && P[d].getVideoData(); return v && v.title ? v.title : (S.ids[d] ? "Song " + d : "No song yet"); } catch(e){ return "Song " + d; } }
 
@@ -316,7 +320,7 @@ function fillSetup(){
   $("iM").value = Math.floor((S.inAt||0)/60); $("iS").value = Math.floor((S.inAt||0)%60);
   chips("fadeC", S.fade); chips("countC", S.countIn);
   $("autoOn").classList.toggle("main", !!S.auto); $("autoOff").classList.toggle("main", !S.auto);
-  marksFor(out, "oMarks", (t) => setOut(t)); marksFor(inn, "iMarks", (t) => setIn(t));
+  marksFor(out, "oMarks", (t) => setOut(t)); marksFor(inn, "iMarks", (t) => setIn(t)); renderQueue();
   if (document.activeElement !== $("linkA")) $("linkA").value = S.ids.A ? "https://youtu.be/" + S.ids.A : "";
   if (document.activeElement !== $("linkB")) $("linkB").value = S.ids.B ? "https://youtu.be/" + S.ids.B : "";
   $("level").value = S.level;
@@ -346,6 +350,76 @@ $("speed").onclick = () => { const r = [1, 0.75, 0.5]; rate = r[(r.indexOf(rate)
 $("mark").onclick = () => { const d = out, c = cur(d), id = S.ids[d]; if (c == null || !id) return banner("Nothing is playing to mark."); (S.marks[id] = S.marks[id] || []).push(Math.round(c*10)/10); S.marks[id].sort((a,b) => a-b); save(); banner("Marked " + fmt(c) + " on Song " + d + ".", 2500); };
 const KEYS = {"1":() => loopPress("A"), "ArrowLeft":() => loopPress("A"), "2":runAgain, "ArrowUp":runAgain, "3":() => loopPress("B"), "ArrowDown":() => loopPress("B"), "4":mixNow, "ArrowRight":mixNow};
 addEventListener("keydown", (e) => { if (e.repeat) return; const tg = e.target && e.target.tagName; if (tg === "INPUT") return; const f = KEYS[e.key]; if (f){ e.preventDefault(); log("key " + e.key); f(); } });
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+S.queue = S.queue || [];
+function makePlayer(d, o){
+  ready[d] = false;
+  const cfg = { width:"100%", height:"100%", playerVars:Object.assign({playsinline:1, rel:0, controls:1}, o.playerVars || {}),
+    events:{
+      onReady: () => { ready[d] = true; vol(d, gain[d]); log(d + " ready"); if (!armed) $("arm").style.display = "block"; },
+      onStateChange: (e) => { log(d + " " + (STATE[e.data]||e.data)); },
+      onError: (e) => { log(d + " error " + e.data); banner("Song " + d + " cannot be played here (code " + e.data + "). Try another song.", 8000); const q = S.queue.find(x => x.id === S.ids[d]); if (q){ q.flag = "cannot play here"; save(); renderQueue(); } }
+    }};
+  if (o.videoId) cfg.videoId = o.videoId;
+  P[d] = new YT.Player("p" + d, cfg);
+}
+
+/* ---------- playlist and queue ---------- */
+function renderQueue(){
+  const el = $("queue"); if (!el) return; el.innerHTML = "";
+  S.queue.forEach((q, i) => {
+    const r = document.createElement("div"); r.className = "qrow";
+    const n = document.createElement("span"); n.className = "qn"; n.textContent = String(i+1);
+    const t = document.createElement("span"); t.className = "qt"; t.textContent = q.title || ("Song " + (i+1));
+    r.appendChild(n); r.appendChild(t);
+    if (q.flag){ const f = document.createElement("span"); f.className = "qf"; f.textContent = q.flag; r.appendChild(f); }
+    for (const d of ["A","B"]){ const b = document.createElement("button"); b.className = d === "A" ? "ba" : "bb"; b.textContent = d; b.setAttribute("aria-label", "Put this song on side " + d); b.onclick = () => { loadSong(d, q.id); banner("Loading it on side " + d + ".", 2500); }; r.appendChild(b); }
+    el.appendChild(r);
+  });
+}
+async function fetchTitles(){
+  for (const q of S.queue){
+    if (q.title) continue;
+    try {
+      const r = await fetch("https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent("https://www.youtube.com/watch?v=" + q.id));
+      if (r.ok){ const j = await r.json(); q.title = j.title || ""; }
+      else if (r.status === 401 || r.status === 403){ q.flag = "may not play here"; }
+      else if (r.status === 404 || r.status === 400){ q.flag = "not available"; }
+    } catch(e){ log("titles could not be fetched: " + e.message); break; }
+    save(); renderQueue();
+  }
+}
+async function importPlaylist(listId){
+  try { await loadApi(); } catch(e){ banner(e.message); return; }
+  if (phase !== "idle"){ banner("Wait for the mix to finish, then load the playlist."); return; }
+  const d = st(inn) === 1 ? out : inn;
+  if (st(d) === 1){ banner("Pause one song first. The playlist is read through a player that is not playing."); return; }
+  $("plNote").textContent = "Reading the playlist…"; log("reading playlist " + listId + " through side " + d);
+  if (P[d] && ready[d]) P[d].cuePlaylist({listType:"playlist", list:listId}); else makePlayer(d, {playerVars:{listType:"playlist", list:listId}});
+  let ids = null;
+  for (let i = 0; i < 48; i++){ await sleep(250); try { const g = ready[d] && P[d].getPlaylist && P[d].getPlaylist(); if (g && g.length){ ids = g.slice(); break; } } catch(e){} }
+  if (!ids){
+    $("plNote").textContent = "That playlist could not be read. If it is set to Private on YouTube, change it to Unlisted and try again.";
+    if (S.ids[d] && ready[d]) P[d].cueVideoById({videoId:S.ids[d], startSeconds: d === inn ? (S.inAt||0) : 0});
+    log("playlist read failed"); return;
+  }
+  const old = {}; S.queue.forEach(q => { old[q.id] = q; });
+  S.queue = ids.map(id => old[id] ? old[id] : {id, title:""}); S.playlistId = listId; save();
+  const first = ids[0], second = ids[1] || ids[0], o = OTHER[d];
+  if (S.ids[d]) P[d].cueVideoById({videoId:S.ids[d], startSeconds: d === inn ? (S.inAt||0) : 0}); else loadSong(d, d === out ? first : second);
+  if (!S.ids[o]) loadSong(o, o === out ? first : second);
+  renderQueue(); $("plNote").textContent = ids.length + " songs loaded from the playlist. Tap A or B to put a song on that side."; log("playlist gave " + ids.length + " songs");
+  fetchTitles();
+}
+function startOver(){
+  phase = "idle"; loop.A.st = 0; loop.B.st = 0; out = "A"; inn = "B"; lastMix = null;
+  for (const d of ["A","B"]){ try { wd[d]++; if (ready[d]) P[d].pauseVideo(); } catch(e){} }
+  vol("A", 1); vol("B", 0); if (ready.A) cue("A", 0); if (ready.B) cue("B", S.inAt || 0);
+  fillSetup(); view("play"); banner("Started over. Press play on Song A.", 3500); log("start over");
+}
+$("vOver").onclick = startOver;
+$("plLoad").onclick = () => { const m = ($("plLink").value || "").match(/[?&]list=([\w-]+)/) || ($("plLink").value || "").trim().match(/^((?:PL|UU|FL|OL|RD)[\w-]{10,})$/); if (!m) return banner("That is not a playlist link. A playlist link has list= in it."); importPlaylist(m[1]); };
 
 /* ---------- start ---------- */
 if (location.hash === "#demo"){ S.ids = {A:"M7lc1UVf-VE", B:"M7lc1UVf-VE"}; S.outAt = 60; S.inAt = 420; S.fade = 8; S.countIn = 4; S.auto = true; save(); }
