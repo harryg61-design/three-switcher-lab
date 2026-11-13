@@ -79,7 +79,7 @@ small.note{font-size:15px;color:var(--m)}
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 0.3</div>
+  <div id="status">build 0.4</div>
   <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
@@ -136,7 +136,7 @@ small.note{font-size:15px;color:var(--m)}
     <div class="card"><h2>Pedals and keys</h2><small class="note">1 or Left arrow: Loop A · 2 or Up arrow: Run it again · 3 or Down arrow: Loop B · 4 or Right arrow: Mix now</small></div>
   </div>
   <div class="card"><h2>Saved mixes</h2>
-    <button class="btn" id="mxSave">Save this mix</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="mxSave">Save this mix</button><button class="btn" id="mxChain" aria-pressed="false">Run in order: off</button></div>
     <small class="note" id="mxNote">Saves both songs, the out point, the in point, the fade and the count-in. Tap Load to bring a saved mix back.</small>
     <div id="mixes"></div></div>
   <div class="card"><h2>Playlist</h2>
@@ -435,7 +435,7 @@ function renderMixes(){
     const r = document.createElement("div"); r.className = "qrow";
     const n = document.createElement("span"); n.className = "qn"; n.textContent = String(i+1);
     const t = document.createElement("span"); t.className = "qt"; t.textContent = (m.ta || "Song A") + "  to  " + (m.tb || "Song B") + "  (out " + tc(m.outAt) + ", in " + tc(m.inAt) + ")";
-    const l = document.createElement("button"); l.className = "ba"; l.textContent = "Load"; l.style.width = "76px"; l.setAttribute("aria-label", "Load saved mix " + (i+1)); l.onclick = () => loadMix(i);
+    if (S.chain && i === S.cur) r.style.background = "#20262D"; const l = document.createElement("button"); l.className = "ba"; l.textContent = "Load"; l.style.width = "76px"; l.setAttribute("aria-label", "Load saved mix " + (i+1)); l.onclick = () => loadMix(i);
     const x = document.createElement("button"); x.className = "bb"; x.textContent = "Remove"; x.style.width = "96px"; x.setAttribute("aria-label", "Remove saved mix " + (i+1)); x.onclick = () => { S.mixes.splice(i, 1); save(); renderMixes(); };
     r.appendChild(n); r.appendChild(t); r.appendChild(l); r.appendChild(x); el.appendChild(r);
   });
@@ -452,9 +452,24 @@ async function loadMix(i){
   const put = () => { S.outAt = m.outAt; S.inAt = m.inAt; S.fade = m.fade; S.countIn = m.countIn; save(); };
   out = "A"; inn = "B"; put(); loadSong("A", m.a); loadSong("B", m.b);
   for (let k = 0; k < 60; k++){ await sleep(250); if (ready.A && ready.B) break; }
-  put(); startOver(); banner("Saved mix " + (i+1) + " loaded. Press play on Song A.", 3500); log("mix " + (i+1) + " loaded");
+  S.cur = i; save(); put(); startOver(); banner("Saved mix " + (i+1) + " loaded. Press play on Song A.", 3500); log("mix " + (i+1) + " loaded");
 }
 $("mxSave").onclick = saveMix;
+
+/* ---------- run saved mixes in order ---------- */
+function drawChain(){ const b = $("mxChain"); if (!b) return; b.textContent = "Run in order: " + (S.chain ? "on" : "off"); b.setAttribute("aria-pressed", S.chain ? "true" : "false"); b.style.borderColor = S.chain ? "#7BD88F" : ""; b.style.color = S.chain ? "#7BD88F" : ""; }
+$("mxChain").onclick = () => { S.chain = !S.chain; save(); drawChain(); renderMixes(); banner(S.chain ? "Run in order is on. When a mix finishes, the next saved mix is set up for you." : "Run in order is off.", 4000); };
+function nextInOrder(){
+  if (!S.chain || S.cur == null) return;
+  const n = S.cur + 1, m = S.mixes[n];
+  if (!m){ banner("That was the last saved mix.", 4000); return; }
+  if (m.a !== S.ids[out]){ banner("Saved mix " + (n+1) + " does not start with the song now playing, so it was not set up.", 7000); return; }
+  S.cur = n; S.inAt = m.inAt; S.fade = m.fade; S.countIn = m.countIn; S.outAt = m.outAt; save();
+  loadSong(inn, m.b); fillSetup(); draw();
+  banner("Next up: saved mix " + (n+1) + ".", 4000); log("set up mix " + (n+1) + " in order");
+}
+{ const fm0 = finishMix; finishMix = function(){ const r0 = fm0.apply(this, arguments); try { nextInOrder(); } catch(e){ log("run in order error: " + e.message); } return r0; }; }
+drawChain();
 
 /* ---------- start ---------- */
 if (location.hash === "#demo"){ S.ids = {A:"M7lc1UVf-VE", B:"M7lc1UVf-VE"}; S.outAt = 60; S.inAt = 420; S.fade = 8; S.countIn = 4; S.auto = true; save(); }
