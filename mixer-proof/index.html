@@ -34,7 +34,7 @@ td.s{width:110px;font-weight:700;white-space:nowrap}
 </style>
 </head>
 <body>
-<h1>Mixer · proof build 0.2</h1>
+<h1>Mixer · proof build 0.3</h1>
 <p>This page tests what the mixer depends on, on the device it is opened on. It is a test bench, not the mixer.</p>
 <p id="env" class="small"></p>
 
@@ -122,7 +122,7 @@ function render(){
   refreshOut();
 }
 function refreshOut(){
-  const lines = ["MIXER PROOF BUILD 0.2 — " + new Date().toString(), $("env").textContent, ""];
+  const lines = ["MIXER PROOF BUILD 0.3 — " + new Date().toString(), $("env").textContent, ""];
   TESTS.forEach(([k]) => lines.push(R[k].status.padEnd(8) + R[k].name + " :: " + R[k].detail));
   lines.push("", "EVENT LOG", ...logLines.slice(-80));
   $("out").value = lines.join("\n");
@@ -151,7 +151,7 @@ function makePlayer(elId, name, videoId){
     const timer = setTimeout(() => rej(new Error(name+" did not become ready in 15 seconds")), 15000);
     const p = new YT.Player(elId, {
       width:"100%", height:"100%", videoId,
-      playerVars:{playsinline:1, rel:0, controls:1},
+      playerVars:{playsinline:1, rel:0, controls:1, start:(name==="A"?30:(name==="B"?420:0))},
       events:{
         onReady: () => { clearTimeout(timer); res(p); },
         onStateChange: (e) => log(name+" state: "+(STATE[e.data]||e.data)),
@@ -346,6 +346,34 @@ async function withBusy(btn, label, secs, fn){
 }
 $("hearBoth").onclick = () => withBusy($("hearBoth"), "PLAYING BOTH NOW ·", 10, hearBoth);
 $("fade").onclick = () => withBusy($("fade"), "FADING A TO B NOW ·", 11, fade);
+/* ---------- one-tap listening mode: open the page with #listen on the end of the address ---------- */
+if (location.hash === "#listen"){
+  const p = document.createElement("div");
+  p.style.cssText = "display:flex;flex-direction:column;gap:16px;padding:18px;margin:10px 0 18px;border:3px solid #FFD166;border-radius:20px;text-align:center";
+  p.innerHTML = '<div id="lmsg" style="font-size:28px;font-weight:700">Getting two songs ready. Wait a moment.</div>'
+    + '<button id="lgo" class="main" disabled style="min-height:150px;font-size:38px;border-radius:22px">Tap here to play both</button>'
+    + '<div id="lans" style="display:none;flex-direction:column;gap:14px">'
+    + '<button id="l2" style="min-height:110px;font-size:30px">I heard TWO voices at once</button>'
+    + '<button id="l1" style="min-height:110px;font-size:30px">I heard ONE voice</button>'
+    + '<button id="l0" style="min-height:110px;font-size:30px">I heard NOTHING</button></div>';
+  document.querySelector("h1").after(p);
+  const msg = (t) => { $("lmsg").textContent = t; };
+  loadBoth().then((ok) => { if (ok){ $("lgo").disabled = false; msg("Ready. Tap the big button once, then listen for 10 seconds."); } else { msg("The songs did not load. Tell Claude: DID NOT LOAD."); } });
+  $("lgo").onclick = async () => {
+    $("lgo").disabled = true; $("lans").style.display = "none";
+    A.setVolume(60); B.setVolume(60); A.playVideo(); B.playVideo(); log("one-tap listening check started");
+    for (let i = 10; i > 0; i--){ msg("PLAYING NOW. Listen. " + i); await sleep(1000); }
+    const ca = A.getCurrentTime(), cb = B.getCurrentTime(), sa = STATE[A.getPlayerState()], sb = STATE[B.getPlayerState()];
+    A.pauseVideo(); B.pauseVideo();
+    log("one-tap check ended: A " + sa + " at " + ca.toFixed(1) + " s, B " + sb + " at " + cb.toFixed(1) + " s");
+    msg("What did you hear? (Clocks: A " + sa + " at " + ca.toFixed(0) + " s, B " + sb + " at " + cb.toFixed(0) + " s)");
+    $("lans").style.display = "flex"; $("lgo").textContent = "Play both again"; $("lgo").disabled = false;
+  };
+  const ans = (word, status, detail) => () => { set("hear", status, detail); msg("Recorded. Tell Claude: " + word); };
+  $("l2").onclick = ans("TWO VOICES", "PASS", "listener heard two voices at once");
+  $("l1").onclick = ans("ONE VOICE", "FAIL", "listener heard only one voice");
+  $("l0").onclick = ans("NOTHING", "FAIL", "listener heard nothing");
+}
 render(); tEnv(); log("page opened");
 </script>
 </body>
