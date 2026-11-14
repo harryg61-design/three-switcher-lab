@@ -79,7 +79,7 @@ small.note{font-size:15px;color:var(--m)}
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 0.4</div>
+  <div id="status">build 0.5</div>
   <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
@@ -103,6 +103,10 @@ small.note{font-size:15px;color:var(--m)}
   <div class="halves">
     <div class="two"><button class="tool" id="mark">Mark this spot</button><button class="tool" id="speed">Speed 100%</button></div>
     <div class="two"><label style="font-size:15px;color:var(--m)">Music level <input type="range" id="level" min="0" max="100" step="5" aria-label="Music level"></label><button class="tool" id="release">Release all loops</button></div>
+  </div>
+  <div class="halves">
+    <div class="two"><button class="tool" id="tap">Tap the beat</button><button class="tool" id="meter">4 beats in a bar</button></div>
+    <div class="two"><div id="barsRow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button class="tool" id="nEarly">Start earlier</button><button class="tool" id="nLate">Start later</button></div></div>
   </div>
   <div class="halves">
     <div class="two"><button class="pad" id="k1"><span class="k">PEDAL 1</span><span class="n">Loop A</span><span class="s" id="k1s">set start</span></button>
@@ -268,7 +272,7 @@ function releaseAll(){ loop.A.st = 0; loop.B.st = 0; log("all loops released"); 
 function tick(){
   const t = now();
   for (const d of ["A","B"]){ const L = loop[d]; if (L.st === 2 && t > L.hold){ const c = cur(d); if (c != null && (c >= L.e || c < L.s - 1.5)){ L.n++; L.hold = t + 900; seekPlay(d, L.s); } } }
-  if (phase === "idle" && armed && S.auto && S.outAt != null && loop[out].st !== 2 && st(out) === 1 && ready[inn] && S.ids[inn]){
+  if (phase === "idle" && armed && S.auto && S.outAt != null && loop[out].st < 2 && st(out) === 1 && ready[inn] && S.ids[inn]){
     const rem = (S.outAt - cur(out)) / rate;
     if (rem <= (S.countIn|0) + 0.05 && rem > -1){ phase = "count"; mixAt = t + rem*1000; log("automatic count-in, " + rem.toFixed(1) + " s to the mix"); }
   }
@@ -292,7 +296,7 @@ function draw(){
     if (!S.ids[d]){ setRead(d, "NO SONG", "–:––", "add a link in Set up"); continue; }
     if (!ready[d]){ setRead(d, "LOADING", "–:––", ""); continue; }
     if (phase === "count"){ const n = Math.max(0, Math.ceil((mixAt - t)/1000)); setRead(d, d === out ? (S.fade ? "FADES OUT IN" : "CUTS OUT IN") : "STARTS IN", String(n), "", true); continue; }
-    if (L.st === 2){ setRead(d, "LOOPING", fmt(L.e - L.s), "from " + fmt(L.s) + " to " + fmt(L.e) + " · pass " + L.n); continue; }
+    if (L.st >= 2){ setRead(d, L.st === 3 ? "LOOPING " + S.bars + (S.bars === 1 ? " BAR" : " BARS") : "LOOPING", fmt(L.e - L.s), "from " + fmt(L.s) + " to " + fmt(L.e) + " · pass " + L.n); continue; }
     if (L.st === 1){ setRead(d, "LOOP START SET", fmt(c), "press Loop " + d + " again at the end"); continue; }
     if (d === out){
       if (phase === "mix"){ setRead(d, "FADING OUT", fmt(c), "to Song " + inn); }
@@ -470,6 +474,78 @@ function nextInOrder(){
 }
 { const fm0 = finishMix; finishMix = function(){ const r0 = fm0.apply(this, arguments); try { nextInOrder(); } catch(e){ log("run in order error: " + e.message); } return r0; }; }
 drawChain();
+
+/* ---------- beat loops: one press, a whole number of bars, held on a steady clock ---------- */
+S.tempo = S.tempo || {}; S.meter = S.meter || {}; S.bars = S.bars || 4;
+const pnow = () => performance.now();
+const anchor = {A:null, B:null}, lastCT = {A:-1, B:-1}, BL = {A:null, B:null}, gapMs = {A:150, B:150}, beatLog = [];
+function est(d){ const a = anchor[d]; if (!a) return cur(d) || 0; if (st(d) !== 1) return a.m; return a.m + Math.min(0.6, (pnow() - a.w)/1000) * rate; }
+function audible(){ return st(out) === 1 ? out : (st(inn) === 1 ? inn : out); }
+setInterval(() => {
+  for (const d of ["A","B"]){
+    try {
+      if (!P[d] || !ready[d]) continue;
+      const m = P[d].getCurrentTime();
+      if (m !== lastCT[d]){ lastCT[d] = m; anchor[d] = {w: pnow(), m}; }
+      const b = BL[d], L = loop[d];
+      if (b && b.wait && L.st === 3){
+        if (st(d) === 1 && anchor[d].w > b.tSeek && anchor[d].m > L.s + 0.02 && anchor[d].m < L.s + 1.5){
+          const landed = anchor[d].w - (anchor[d].m - L.s) / rate * 1000, err = landed - b.land;
+          b.wait = false; beatLog.push({d, pass: L.n, err: Math.round(err), gap: Math.round(landed - b.tSeek)});
+          gapMs[d] = Math.max(20, Math.min(1200, gapMs[d] + 0.6 * err));
+        } else if (pnow() - b.tSeek > 2800){ b.wait = false; log("beat loop rescue on " + d); beatLoopStart(d, true); }
+      }
+    } catch(e){}
+  }
+}, 20);
+function barSeconds(d){ const id = S.ids[d], beat = S.tempo[id]; return beat ? beat * (S.meter[id] || 4) * S.bars : 0; }
+function beatLoopStart(d, again){
+  const L = loop[d], D = barSeconds(d); if (!D) return false;
+  if (!again){ L.s = est(d); L.n = 1; }
+  L.e = L.s + D; L.st = 3;
+  if (again){ wd[d]++; P[d].seekTo(L.s, true); P[d].playVideo(); }
+  BL[d] = {w0: pnow() + (again ? gapMs[d] : 0), k: 1, wait: false}; lastLoop = d;
+  schedJump(d); log("beat loop " + d + " from " + L.s.toFixed(2) + ", " + S.bars + " bars, " + D.toFixed(2) + " s"); return true;
+}
+function schedJump(d){
+  const b = BL[d], L = loop[d]; if (!b || L.st !== 3) return;
+  clearTimeout(b.timer);
+  const Dms = (L.e - L.s) / rate * 1000; b.grid = b.w0 + b.k * Dms;
+  b.timer = setTimeout(() => jumpBack(d), Math.max(0, b.grid - gapMs[d] - pnow()));
+}
+function jumpBack(d){
+  const b = BL[d], L = loop[d]; if (!b || L.st !== 3 || !P[d]) return;
+  b.tSeek = pnow(); b.land = b.grid; b.wait = true; wd[d]++; P[d].seekTo(L.s, true); P[d].playVideo(); L.n++; b.k++;
+  schedJump(d);
+}
+let lastLoop = "A";
+{ const lp0 = loopPress; loopPress = function(d){
+    const L = loop[d];
+    if (L.st === 3){ L.st = 0; if (BL[d]) clearTimeout(BL[d].timer); BL[d] = null; log("beat loop " + d + " released"); return; }
+    if (L.st === 0 && armed && ready[d] && S.tempo[S.ids[d]] && st(d) === 1){ beatLoopStart(d); return; }
+    return lp0(d);
+  }; }
+/* tap the beat */
+let taps = [];
+function drawBeat(){
+  const d = audible(), id = S.ids[d], beat = S.tempo[id];
+  $("tap").textContent = beat ? "Beat " + (60 / beat).toFixed(1) + " (tap to redo)" : "Tap the beat";
+  $("meter").textContent = (S.meter[id] || 4) + " beats in a bar";
+  [...$("barsRow").children].forEach(b => { const on = +b.dataset.n === S.bars; b.style.borderColor = on ? "#7BD88F" : ""; b.style.color = on ? "#7BD88F" : ""; });
+}
+$("tap").onclick = () => {
+  const w = pnow(), d = audible(), id = S.ids[d]; if (!id) return banner("Load a song first.");
+  if (taps.length && w - taps[taps.length - 1] > 2500) taps = [];
+  taps.push(w);
+  if (taps.length >= 4){ const beat = (taps[taps.length - 1] - taps[0]) / (taps.length - 1) / 1000 * rate; if (beat > 0.2 && beat < 2){ S.tempo[id] = beat; save(); } }
+  else $("tap").textContent = "Keep tapping (" + taps.length + ")";
+  if (taps.length >= 4) drawBeat();
+};
+$("meter").onclick = () => { const id = S.ids[audible()]; if (!id) return; const o = [4,3,6,5,7,2], c = S.meter[id] || 4; S.meter[id] = o[(o.indexOf(c) + 1) % o.length]; save(); drawBeat(); for (const d of ["A","B"]) if (loop[d].st === 3){ loop[d].e = loop[d].s + barSeconds(d); } };
+[1,2,4,8].forEach(n => { const b = document.createElement("button"); b.className = "tool"; b.dataset.n = n; b.textContent = n + (n === 1 ? " bar" : " bars"); b.onclick = () => { S.bars = n; save(); drawBeat(); for (const d of ["A","B"]) if (loop[d].st === 3){ loop[d].e = loop[d].s + barSeconds(d); Object.assign(BL[d], {w0: pnow() - ((est(d) - loop[d].s) / rate * 1000), k: 1}); schedJump(d); } }; $("barsRow").appendChild(b); });
+function nudge(x){ const d = loop[lastLoop].st >= 2 ? lastLoop : (loop.A.st >= 2 ? "A" : loop.B.st >= 2 ? "B" : null); if (!d) return banner("Start a loop first, then nudge its start."); const L = loop[d]; L.s = Math.max(0, L.s + x); L.e += x; banner("Loop " + d + " starts " + (x < 0 ? "earlier" : "later") + ": " + L.s.toFixed(2), 1500); }
+$("nEarly").onclick = () => nudge(-0.03); $("nLate").onclick = () => nudge(0.03);
+setInterval(drawBeat, 500);
 
 /* ---------- start ---------- */
 if (location.hash === "#demo"){ S.ids = {A:"M7lc1UVf-VE", B:"M7lc1UVf-VE"}; S.outAt = 60; S.inAt = 420; S.fade = 8; S.countIn = 4; S.auto = true; save(); }
