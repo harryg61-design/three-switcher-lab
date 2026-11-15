@@ -78,13 +78,14 @@ small.note{font-size:15px;color:var(--m)}
 .qrow .qf{color:#FFD166;font-size:14px;flex:none}
 .qrow button{width:58px;height:44px;border-radius:10px;border:1px solid var(--l);background:transparent;font-size:18px;font-weight:700;flex:none}
 .qrow .ba{color:var(--a)}.qrow .bb{color:var(--b)}
+.qrow .bm{color:inherit}.qrow button:disabled{opacity:.3}.qrow.moved{background:#1B2838}#plOrder.on{border-color:var(--a);color:var(--a)}
 </style>
 </head>
 <body>
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 0.6</div>
+  <div id="status">build 0.8</div>
   <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
@@ -149,10 +150,10 @@ small.note{font-size:15px;color:var(--m)}
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="mxSave">Save this mix</button><button class="btn" id="mxChain" aria-pressed="false">Run in order: off</button></div>
     <small class="note" id="mxNote">Saves both songs, the out point, the in point, the fade and the count-in. Tap Load to bring a saved mix back.</small>
     <div id="mixes"></div></div>
-  <div class="card"><h2>Playlist</h2>
+  <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><h2 style="margin:0">Playlist</h2><button class="btn" id="plOrder" style="flex:none" aria-pressed="false">Reorder</button></div>
     <div style="display:flex;gap:8px"><input type="url" id="plLink" placeholder="Paste a YouTube playlist link" aria-label="YouTube playlist link"><button class="btn" id="plLoad" style="flex:none">Load playlist</button></div>
     <small class="note" id="plNote">Songs from the playlist appear here. Tap A or B to put a song on that side.</small>
-    <div id="queue"></div></div>
+    <div id="queue"></div><button class="btn" id="plYt" style="display:none;margin-top:8px">Back to YouTube order</button></div>
   <button class="btn main" id="done" style="min-height:66px;font-size:24px">Done</button>
 </div>
 </div>
@@ -380,17 +381,43 @@ function makePlayer(d, o){
 }
 
 /* ---------- playlist and queue ---------- */
+let reorder = false, lastMoved = null;
+function moveSong(i, to){
+  if (to < 0 || to >= S.queue.length || to === i) return;
+  const q = S.queue.splice(i, 1)[0]; S.queue.splice(to, 0, q); lastMoved = q.id; save(); renderQueue();
+  const el = $("queue").children[to]; if (el && el.scrollIntoView) el.scrollIntoView({block:"nearest"});
+  log("moved song from " + (i+1) + " to " + (to+1));
+}
+function ytOrderDiffers(){ const y = S.ytOrder || []; if (!y.length) return false; const c = S.queue.map(q => q.id); return c.length !== y.length || c.some((id, i) => id !== y[i]); }
+function setReorder(on){
+  reorder = !!on; if (!reorder) lastMoved = null;
+  const b = $("plOrder"); if (b){ b.textContent = reorder ? "Done" : "Reorder"; b.classList.toggle("on", reorder); b.setAttribute("aria-pressed", reorder ? "true" : "false"); }
+  if (S.queue.length) $("plNote").textContent = reorder ? "Move songs with the arrows. Tap Done when you are finished." : S.queue.length + " songs in the playlist. Tap A or B to put a song on that side.";
+  renderQueue();
+}
+function backToYt(){
+  const pos = {}; (S.ytOrder || []).forEach((id, i) => { if (!(id in pos)) pos[id] = i; });
+  S.queue = S.queue.map((q, i) => ({q, k: (q.id in pos) ? pos[q.id] : 1e6 + i})).sort((a, b) => a.k - b.k).map(x => x.q);
+  lastMoved = null; save(); renderQueue(); log("back to YouTube order");
+}
 function renderQueue(){
   const el = $("queue"); if (!el) return; el.innerHTML = "";
+  const last = S.queue.length - 1;
   S.queue.forEach((q, i) => {
-    const r = document.createElement("div"); r.className = "qrow";
+    const r = document.createElement("div"); r.className = "qrow" + (reorder && q.id === lastMoved ? " moved" : "");
     const n = document.createElement("span"); n.className = "qn"; n.textContent = String(i+1);
     const t = document.createElement("span"); t.className = "qt"; t.textContent = q.title || ("Song " + (i+1));
     r.appendChild(n); r.appendChild(t);
     if (q.flag){ const f = document.createElement("span"); f.className = "qf"; f.textContent = q.flag; r.appendChild(f); }
-    for (const d of ["A","B"]){ const b = document.createElement("button"); b.className = d === "A" ? "ba" : "bb"; b.textContent = d; b.setAttribute("aria-label", "Put this song on side " + d); b.onclick = () => { loadSong(d, q.id); banner("Loading it on side " + d + ".", 2500); }; r.appendChild(b); }
+    if (reorder){
+      const mk = (txt, lab, to, off) => { const b = document.createElement("button"); b.className = "bm"; b.textContent = txt; b.setAttribute("aria-label", lab); b.disabled = off; b.onclick = () => moveSong(i, to); r.appendChild(b); };
+      mk("\u2191", "Move this song up", i - 1, i === 0); mk("\u2193", "Move this song down", i + 1, i === last); mk("Top", "Send this song to the top", 0, i === 0);
+    } else {
+      for (const d of ["A","B"]){ const b = document.createElement("button"); b.className = d === "A" ? "ba" : "bb"; b.textContent = d; b.setAttribute("aria-label", "Put this song on side " + d); b.onclick = () => { loadSong(d, q.id); banner("Loading it on side " + d + ".", 2500); }; r.appendChild(b); }
+    }
     el.appendChild(r);
   });
+  const y = $("plYt"); if (y) y.style.display = (reorder && ytOrderDiffers()) ? "" : "none";
 }
 async function fetchTitles(){
   for (const q of S.queue){
@@ -420,7 +447,10 @@ async function importPlaylist(listId){
     log("playlist read failed"); return;
   }
   const old = {}; S.queue.forEach(q => { old[q.id] = q; });
-  S.queue = ids.map(id => old[id] ? old[id] : {id, title:""}); S.playlistId = listId; save();
+  const same = S.playlistId === listId && S.queue.length > 0, inNew = new Set(ids);
+  const kept = same ? S.queue.filter(q => inNew.has(q.id)).map(q => q.id) : [], keptSet = new Set(kept);
+  const order = same ? kept.concat(ids.filter(id => !keptSet.has(id))) : ids;
+  S.queue = order.map(id => old[id] ? old[id] : {id, title:""}); S.ytOrder = ids.slice(); S.playlistId = listId; save();
   const first = ids[0], second = ids[1] || ids[0], o = OTHER[d];
   if (S.ids[d]) P[d].cueVideoById({videoId:S.ids[d], startSeconds: d === inn ? (S.inAt||0) : 0}); else loadSong(d, d === out ? first : second);
   if (!S.ids[o]) loadSong(o, o === out ? first : second);
@@ -435,6 +465,11 @@ function startOver(){
 }
 $("vOver").onclick = startOver;
 $("plLoad").onclick = () => { const m = ($("plLink").value || "").match(/[?&]list=([\w-]+)/) || ($("plLink").value || "").trim().match(/^((?:PL|UU|FL|OL|RD)[\w-]{10,})$/); if (!m) return plSay("That is not a playlist link. A playlist link has list= in it."); importPlaylist(m[1]); };
+
+$("plOrder").onclick = () => setReorder(!reorder);
+$("plYt").onclick = backToYt;
+$("done").addEventListener("click", () => { if (reorder) setReorder(false); });
+if (!S.ytOrder && S.queue && S.queue.length){ S.ytOrder = S.queue.map(q => q.id); save(); }
 
 /* ---------- saved mixes ---------- */
 S.mixes = S.mixes || [];
