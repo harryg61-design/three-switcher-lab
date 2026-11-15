@@ -77,6 +77,17 @@ small.note{font-size:15px;color:var(--m)}
 .qrow .qt{flex:1 1 auto;min-width:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qrow .qf{color:#FFD166;font-size:14px;flex:none}
 .qrow button{width:58px;height:44px;border-radius:10px;border:1px solid var(--l);background:transparent;font-size:18px;font-weight:700;flex:none}
+.deck .frame{position:relative}
+.dropz{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;border-radius:8px;font-size:22px;font-weight:700;color:#101214;background:transparent;text-align:center;padding:8px}
+body.dropArm .dropz{display:flex}
+.dropz span{display:none}
+body.dropShow .dropz{background:rgba(255,209,102,.9);outline:3px dashed #101214;outline-offset:-8px}
+body.dropShow .dropz span{display:block}
+body.dropShow .dropz.over{background:#FFE9A8}
+#plDropHint{display:none;color:#FFD166}
+body.dropShow #plDropHint{display:block}
+body.dropShow #plCard{outline:3px dashed #FFD166;outline-offset:-3px}
+body.dropShow #plCard.over{background:#2A3038}
 .qrow .ba{color:var(--a)}.qrow .bb{color:var(--b)}
 .qrow .bm{color:inherit}.qrow button:disabled{opacity:.3}.qrow.moved{background:#1B2838}#plOrder.on{border-color:var(--a);color:var(--a)}
 </style>
@@ -85,7 +96,7 @@ small.note{font-size:15px;color:var(--m)}
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 0.8</div>
+  <div id="status">build 0.9</div>
   <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
@@ -94,12 +105,12 @@ small.note{font-size:15px;color:var(--m)}
 <div class="halves">
   <section class="deck A" aria-label="Song A">
     <div class="dh"><span class="badge">A</span><span class="title" id="tA">No song yet</span><span class="dstate" id="sA"></span></div>
-    <div class="frame"><div id="pA">Add a YouTube link in Set up</div></div>
+    <div class="frame"><div id="pA">Add a YouTube link in Set up</div><div class="dropz" data-d="A"><span>Drop here for Song A</span></div></div>
     <div class="read" id="rA"><span class="lab"></span><span class="num"></span><span class="sub"></span></div>
   </section>
   <section class="deck B" aria-label="Song B">
     <div class="dh"><span class="badge">B</span><span class="title" id="tB">No song yet</span><span class="dstate" id="sB"></span></div>
-    <div class="frame"><div id="pB">Add a YouTube link in Set up</div></div>
+    <div class="frame"><div id="pB">Add a YouTube link in Set up</div><div class="dropz" data-d="B"><span>Drop here for Song B</span></div></div>
     <div class="read" id="rB"><span class="lab"></span><span class="num"></span><span class="sub"></span></div>
   </section>
 </div>
@@ -150,10 +161,10 @@ small.note{font-size:15px;color:var(--m)}
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="mxSave">Save this mix</button><button class="btn" id="mxChain" aria-pressed="false">Run in order: off</button></div>
     <small class="note" id="mxNote">Saves both songs, the out point, the in point, the fade and the count-in. Tap Load to bring a saved mix back.</small>
     <div id="mixes"></div></div>
-  <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><h2 style="margin:0">Playlist</h2><button class="btn" id="plOrder" style="flex:none" aria-pressed="false">Reorder</button></div>
+  <div class="card" id="plCard"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><h2 style="margin:0">Playlist</h2><button class="btn" id="plOrder" style="flex:none" aria-pressed="false">Reorder</button></div>
     <div style="display:flex;gap:8px"><input type="url" id="plLink" placeholder="Paste a YouTube playlist link" aria-label="YouTube playlist link"><button class="btn" id="plLoad" style="flex:none">Load playlist</button></div>
     <small class="note" id="plNote">Songs from the playlist appear here. Tap A or B to put a song on that side.</small>
-    <div id="queue"></div><button class="btn" id="plYt" style="display:none;margin-top:8px">Back to YouTube order</button></div>
+    <small class="note" id="plDropHint">Drop a song here to add it to the list, or a playlist link to load the whole playlist.</small><div id="queue"></div><button class="btn" id="plYt" style="display:none;margin-top:8px">Back to YouTube order</button></div>
   <button class="btn main" id="done" style="min-height:66px;font-size:24px">Done</button>
 </div>
 </div>
@@ -448,13 +459,13 @@ async function importPlaylist(listId){
   }
   const old = {}; S.queue.forEach(q => { old[q.id] = q; });
   const same = S.playlistId === listId && S.queue.length > 0, inNew = new Set(ids);
-  const kept = same ? S.queue.filter(q => inNew.has(q.id)).map(q => q.id) : [], keptSet = new Set(kept);
+  const kept = same ? S.queue.filter(q => inNew.has(q.id) || q.added).map(q => q.id) : [], keptSet = new Set(kept);
   const order = same ? kept.concat(ids.filter(id => !keptSet.has(id))) : ids;
   S.queue = order.map(id => old[id] ? old[id] : {id, title:""}); S.ytOrder = ids.slice(); S.playlistId = listId; save();
   const first = ids[0], second = ids[1] || ids[0], o = OTHER[d];
   if (S.ids[d]) P[d].cueVideoById({videoId:S.ids[d], startSeconds: d === inn ? (S.inAt||0) : 0}); else loadSong(d, d === out ? first : second);
   if (!S.ids[o]) loadSong(o, o === out ? first : second);
-  renderQueue(); $("plNote").textContent = ids.length + " songs loaded from the playlist. Tap A or B to put a song on that side."; log("playlist gave " + ids.length + " songs");
+  renderQueue(); $("plNote").textContent = ids.length + " songs loaded from the playlist" + (S.queue.length !== ids.length ? ", " + S.queue.length + " in your list" : "") + ". Tap A or B to put a song on that side."; log("playlist gave " + ids.length + " songs");
   fetchTitles();
 }
 function startOver(){
@@ -470,6 +481,57 @@ $("plOrder").onclick = () => setReorder(!reorder);
 $("plYt").onclick = backToYt;
 $("done").addEventListener("click", () => { if (reorder) setReorder(false); });
 if (!S.ytOrder && S.queue && S.queue.length){ S.ytOrder = S.queue.map(q => q.id); save(); }
+
+/* ---------- drag and drop from YouTube ---------- */
+function dragHasLink(e){ const t = e.dataTransfer && e.dataTransfer.types ? Array.from(e.dataTransfer.types) : []; return t.includes("text/uri-list") || t.includes("text/plain") || t.includes("text/html"); }
+function droppedText(e){
+  const dt = e.dataTransfer; let s = "";
+  try { s = dt.getData("text/uri-list") || ""; } catch(x){}
+  if (!s){ try { s = dt.getData("text/plain") || ""; } catch(x){} }
+  if (!s){ try { const m = (dt.getData("text/html") || "").match(/href="([^"]+)"/i); if (m) s = m[1].replace(/&amp;/g, "&"); } catch(x){} }
+  return s.split(/\r?\n/).filter(l => l && l[0] !== "#")[0] || "";
+}
+function readDrop(e){
+  const s = droppedText(e), yt = /youtu\.be|youtube\.com/i.test(s), lm = yt ? s.match(/[?&]list=([\w-]+)/) : null;
+  return {text:s, id: yt ? parseId(s) : null, list: lm ? lm[1] : null};
+}
+function dropZoneOf(e){ const t = e.target; return t && t.closest ? (t.closest(".dropz") || t.closest("#plCard")) : null; }
+let dragSeen = 0, dragTimer = null;
+function dropShow(on){
+  document.body.classList.toggle("dropShow", on);
+  if (on) document.body.classList.add("dropArm"); else if (document.hasFocus()) document.body.classList.remove("dropArm");
+  if (!on) document.querySelectorAll(".dropz.over, #plCard.over").forEach(x => x.classList.remove("over"));
+}
+function dragPing(){
+  dragSeen = now(); if (!document.body.classList.contains("dropShow")) dropShow(true);
+  if (!dragTimer) dragTimer = setInterval(() => { if (now() - dragSeen > 900){ clearInterval(dragTimer); dragTimer = null; dropShow(false); } }, 200);
+}
+function addToQueue(id){
+  S.queue = S.queue || [];
+  const at = S.queue.findIndex(q => q.id === id);
+  if (at >= 0){ plSay("That song is already number " + (at+1) + " in the list."); return; }
+  S.queue.push({id, title:"", added:true}); save(); renderQueue(); fetchTitles();
+  $("plNote").textContent = "Added as number " + S.queue.length + ". " + S.queue.length + " songs in the playlist.";
+  banner("Added to the playlist as number " + S.queue.length + ".", 2500); log("dropped " + id + " into the playlist");
+}
+function handleDrop(z, r){
+  if (!z){ banner("Drop it on Song A, Song B or the Playlist card."); return; }
+  if (!r.id && !r.list){ const msg = "That is not a YouTube song or playlist link."; if (z.id === "plCard") plSay(msg); else banner(msg); return; }
+  if (z.id === "plCard"){ if (r.id) addToQueue(r.id); else importPlaylist(r.list); return; }
+  const d = z.getAttribute("data-d");
+  if (r.id){ loadSong(d, r.id); banner("Loading it on side " + d + ".", 2500); log("dropped " + r.id + " on " + d); }
+  else importPlaylist(r.list);
+}
+window.addEventListener("blur", () => setTimeout(() => { if (!document.hasFocus()) document.body.classList.add("dropArm"); }, 0));
+window.addEventListener("focus", () => { if (!document.body.classList.contains("dropShow")) document.body.classList.remove("dropArm"); });
+document.addEventListener("dragenter", (e) => { if (!dragHasLink(e)) return; e.preventDefault(); dragPing(); });
+document.addEventListener("dragover", (e) => {
+  if (!dragHasLink(e)) return;
+  e.preventDefault(); const z = dropZoneOf(e); e.dataTransfer.dropEffect = z ? "copy" : "none";
+  document.querySelectorAll(".dropz.over, #plCard.over").forEach(x => { if (x !== z) x.classList.remove("over"); }); if (z) z.classList.add("over");
+  dragPing();
+});
+document.addEventListener("drop", (e) => { if (!dragHasLink(e)) return; e.preventDefault(); const z = dropZoneOf(e), r = readDrop(e); dragSeen = 0; dropShow(false); handleDrop(z, r); });
 
 /* ---------- saved mixes ---------- */
 S.mixes = S.mixes || [];
