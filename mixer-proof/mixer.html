@@ -38,6 +38,10 @@ nav button.on{background:var(--t);color:#101214;font-weight:700}
 #ftrack{position:relative;flex:1 1 auto;height:40px;border-radius:12px;background:#000;border:1px solid #2E343B}
 #ftrack i{position:absolute;left:16px;right:16px;top:19px;height:2px;background:var(--l)}
 #fh{position:absolute;top:4px;width:64px;height:30px;border-radius:8px;background:var(--t);left:4px}
+#ftrack{touch-action:none;cursor:pointer}
+#fh{pointer-events:none}
+#ss{height:56px;font-size:19px;width:100%}
+#ss.go{background:#7BD88F;color:#000;border-color:#7BD88F}
 .tool{height:48px;border-radius:12px;border:1px solid var(--l);background:transparent;color:var(--t);font-size:16px;font-weight:600;padding:0 4px}
 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:center}
 .pad{height:104px;border-radius:18px;border:2px solid var(--l);background:var(--p);color:var(--t);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 4px}
@@ -79,7 +83,7 @@ small.note{font-size:15px;color:var(--m)}
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 0.5</div>
+  <div id="status">build 0.6</div>
   <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
@@ -100,6 +104,7 @@ small.note{font-size:15px;color:var(--m)}
 
 <div id="play">
   <div id="fader"><b style="color:var(--a)">A</b><div id="ftrack" role="img" aria-label="Crossfader"><i></i><div id="fh"></div></div><b style="color:var(--b)">B</b></div>
+  <button class="tool" id="ss">Stop</button>
   <div class="halves">
     <div class="two"><button class="tool" id="mark">Mark this spot</button><button class="tool" id="speed">Speed 100%</button></div>
     <div class="two"><label style="font-size:15px;color:var(--m)">Music level <input type="range" id="level" min="0" max="100" step="5" aria-label="Music level"></label><button class="tool" id="release">Release all loops</button></div>
@@ -547,6 +552,110 @@ function nudge(x){ const d = loop[lastLoop].st >= 2 ? lastLoop : (loop.A.st >= 2
 $("nEarly").onclick = () => nudge(-0.03); $("nLate").onclick = () => nudge(0.03);
 setInterval(drawBeat, 500);
 
+/* ---------- build 0.6: one Stop / Start button, and a crossfader you can move by hand ---------- */
+const HAND = {drag:false, kicked:{A:0,B:0}};
+const SS = {on:false, decks:[], at:{}, t:0};
+const sounding = (d) => st(d) === 1 || st(d) === 3;
+const posNow = () => (gain.A + gain.B) > 0 ? (2/Math.PI) * Math.atan2(gain.B, gain.A) : (out === "A" ? 0 : 1);   // 0 = all Song A, 1 = all Song B
+function blend(p){ p = Math.max(0, Math.min(1, p)); vol("A", Math.cos(p*Math.PI/2)); vol("B", Math.sin(p*Math.PI/2)); }
+function dropBeat(d){ if (BL[d]) clearTimeout(BL[d].timer); BL[d] = null; }
+
+/* Stop: everything that is sounding pauses and is remembered. Start: the same songs pick up at the same spot, same loop, same blend. */
+function stopAll(){
+  const decks = ["A","B"].filter(d => ready[d] && sounding(d));
+  if (!decks.length) return false;
+  if (phase !== "idle"){ log("stop froze the " + phase + " where it was"); phase = "idle"; }
+  for (const d of ["A","B"]){ const L = loop[d]; if (L.st === 3){ if (BL[d]) clearTimeout(BL[d].timer); L.st = 4; } }   // 4 = a beat loop that is being held while stopped
+  for (const d of decks){ try { wd[d]++; P[d].pauseVideo(); } catch(e){} }
+  SS.on = true; SS.decks = decks; SS.t = pnow(); SS.at = {}; setTimeout(() => { for (const d of decks) SS.at[d] = cur(d); }, 600);
+  log("STOP " + decks.join("+")); return true;
+}
+function resumeBeat(d){
+  const L = loop[d], D = barSeconds(d); if (D) L.e = L.s + D; L.st = 3;
+  const c0 = cur(d); if (c0 == null || c0 < L.s - 0.05 || c0 >= L.e - 0.05){ beatLoopStart(d, true); return; }
+  const t0 = pnow(); wd[d]++; P[d].playVideo(); BL[d] = null; lastLoop = d;
+  const iv = setInterval(() => {
+    if (loop[d].st !== 3){ clearInterval(iv); return; }
+    const a = anchor[d];
+    if (st(d) === 1 && a && a.w > t0 && a.m > c0 + 0.02){ clearInterval(iv); BL[d] = {w0: a.w - (a.m - L.s) / rate * 1000, k: 1, wait: false}; schedJump(d); }
+    else if (pnow() - t0 > 3000){ clearInterval(iv); beatLoopStart(d, true); }
+  }, 40);
+}
+function startAll(){
+  SS.on = false;
+  for (const d of SS.decks){
+    if (!ready[d]) continue; const L = loop[d];
+    if (L.st === 4){ resumeBeat(d); continue; }
+    if (L.st === 2) L.hold = now() + 900;
+    const tk = ++wd[d]; try { P[d].playVideo(); } catch(e){}
+    setTimeout(() => { if (tk === wd[d] && st(d) !== 1) seekPlay(d, cur(d) || 0); }, 2500);
+  }
+  log("START " + SS.decks.join("+"));
+}
+function stopStart(){
+  if (!armed){ banner("Tap the yellow button first."); return; }
+  if (["A","B"].some(d => ready[d] && sounding(d))){ stopAll(); return; }
+  if (SS.on && SS.decks.length){ startAll(); return; }
+  if (!ready[out] || !S.ids[out]){ banner("Load a song in Set up first."); return; }
+  const s = st(out), c = cur(out); seekPlay(out, s === 0 || c == null ? 0 : c); log("START " + out);
+}
+$("ss").onclick = stopStart;
+
+/* The crossfader by hand. Left is only Song A, right is only Song B. It stays where the finger leaves it. */
+const ft = $("ftrack"); ft.setAttribute("role", "slider"); ft.setAttribute("aria-label", "Blend from Song A to Song B"); ft.setAttribute("aria-valuemin", "0"); ft.setAttribute("aria-valuemax", "100");
+function posAt(e){ const r = ft.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - r.left - 36) / Math.max(1, r.width - 72))); }
+function kick(d){
+  if (!ready[d] || !S.ids[d] || sounding(d) || pnow() - HAND.kicked[d] < 3000) return;
+  HAND.kicked[d] = pnow(); const s = st(d), c = cur(d);
+  seekPlay(d, s === 0 || c == null ? (d === inn ? (S.inAt || 0) : 0) : c); log("hand brought in Song " + d);
+}
+function handMove(e){
+  const p = posAt(e);
+  if (phase !== "idle"){ phase = "idle"; log("hand took over the fade"); }
+  blend(p);
+  if (p > 0.02 && sounding("A")) kick("B");
+  if (p < 0.98 && sounding("B")) kick("A");
+  draw();
+}
+function handUp(){
+  HAND.drag = false; const p = posNow(), end = p >= 0.985 ? "B" : p <= 0.015 ? "A" : null;
+  if (!end){ log("hand blend left at " + Math.round(p*100)); return; }
+  const other = end === "A" ? "B" : "A"; blend(end === "B" ? 1 : 0);
+  if (end !== out){
+    if (sounding(end)){ finishMix(other, end); log("hand mix finished on Song " + end); }
+    else if (!sounding(out) && ready[end] && S.ids[end]){ out = end; inn = other; fillSetup(); log("hand chose Song " + end + " to play"); }
+    else { blend(out === "B" ? 1 : 0); banner("Song " + end + " is not ready."); }
+  } else if (sounding(other)){
+    try { wd[other]++; P[other].pauseVideo(); } catch(e){}
+    if (loop[other].st >= 3) dropBeat(other); loop[other].st = 0; cue(other, S.inAt || 0); log("hand went back to Song " + end);
+  }
+  draw();
+}
+ft.addEventListener("pointerdown", (e) => { if (!armed){ banner("Tap the yellow button first."); return; } e.preventDefault(); HAND.drag = true; try { ft.setPointerCapture(e.pointerId); } catch(x){} handMove(e); });
+ft.addEventListener("pointermove", (e) => { if (HAND.drag) handMove(e); });
+ft.addEventListener("pointerup", () => { if (HAND.drag) handUp(); });
+ft.addEventListener("pointercancel", () => { if (HAND.drag) handUp(); });
+
+/* A mix that starts while the two songs are already blended by hand carries on from where the blend is, with no jump. */
+{ const execute0 = execute; execute = function(){
+    const p = posNow(), pin = inn === "B" ? p : 1 - p;
+    if (pin > 0.02 && pin < 0.98 && sounding(inn) && sounding(out)){
+      const o = out, i = inn, f = Math.max(0.001, S.fade|0); phase = "mix";
+      lastMix = {out:o, inn:i, outAt: cur(o) || 0, inAt: cur(i) || 0}; fadeT0 = now() - pin * f * 1000;
+      log("MIX " + o + " to " + i + " carried on from a hand blend at " + Math.round(pin*100)); return;
+    }
+    execute0();
+  }; }
+{ const draw0 = draw; draw = function(){
+    draw0();
+    const p = posNow(), tr = ft.clientWidth - 72; $("fh").style.left = (4 + p * Math.max(0, tr)) + "px"; ft.setAttribute("aria-valuenow", String(Math.round(p*100)));
+    if (SS.on && pnow() - SS.t > 1500 && (["A","B"].some(d => st(d) === 1) || SS.decks.some(d => SS.at[d] != null && cur(d) != null && Math.abs(cur(d) - SS.at[d]) > 0.5))){
+      SS.on = false; for (const d of ["A","B"]) if (loop[d].st === 4){ loop[d].st = 0; dropBeat(d); }
+    }
+    if (phase === "idle" && ready[inn] && S.ids[inn] && loop[inn].st < 2 && gain[inn] > 0.02 && (sounding(inn) || (SS.on && SS.decks.includes(inn)))) setRead(inn, "BLENDED IN", fmt(cur(inn)), "by hand, " + Math.round((inn === "B" ? p : 1 - p) * 100) + " percent");
+    const playing = ["A","B"].some(d => ready[d] && sounding(d)), b = $("ss");
+    b.textContent = playing ? "Stop" : "Start"; b.classList.toggle("go", !playing && SS.on);
+  }; }
 /* ---------- start ---------- */
 if (location.hash === "#demo"){ S.ids = {A:"M7lc1UVf-VE", B:"M7lc1UVf-VE"}; S.outAt = 60; S.inAt = 420; S.fade = 8; S.countIn = 4; S.auto = true; save(); }
 fillSetup(); view(S.ids.A || S.ids.B ? "play" : "setup");
