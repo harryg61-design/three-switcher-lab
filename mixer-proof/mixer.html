@@ -78,6 +78,8 @@ small.note{font-size:15px;color:var(--m)}
 .qrow .qf{color:#FFD166;font-size:14px;flex:none}
 .qrow button{width:58px;height:44px;border-radius:10px;border:1px solid var(--l);background:transparent;font-size:18px;font-weight:700;flex:none}
 .deck .frame{position:relative}
+.ej{flex:none;height:28px;padding:0 10px;border-radius:8px;border:1px solid var(--l);background:transparent;color:inherit;font-size:14px;font-weight:700}.ej:disabled{opacity:.3}.ej.sure{background:#FFD166;color:#101214;border-color:#FFD166}
+.qrow .bm.rm{width:auto;padding:0 12px;color:#FF8A80}
 .dropz{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;border-radius:8px;font-size:22px;font-weight:700;color:#101214;background:transparent;text-align:center;padding:8px}
 body.dropArm .dropz{display:flex}
 .dropz span{display:none}
@@ -96,7 +98,7 @@ body.dropShow #plCard.over{background:#2A3038}
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 0.9</div>
+  <div id="status">build 1.0</div>
   <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
@@ -104,12 +106,12 @@ body.dropShow #plCard.over{background:#2A3038}
 
 <div class="halves">
   <section class="deck A" aria-label="Song A">
-    <div class="dh"><span class="badge">A</span><span class="title" id="tA">No song yet</span><span class="dstate" id="sA"></span></div>
+    <div class="dh"><span class="badge">A</span><span class="title" id="tA">No song yet</span><span class="dstate" id="sA"></span><button class="ej" id="ejA" aria-label="Eject Song A">Eject</button></div>
     <div class="frame"><div id="pA">Add a YouTube link in Set up</div><div class="dropz" data-d="A"><span>Drop here for Song A</span></div></div>
     <div class="read" id="rA"><span class="lab"></span><span class="num"></span><span class="sub"></span></div>
   </section>
   <section class="deck B" aria-label="Song B">
-    <div class="dh"><span class="badge">B</span><span class="title" id="tB">No song yet</span><span class="dstate" id="sB"></span></div>
+    <div class="dh"><span class="badge">B</span><span class="title" id="tB">No song yet</span><span class="dstate" id="sB"></span><button class="ej" id="ejB" aria-label="Eject Song B">Eject</button></div>
     <div class="frame"><div id="pB">Add a YouTube link in Set up</div><div class="dropz" data-d="B"><span>Drop here for Song B</span></div></div>
     <div class="read" id="rB"><span class="lab"></span><span class="num"></span><span class="sub"></span></div>
   </section>
@@ -407,9 +409,10 @@ function setReorder(on){
   renderQueue();
 }
 function backToYt(){
+  const have = new Set(S.queue.map(q => q.id)); (S.ytOrder || []).forEach(id => { if (!have.has(id)){ S.queue.push({id, title:""}); have.add(id); } }); S.removed = [];
   const pos = {}; (S.ytOrder || []).forEach((id, i) => { if (!(id in pos)) pos[id] = i; });
   S.queue = S.queue.map((q, i) => ({q, k: (q.id in pos) ? pos[q.id] : 1e6 + i})).sort((a, b) => a.k - b.k).map(x => x.q);
-  lastMoved = null; save(); renderQueue(); log("back to YouTube order");
+  lastMoved = null; save(); renderQueue(); fetchTitles(); setReorderNote(); log("back to YouTube order");
 }
 function renderQueue(){
   const el = $("queue"); if (!el) return; el.innerHTML = "";
@@ -423,6 +426,7 @@ function renderQueue(){
     if (reorder){
       const mk = (txt, lab, to, off) => { const b = document.createElement("button"); b.className = "bm"; b.textContent = txt; b.setAttribute("aria-label", lab); b.disabled = off; b.onclick = () => moveSong(i, to); r.appendChild(b); };
       mk("\u2191", "Move this song up", i - 1, i === 0); mk("\u2193", "Move this song down", i + 1, i === last); mk("Top", "Send this song to the top", 0, i === 0);
+      const rb = document.createElement("button"); rb.className = "bm rm"; rb.textContent = "Remove"; rb.setAttribute("aria-label", "Remove this song from the list"); rb.onclick = () => removeSong(i); r.appendChild(rb);
     } else {
       for (const d of ["A","B"]){ const b = document.createElement("button"); b.className = d === "A" ? "ba" : "bb"; b.textContent = d; b.setAttribute("aria-label", "Put this song on side " + d); b.onclick = () => { loadSong(d, q.id); banner("Loading it on side " + d + ".", 2500); }; r.appendChild(b); }
     }
@@ -460,7 +464,8 @@ async function importPlaylist(listId){
   const old = {}; S.queue.forEach(q => { old[q.id] = q; });
   const same = S.playlistId === listId && S.queue.length > 0, inNew = new Set(ids);
   const kept = same ? S.queue.filter(q => inNew.has(q.id) || q.added).map(q => q.id) : [], keptSet = new Set(kept);
-  const order = same ? kept.concat(ids.filter(id => !keptSet.has(id))) : ids;
+  if (!same) S.removed = []; const rem = new Set(S.removed || []);
+  const order = same ? kept.concat(ids.filter(id => !keptSet.has(id) && !rem.has(id))) : ids;
   S.queue = order.map(id => old[id] ? old[id] : {id, title:""}); S.ytOrder = ids.slice(); S.playlistId = listId; save();
   const first = ids[0], second = ids[1] || ids[0], o = OTHER[d];
   if (S.ids[d]) P[d].cueVideoById({videoId:S.ids[d], startSeconds: d === inn ? (S.inAt||0) : 0}); else loadSong(d, d === out ? first : second);
@@ -532,6 +537,44 @@ document.addEventListener("dragover", (e) => {
   dragPing();
 });
 document.addEventListener("drop", (e) => { if (!dragHasLink(e)) return; e.preventDefault(); const z = dropZoneOf(e), r = readDrop(e); dragSeen = 0; dropShow(false); handleDrop(z, r); });
+
+/* ---------- remove from the list, eject from a player ---------- */
+let undoRm = null, undoT = null;
+function setReorderNote(){ $("plNote").textContent = reorder ? "Move songs with the arrows. Tap Done when you are finished." : S.queue.length + " songs in the playlist. Tap A or B to put a song on that side."; }
+function removeSong(i){
+  const q = S.queue[i]; if (!q) return;
+  S.queue.splice(i, 1); S.removed = S.removed || []; if (!q.added && !S.removed.includes(q.id)) S.removed.push(q.id);
+  lastMoved = null; save(); undoRm = {q, i}; renderQueue();
+  const n = $("plNote"); n.textContent = "Removed \u201C" + (q.title || "that song") + "\u201D. ";
+  const b = document.createElement("button"); b.id = "plUndo"; b.className = "btn"; b.textContent = "Undo"; b.style.cssText = "margin-left:8px;min-height:36px;padding:4px 14px"; b.onclick = undoRemove; n.appendChild(b);
+  clearTimeout(undoT); undoT = setTimeout(() => { undoRm = null; if ($("plUndo")) setReorderNote(); }, 8000);
+  log("removed " + q.id + " from the playlist");
+}
+function undoRemove(){
+  if (!undoRm) return; const q = undoRm.q, i = undoRm.i; undoRm = null; clearTimeout(undoT);
+  S.queue.splice(Math.min(i, S.queue.length), 0, q); S.removed = (S.removed || []).filter(id => id !== q.id);
+  lastMoved = q.id; save(); renderQueue(); setReorderNote(); log("undo remove " + q.id);
+}
+const ejT = {A:null, B:null};
+function ejectAsk(d){
+  const b = $("ej" + d);
+  if (!S.ids[d]){ banner("Song " + d + " is already empty."); return; }
+  if (phase !== "idle"){ banner("Let the mix finish first, then eject."); return; }
+  if (!b.classList.contains("sure")){ b.classList.add("sure"); b.textContent = "Tap again"; clearTimeout(ejT[d]); ejT[d] = setTimeout(() => { b.classList.remove("sure"); b.textContent = "Eject"; }, 3000); return; }
+  clearTimeout(ejT[d]); b.classList.remove("sure"); b.textContent = "Eject"; eject(d);
+}
+function eject(d){
+  wd[d]++; loop[d].st = 0; S.ids[d] = null; save();
+  if (P[d]){ try { P[d].stopVideo(); } catch(e){} try { P[d].destroy(); } catch(e){} }
+  P[d] = null; ready[d] = false;
+  let el = $("p" + d); if (el && el.tagName === "IFRAME"){ el.remove(); el = null; }
+  if (!el){ el = document.createElement("div"); el.id = "p" + d; const f = document.querySelector(".deck." + d + " .frame"); f.insertBefore(el, f.firstChild); }
+  el.textContent = "Add a YouTube link in Set up";
+  try { if ($("setup").style.display !== "none") fillSetup(); } catch(e){}
+  banner("Song " + d + " ejected.", 2500); log("ejected " + d); draw();
+}
+$("ejA").onclick = () => ejectAsk("A"); $("ejB").onclick = () => ejectAsk("B");
+setInterval(() => { for (const d of ["A","B"]) $("ej" + d).disabled = !S.ids[d]; }, 400);
 
 /* ---------- saved mixes ---------- */
 S.mixes = S.mixes || [];
