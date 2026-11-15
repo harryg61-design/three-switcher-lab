@@ -16,6 +16,7 @@ header h1{margin:0;font-size:22px}
 nav{display:flex;gap:4px;padding:3px;background:var(--p);border-radius:12px;flex:none}
 nav button{height:38px;padding:0 16px;border-radius:9px;border:none;background:transparent;color:#D5DAE0;font-size:17px;font-weight:600}
 nav button.on{background:var(--t);color:#101214;font-weight:700}
+#banner.float{position:fixed;top:8px;left:12px;right:12px;z-index:60;box-shadow:0 6px 24px rgba(0,0,0,.6)}
 #banner{display:none;padding:10px 14px;border-radius:12px;background:#FFD166;color:#101214;font-size:18px;font-weight:700;text-align:center}
 .halves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
 .deck{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -176,7 +177,7 @@ function log(m){ LOG.push(((now()/1000).toFixed(1)) + " " + m); if (LOG.length >
 
 /* ---------- helpers ---------- */
 const fmt = (s) => { if (s == null || !isFinite(s)) return "–:––"; s = Math.max(0, s); const m = Math.floor(s/60), r = Math.floor(s%60); return m + ":" + String(r).padStart(2,"0"); };
-function banner(t, ms){ const b = $("banner"); b.textContent = t; b.style.display = "block"; clearTimeout(banner.t); banner.t = setTimeout(() => b.style.display = "none", ms || 4000); log("banner: " + t); }
+function banner(t, ms){ const b = $("banner"); b.classList.remove("float"); b.textContent = t; b.style.display = "block"; const br = b.getBoundingClientRect(); if (br.bottom < 0 || br.top > innerHeight) b.classList.add("float"); clearTimeout(banner.t); banner.t = setTimeout(() => b.style.display = "none", ms || 4000); log("banner: " + t); }
 function parseId(s){ s = (s||"").trim(); if (!s) return null; if (/^[\w-]{11}$/.test(s)) return s; const m = s.match(/(?:v=|youtu\.be\/|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/); return m ? m[1] : null; }
 const cur = (d) => { try { return P[d] && ready[d] ? P[d].getCurrentTime() : null; } catch(e){ return null; } };
 const st  = (d) => { try { return P[d] && ready[d] ? P[d].getPlayerState() : null; } catch(e){ return null; } };
@@ -403,11 +404,12 @@ async function fetchTitles(){
     save(); renderQueue();
   }
 }
+function plSay(t){ $("plNote").textContent = t; banner(t); }
 async function importPlaylist(listId){
   try { await loadApi(); } catch(e){ banner(e.message); return; }
-  if (phase !== "idle"){ banner("Wait for the mix to finish, then load the playlist."); return; }
+  if (phase !== "idle"){ plSay("Wait for the mix to finish, then load the playlist."); return; }
   const d = st(inn) === 1 ? out : inn;
-  if (st(d) === 1){ banner("Pause one song first. The playlist is read through a player that is not playing."); return; }
+  if (st(d) === 1){ plSay("Pause one song first. The playlist is read through a player that is not playing."); return; }
   $("plNote").textContent = "Reading the playlist…"; log("reading playlist " + listId + " through side " + d);
   if (P[d] && ready[d]) P[d].cuePlaylist({listType:"playlist", list:listId}); else makePlayer(d, {playerVars:{listType:"playlist", list:listId}});
   let ids = null;
@@ -432,7 +434,7 @@ function startOver(){
   fillSetup(); view("play"); banner("Started over. Press play on Song A.", 3500); log("start over");
 }
 $("vOver").onclick = startOver;
-$("plLoad").onclick = () => { const m = ($("plLink").value || "").match(/[?&]list=([\w-]+)/) || ($("plLink").value || "").trim().match(/^((?:PL|UU|FL|OL|RD)[\w-]{10,})$/); if (!m) return banner("That is not a playlist link. A playlist link has list= in it."); importPlaylist(m[1]); };
+$("plLoad").onclick = () => { const m = ($("plLink").value || "").match(/[?&]list=([\w-]+)/) || ($("plLink").value || "").trim().match(/^((?:PL|UU|FL|OL|RD)[\w-]{10,})$/); if (!m) return plSay("That is not a playlist link. A playlist link has list= in it."); importPlaylist(m[1]); };
 
 /* ---------- saved mixes ---------- */
 S.mixes = S.mixes || [];
