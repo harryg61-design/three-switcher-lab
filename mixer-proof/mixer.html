@@ -78,6 +78,13 @@ small.note{font-size:15px;color:var(--m)}
 .qrow .qf{color:#FFD166;font-size:14px;flex:none}
 .qrow button{width:58px;height:44px;border-radius:10px;border:1px solid var(--l);background:transparent;font-size:18px;font-weight:700;flex:none}
 .deck .frame{position:relative}
+#mixbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;background:#14171B;border-top:1px solid #2E343B;padding:6px 12px calc(8px + env(safe-area-inset-bottom))}
+#mixbar .in{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:4px}
+#mbNow{font-size:14px;color:var(--m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mbRow{display:grid;grid-template-columns:minmax(92px,150px) minmax(0,1fr) minmax(92px,150px);gap:10px;align-items:center}
+#mixbar #ss{height:48px;width:100%;font-size:17px;margin:0}
+#mbMix{height:48px;width:100%;background:var(--t);color:#101214;font-weight:700;font-size:17px}
+body.setupOn #app{padding-bottom:118px}
 .ej{flex:none;height:28px;padding:0 10px;border-radius:8px;border:1px solid var(--l);background:transparent;color:inherit;font-size:14px;font-weight:700}.ej:disabled{opacity:.3}.ej.sure{background:#FFD166;color:#101214;border-color:#FFD166}
 .qrow .bm.rm{width:auto;padding:0 12px;color:#FF8A80}
 .dropz{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;border-radius:8px;font-size:22px;font-weight:700;color:#101214;background:transparent;text-align:center;padding:8px}
@@ -98,7 +105,7 @@ body.dropShow #plCard.over{background:#2A3038}
 <div id="app">
 <header>
   <h1>Mixer</h1>
-  <div id="status">build 1.0</div>
+  <div id="status">build 1.1</div>
   <nav aria-label="Screens"><button id="vPlay" class="on">Play</button><button id="vSetup">Set up</button><button id="vOver">Start over</button></nav>
 </header>
 <div id="banner" role="status"></div>
@@ -156,7 +163,7 @@ body.dropShow #plCard.over{background:#2A3038}
     <div class="card"><h2>Count-in, in seconds</h2><div class="chips" id="countC"><button data-v="0" style="font-size:17px">None</button><button data-v="4">4</button><button data-v="8">8</button><button data-v="16">16</button></div></div>
   </div>
   <div class="halves">
-    <div class="card"><h2>When to mix</h2><div class="two"><button class="btn" id="autoOn">Automatic at the set time</button><button class="btn" id="autoOff">Only on the pedal</button></div></div>
+    <div class="card"><h2>When to mix</h2><div class="two"><button class="btn" id="autoOn">Automatic at the set time</button><button class="btn" id="autoOff">Only on the pedal</button></div><div class="two"><button class="btn" id="endNext">Song ends: play the other side</button><button class="btn" id="endStop">Song ends: stop</button></div></div>
     <div class="card"><h2>Pedals and keys</h2><small class="note">1 or Left arrow: Loop A · 2 or Up arrow: Run it again · 3 or Down arrow: Loop B · 4 or Right arrow: Mix now</small></div>
   </div>
   <div class="card"><h2>Saved mixes</h2>
@@ -167,6 +174,7 @@ body.dropShow #plCard.over{background:#2A3038}
     <div style="display:flex;gap:8px"><input type="url" id="plLink" placeholder="Paste a YouTube playlist link" aria-label="YouTube playlist link"><button class="btn" id="plLoad" style="flex:none">Load playlist</button></div>
     <small class="note" id="plNote">Songs from the playlist appear here. Tap A or B to put a song on that side.</small>
     <small class="note" id="plDropHint">Drop a song here to add it to the list, or a playlist link to load the whole playlist.</small><div id="queue"></div><button class="btn" id="plYt" style="display:none;margin-top:8px">Back to YouTube order</button></div>
+  <div id="mixbar"><div class="in"><div id="mbNow"></div><div id="mbRow"><div id="mbSS"></div><div id="mbFader"></div><button class="tool" id="mbMix">Mix now</button></div></div></div>
   <button class="btn main" id="done" style="min-height:66px;font-size:24px">Done</button>
 </div>
 </div>
@@ -347,7 +355,7 @@ function fillSetup(){
   $("oM").value = S.outAt == null ? "" : Math.floor(S.outAt/60); $("oS").value = S.outAt == null ? "" : Math.floor(S.outAt%60);
   $("iM").value = Math.floor((S.inAt||0)/60); $("iS").value = Math.floor((S.inAt||0)%60);
   chips("fadeC", S.fade); chips("countC", S.countIn);
-  $("autoOn").classList.toggle("main", !!S.auto); $("autoOff").classList.toggle("main", !S.auto);
+  $("autoOn").classList.toggle("main", !!S.auto); $("autoOff").classList.toggle("main", !S.auto); $("endNext").classList.toggle("main", S.endNext !== false); $("endStop").classList.toggle("main", S.endNext === false);
   marksFor(out, "oMarks", (t) => setOut(t)); marksFor(inn, "iMarks", (t) => setIn(t)); renderQueue(); renderMixes();
   if (document.activeElement !== $("linkA")) $("linkA").value = S.ids.A ? "https://youtu.be/" + S.ids.A : "";
   if (document.activeElement !== $("linkB")) $("linkB").value = S.ids.B ? "https://youtu.be/" + S.ids.B : "";
@@ -366,7 +374,7 @@ $("fadeC").onclick = (e) => { if (e.target.dataset.v != null){ S.fade = Number(e
 $("countC").onclick = (e) => { if (e.target.dataset.v != null){ S.countIn = Number(e.target.dataset.v); save(); fillSetup(); } };
 $("autoOn").onclick = () => { S.auto = true; save(); fillSetup(); }; $("autoOff").onclick = () => { S.auto = false; save(); fillSetup(); };
 for (const d of ["A","B"]) $("load"+d).onclick = () => { const id = parseId($("link"+d).value); if (!id) return banner("That is not a YouTube link."); loadSong(d, id); banner("Loading Song " + d + "."); };
-function view(v){ $("play").style.display = v === "play" ? "flex" : "none"; $("setup").style.display = v === "setup" ? "flex" : "none"; $("vPlay").classList.toggle("on", v === "play"); $("vSetup").classList.toggle("on", v === "setup"); if (v === "setup") fillSetup(); }
+function view(v){ $("play").style.display = v === "play" ? "flex" : "none"; $("setup").style.display = v === "setup" ? "flex" : "none"; $("vPlay").classList.toggle("on", v === "play"); $("vSetup").classList.toggle("on", v === "setup"); if (v === "setup") fillSetup(); placeMix(v); }
 $("vPlay").onclick = $("done").onclick = () => view("play"); $("vSetup").onclick = () => view("setup");
 
 /* ---------- play screen controls ---------- */
@@ -386,7 +394,7 @@ function makePlayer(d, o){
   const cfg = { width:"100%", height:"100%", playerVars:Object.assign({playsinline:1, rel:0, controls:1}, o.playerVars || {}),
     events:{
       onReady: () => { ready[d] = true; vol(d, gain[d]); log(d + " ready"); if (!armed) $("arm").style.display = "block"; },
-      onStateChange: (e) => { log(d + " " + (STATE[e.data]||e.data)); },
+      onStateChange: (e) => { log(d + " " + (STATE[e.data]||e.data)); if (e.data === 0) onEnded(d); },
       onError: (e) => { log(d + " error " + e.data); banner("Song " + d + " cannot be played here (code " + e.data + "). Try another song.", 8000); const q = S.queue.find(x => x.id === S.ids[d]); if (q){ q.flag = "cannot play here"; save(); renderQueue(); } }
     }};
   if (o.videoId) cfg.videoId = o.videoId;
@@ -575,6 +583,33 @@ function eject(d){
 }
 $("ejA").onclick = () => ejectAsk("A"); $("ejB").onclick = () => ejectAsk("B");
 setInterval(() => { for (const d of ["A","B"]) $("ej" + d).disabled = !S.ids[d]; }, 400);
+
+/* ---------- mixing bar on Set up, and what happens when a song ends ---------- */
+function placeMix(v){
+  const bar = $("mixbar"), on = v === "setup", f = $("fader"), s = $("ss"), p = $("play");
+  bar.style.display = on ? "block" : "none"; document.body.classList.toggle("setupOn", on);
+  if (on){ $("mbFader").appendChild(f); $("mbSS").appendChild(s); }
+  else if (s.parentNode !== p){ p.insertBefore(s, p.firstChild); p.insertBefore(f, p.firstChild); }
+}
+$("mbMix").onclick = mixNow;
+function mbText(){
+  const side = (d) => "Song " + d + (S.ids[d] ? ": " + titleOf(d) : " is empty");
+  if (phase === "count") return "Mixing to Song " + inn + " in " + Math.max(0, Math.ceil((mixAt - now())/1000)) + " seconds. Press Mix now again to go right away.";
+  if (phase === "mix") return "Mixing from Song " + out + " to Song " + inn + ".";
+  return (st(out) === 1 ? "Playing " : "Loaded ") + side(out) + "  \u2022  Next " + side(inn);
+}
+setInterval(() => { if ($("mixbar").style.display === "block"){ $("mbNow").textContent = mbText(); $("mbMix").textContent = phase === "count" ? "Go now" : "Mix now"; } }, 250);
+$("endNext").onclick = () => { S.endNext = true; save(); fillSetup(); }; $("endStop").onclick = () => { S.endNext = false; save(); fillSetup(); };
+function onEnded(d){
+  if (S.endNext === false || phase !== "idle" || d !== out || loop[d].st === 2) return;
+  const o = OTHER[d];
+  if (!armed || !ready[o] || !S.ids[o]){ log("song " + d + " ended; nothing loaded on " + o); return; }
+  lastMix = {out:d, inn:o, outAt: cur(d) || 0, inAt: S.inAt || 0};
+  vol(o, 1); vol(d, 0);
+  if (st(o) !== 1) seekPlay(o, S.inAt || 0);
+  loop[d].st = 0; out = o; inn = d; S.outAt = null; S.inAt = 0; save(); fillSetup();
+  banner("Song " + d + " ended. Now playing Song " + o + ".", 3500); log("song " + d + " ended; started " + o);
+}
 
 /* ---------- saved mixes ---------- */
 S.mixes = S.mixes || [];
